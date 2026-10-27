@@ -303,8 +303,12 @@ const buildPdf=()=>{
   const slots=i=>Math.max((mode==='weeklijst'&&i>=5)?2:7,data.d[i].length);let sum=0;DAGEN.forEach((_,i)=>sum+=slots(i));
   const RH=Math.min(4.763,(262-30.7-7.4-18.3)/(sum+3));
   doc.setLineWidth(.15);doc.setFontSize(Math.min(10,RH*2.1));doc.setFont('helvetica','normal');
+  {let need=0;data.d.forEach(rows=>(rows||[]).forEach(e=>{if(e&&e.pn)need=Math.max(need,doc.getTextWidth(String(e.pn))+2.4)}));
+   const w2=Math.min(48,Math.max(18.9,need));W[1]=80.9-(w2-18.9);W[2]=w2;W.reduce((a,w,i)=>(X[i]=a,a+w),X0)} // kolom project nr. passend, lijn schuift naar links
   const hl=(yy,x=X0)=>doc.line(x,yy,XR,yy),vl=(x,a,b)=>doc.line(x,a,x,b);
-  const T=(t,i,yy,al)=>{t=String(t);if(al==='r')doc.text(t,X[i]+W[i]-1,yy+RH-1.1,{align:'right'});else if(al==='c')doc.text(t,X[i]+W[i]/2,yy+RH-1.1,{align:'center'});else doc.text(t,X[i]+1,yy+RH-1.1)};
+  const T=(t,i,yy,al)=>{t=String(t);const fs0=doc.getFontSize(),mx=W[i]-1.6;if(i===2){let f2=fs0;while(f2>5&&doc.getTextWidth(t)>mx){f2-=.3;doc.setFontSize(f2)}}else if(i===1&&doc.getTextWidth(t)>mx){let b=t;while(b.length>1&&doc.getTextWidth(b+'..')>mx)b=b.slice(0,-1);t=b+'..'}
+   T2(t,i,yy,al);doc.setFontSize(fs0)};
+  const T2=(t,i,yy,al)=>{if(al==='r')doc.text(t,X[i]+W[i]-1,yy+RH-1.1,{align:'right'});else if(al==='c')doc.text(t,X[i]+W[i]/2,yy+RH-1.1,{align:'center'});else doc.text(t,X[i]+1,yy+RH-1.1)};
   let y=Y0;hl(y);
   try{(function(){var k=210/924,sc=1,u=k*sc,ox=X0+1.2,oy=Y0+1.4,B=[30,60,150];
   doc.setFillColor(B[0],B[1],B[2]);doc.rect(ox,oy,80*u,82*u,'F');
@@ -871,8 +875,8 @@ cand.some(function(c){sz=c;for(var e=0;e<=6;e++){sl=slots(1,e);L=wrap(sz,sl);if(
  lab('Levering materiaal: M=magazijn / S=serv.auto / L=leverancier / K=klant',68,1123,7.5,true);
  lw(.2,90);Rr(751,1106,111,122);Ln(751,1147,862,1147);Ln(751,1188,862,1188);
  lab('Totaal (exclusief BTW)',562,1140,7.5,false);lab('€',723,1140,7.5,false);lab('BTW',563,1183,7.5,false);lab('%',661,1183,7.5,false);lab('€',723,1183,7.5,false);lab('Totaal te betalen bedrag',562,1227,7.5,false);lab('€',723,1227,7.5,false);
- lab('Handtekening monteur:',68,1167,7.5,false);lw(.15,110);Ln(68,1207,287,1207);sigC('mon','Handtekening monteur:',68,1172,52,66,287);
- lab('Handtekening klant:',67,1245,7.5,false);lab('Naam klant:',311,1245,7.5,false);Ln(66,1285,286,1285);Ln(311,1285,530,1285);sigC('klant','Handtekening klant:',67,1250,50,66,286);val(f.klant,313,1282,10,null,215);
+ lab('Handtekening monteur:',68,1167,7.5,false);lw(.15,110);sigC('mon','Handtekening monteur:',68,1172,52,66,287);
+ lab('Handtekening klant:',67,1245,7.5,false);lab('Naam klant:',311,1245,7.5,false);Ln(311,1285,530,1285);sigC('klant','Handtekening klant:',67,1250,50,66,286);val(f.klant,313,1282,10,null,215);
  var pg=1,H=24.9;
  function newPage(){doc.addPage();pg++;lab('MIT Installatietechniek - Werkrapport',68,62,12,true);lab((f.wo?'Werkorder nr.: '+f.wo:f.pr?'Project nr.: '+f.pr:'Werkorder nr.: -')+'     Naam: '+(f.naam||'-')+'     Blad '+pg,68,84,9,false);lw(.55,20);Ln(68,96,862,96);return 124}
  function matTable(list,top,vervolg){var n=list.length+1+(vervolg?1:0);lw(.2,90);

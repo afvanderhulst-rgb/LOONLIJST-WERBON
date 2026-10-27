@@ -1,0 +1,147 @@
+MIT Werkbonnen - installeerbare app (PWA)
+
+INHOUD
+index.html (de app met keuze Werkbonnen / Weeklijsten), manifest.webmanifest,
+sw.js (voor offline gebruik), iconen.
+
+STAP 1 - Zet de map online (HTTPS is verplicht voor installeren)
+Kies een van deze mogelijkheden:
+- Netlify Drop: ga naar app.netlify.com/drop en sleep de uitgepakte map erin.
+  Je krijgt meteen een https-adres.
+- Eigen website van MIT: upload alle bestanden naar een map op de webserver
+  (bijvoorbeeld https://www.mit-installatietechniek.com/werkbon/).
+- GitHub Pages of een andere gratis hosting.
+
+VERCEL (als je de app via Vercel online zet)
+- De inhoud van DEZE map (index.html staat bovenin) is het project; niet de map erboven.
+- Vercel > Project > Settings > Deployment Protection > Vercel Authentication: zet op "Disabled"
+  (of "Only Preview Deployments" en gebruik dan het vaste adres  <project>.vercel.app).
+  Staat die bescherming aan, dan kunnen monteurs zonder Vercel-account de app niet openen
+  en kan Chrome hem niet installeren.
+- Gebruik altijd het vaste productie-adres (<project>.vercel.app of je eigen domein),
+  niet de lange adressen met een code erin; die horen bij een losse testversie.
+
+STAP 2 - Installeren op Android
+1. Open het adres in Chrome op de telefoon.
+2. Tik op de drie puntjes > "App installeren" (of "Toevoegen aan startscherm").
+3. Het icoon "MIT Werkbon" staat nu op je startscherm en opent als eigen app.
+
+STAP 3 (optioneel) - Echt APK-bestand
+Ga naar pwabuilder.com, vul het https-adres in en kies "Package for stores" >
+Android. Je krijgt een APK/AAB dat je kunt installeren of in de Play Store zetten.
+
+LET OP
+- Bonnen worden bewaard op het apparaat zelf (niet in een Claude-account).
+- "Als PDF" downloadt in deze versie direct een PDF met de naam naam-werkbonnr.
+- Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
+  (de PDF-onderdelen worden dan uit het geheugen gehaald).
+- Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
+  Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v82,
+  verhoog naar v83 enz.), zodat telefoons de nieuwe versie ophalen.
+
+BIJLAGEN BIJ AANVULLEND RAPPORT
+- Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
+- "Bestand(en) toevoegen": PDF's en/of foto's kiezen (meerdere tegelijk).
+  "Foto('s) maken": de camera opent.
+- Bijlagen worden achter de PDF van de bon gezet (ook in de verzamel-PDF van de weeklijst).
+  Foto's worden verkleind zodat de PDF niet te groot wordt. Ze gaan mee in de back-up.
+- Staat Aanvullend rapport op Nee, dan worden de bijlagen niet meegenomen (wel bewaard).
+
+PAPIEREN WERKBON SCANNEN
+- Startscherm > "Werkbon importeren" > Bon scannen. De camera opent; maak een foto van de bon.
+- De app leest de bon (op het toestel zelf, er gaat niets naar internet) en zet werkbonnr., werkadres,
+  storing en datum afspraak in een nieuwe bon. Controleer de gegevens altijd even.
+- Tips: bon plat op tafel, recht van boven, hele bon in beeld, genoeg licht, niet bewogen.
+- De eerste keer is internet nodig (de tekstherkenning wordt dan eenmalig geladen, ca. 10-15 MB).
+- iPhone: lukt het openen van de foto niet, zet dan Instellingen > Camera > Formaten op "Meest compatibel".
+
+WERKBON UIT DE MAIL IN DE APP ZETTEN - DE SIMPELE MANIER (geen extra's nodig)
+iPhone:   mail > tik op PDF > Delen > Bewaar in Bestanden.
+          Open de app > "Werkbon importeren" > Bestand selecteren > kies de PDF (bovenaan bij Recent).
+Android:  mail > tik op PDF > Delen > MIT Werkbon.
+Computer: Outlook > bijlage > Opslaan als > je gekozen werkbon-map (zie hieronder),
+          of sleep de PDF in het app-venster.
+
+WERKBON UIT DE MAIL IN DE APP ZETTEN
+Computer (Windows, app geinstalleerd via Chrome of Edge):
+- Eenmalig: startscherm > "Werkbonnen uit de mail opslaan" > Map kiezen.
+  Kies (of maak) de map waar je werkbon-PDF's uit de mail in opslaat, bijv. Documenten\Werkbonnen mail.
+  Kies "Bij elk bezoek toestaan" als de browser om toestemming vraagt.
+  Tip: sleep die map in Verkenner naar "Snelle toegang", dan staat hij altijd links in het opslaan-venster.
+- Daarna: in Outlook bij de bijlage > Opslaan als > kies die map > Opslaan.
+  Staat de app open, dan opent de bon binnen een paar seconden ingevuld. Staat hij dicht,
+  dan gebeurt dat zodra je de app opent.
+- Verwerkte werkbonnen gaan naar de submap Verwerkt. Andere PDF's blijven gewoon staan.
+- De map Downloads zelf kan niet: Chrome en Edge staan dat niet toe (beveiliging). Maak in Downloads
+  een submap, bijv. Downloads\Werkbonnen, en kies die.
+  Wil je dat downloads uit de webmail er vanzelf in komen: Chrome/Edge > Instellingen > Downloads >
+  Locatie wijzigen naar Downloads\Werkbonnen (of zet "Vragen waar elk bestand moet worden opgeslagen" aan).
+
+INSTELLINGEN (tandwieltje rechtsboven)
+- Opslagmap voor PDF's: waar de app de gemaakte werkbonnen/weeklijsten opslaat (WERKBONNEN\jaar\Week).
+- Map voor werkbonnen uit de mail: de map waar de app naar kijkt. Wijzigen of uitzetten.
+- Back-up: aan/uit, tijdstip, nu maken en terugzetten.
+- Het e-mailadres van kantoor pas je aan onder Afronden in een bon.
+- Mappen kiezen kan alleen op een computer in Chrome of Edge.
+- Ook mogelijk: rechtsklik op een opgeslagen PDF > Openen met > MIT Werkbon.
+  (Na het installeren van deze versie; soms eerst "Andere app kiezen".)
+- Of: sleep de PDF in het venster van de app.
+Android:
+- Open de PDF uit de mail > Delen > MIT Werkbon. (Houd MIT Werkbon ingedrukt > Vastzetten,
+  dan staat hij bovenaan.)
+iPhone:
+- Bijlage > Bewaar in Bestanden, daarna in de app: Werkbon importeren > Bestand selecteren.
+  (Een iPhone kan een PDF niet rechtstreeks naar een web-app delen.)
+
+AANGELEVERDE WERKBONNEN IMPORTEREN (zonder Claude)
+- In het Werkrapport: Mijn bonnen > "Aangeleverde werkbon importeren (PDF)" en kies de PDF.
+- Op de computer: sleep de PDF-bijlage uit je mail (Outlook, Gmail, enz.) naar het
+  venster van de app. De app opent een nieuwe bon en vult de gegevens meteen in.
+  Lukt slepen direct uit je mailprogramma niet, sla de bijlage dan eerst op en sleep
+  het bestand.
+- Of deel de PDF vanuit je mail of WhatsApp: Delen > "MIT Werkbon". De app opent en
+  vult de gegevens meteen in (werkbonnr., werkadres, storingsmelding en datum afspraak).
+  Het delen werkt zodra de app is geinstalleerd.
+  Foto's/scans en afwijkende opmaak worden alleen binnen Claude gelezen.
+
+E-MAIL VERZENDEN
+Onder Afronding staan de velden "E-mailadres klant" en "E-mailadres kantoor" met knoppen
+"Verzenden naar klant" en "Verzenden naar kantoor". Het kantooradres wordt onthouden
+(standaard info@mit-installatietechniek.com; pas het veld aan om het te wijzigen).
+- De PDF wordt gedownload en je mail-app opent met het ingevulde e-mailadres bij "Aan",
+  plus onderwerp en tekst. Op Android kies je zelf welke mail-app je gebruikt.
+  Voeg de gedownloade PDF zelf toe als bijlage (een mail-link kan geen bijlage meesturen).
+
+PDF OPSLAAN - zelf kiezen waar het bestand komt
+Tik op "Als PDF".
+- Computer (Chrome/Edge): er opent een venster waarin je de map en bestandsnaam kiest.
+- Android: het deelmenu opent. Kies "Opslaan op apparaat", Bestanden of Drive en daarna de map.
+  Kan je telefoon dit niet, dan wordt de PDF gedownload (map Downloads). Zet in Chrome >
+  Instellingen > Downloads "Vraag waar bestanden worden opgeslagen" aan als je dan ook de map
+  wilt kiezen.
+- Bij "Verzenden naar klant/kantoor" wordt de PDF direct gedownload, zodat je hem als bijlage
+  kunt toevoegen.
+Naam van het bestand: naam-werkordernummer (Werkrapport) of servicerapport-werkbonnummer.
+
+UREN NAAR DE WEEKLIJST
+Zodra je bij Uren een datum en een eindtijd invult, staan de uren binnen een paar seconden ook in de
+weeklijst (opdrachtgever, projectnr. en uren). Pas je tijden later aan, dan wordt de weeklijst bijgewerkt.
+
+PAUZE
+In het Werkrapport vul je per dag de pauze in minuten in. Die gaat van de werkuren af.
+
+BACK-UP - ELKE DAG AUTOMATISCH (standaard om 18:00)
+- Instellen via het tandwieltje > Back-up: aan/uit en het tijdstip.
+- Computer: de back-up komt altijd in de map MIT-BACKUP_ in je hoofdmap (opslagmap), bijv.
+  Documenten\MIT Werkbonnen\MIT-BACKUP_\werkbonnen-backup-jjjj-mm-dd.json (alle werkbonnen en weeklijsten).
+  De map wordt vanzelf aangemaakt. De laatste 30 blijven bewaard. Staat de app op dat moment dicht,
+  dan wordt de back-up gemaakt zodra je hem weer opent.
+- Telefoon: een web-app mag daar niet zelf een bestand opslaan. Op het tijdstip verschijnt een melding
+  "Tijd voor de back-up van vandaag" met de knop Back-up maken (kies dan Drive, mail of Bestanden).
+  "Later" verbergt de melding een uur.
+
+BACK-UP (HANDMATIG)
+Je bonnen en weeklijsten staan op je toestel. Maak daarom af en toe een back-up: op het startscherm
+"Back-up maken" en kies waar het bestand heen moet (mail, Drive, WhatsApp). Na een crash of nieuwe telefoon:
+installeer de app, tik op "Terugzetten" en kies het back-upbestand. De gemaakte PDF's staan los van de app.

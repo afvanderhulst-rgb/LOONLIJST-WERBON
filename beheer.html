@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>MIT Werkbon beheer</title>
+<style>
+:root{--bg:#e1e3ef;--card:#f3f4fa;--tx:#14172e;--mu:#4c5170;--bd:#bcc0d8;--ac:#1a147f;--ac2:#d5d7f0;--ok:#16693e;--er:#b3402f;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0b17;--card:#14142a;--tx:#e8e9f7;--mu:#9a9cc0;--bd:#2a2a4e;--ac:#8d88ff;--ac2:#1f1f45;--ok:#4cc58a;--er:#ff8a78;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0b0b17;--card:#14142a;--tx:#e8e9f7;--mu:#9a9cc0;--bd:#2a2a4e;--ac:#8d88ff;--ac2:#1f1f45;--ok:#4cc58a;--er:#ff8a78;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--ac);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+header b{font-size:18px}header small{display:block;opacity:.85}
+main{max-width:860px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 3px}
+input{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:10px;min-width:0}
+.btn{border:1px solid var(--ac);background:var(--ac2);color:var(--ac);border-radius:8px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn.pr{background:var(--ac);color:#fff}
+header .btn{background:transparent;color:#fff;border-color:#fff8;font-weight:400}
+.btn:disabled{opacity:.6;cursor:wait}
+.mu{color:var(--mu);font-size:14px}
+.er{color:var(--er);font-size:14px;margin-top:10px}
+.ok{color:var(--ok)}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.tools input{flex:1;min-width:200px}
+.u{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.uh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;flex-wrap:wrap}
+.uh b{overflow-wrap:anywhere}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:10px;background:var(--ac2);color:var(--ac);margin-left:6px}
+.tag.old{background:transparent;border:1px solid var(--er);color:var(--er)}
+.bl{border-top:1px solid var(--bd);padding:6px 14px 12px}
+.br{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--bd);flex-wrap:wrap}
+.br:last-child{border-bottom:0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><div><b>MIT Werkbon beheer</b><small id="who">Gebruikers en back-ups</small></div><button class="btn" id="out" hidden>Uitloggen</button></header>
+<main>
+ <div class="card" id="login" hidden>
+  <b>Inloggen als beheerder</b>
+  <p class="mu">Gebruik hetzelfde e-mailadres en wachtwoord als in de app.</p>
+  <form id="lf"><label for="lm">E-mailadres</label><input id="lm" type="email" autocomplete="username" required>
+  <label for="lp">Wachtwoord</label><input id="lp" type="password" autocomplete="current-password" required>
+  <div style="margin-top:14px"><button class="btn pr" id="lb" type="submit">Inloggen</button></div></form>
+  <div class="er" id="le" role="alert"></div>
+ </div>
+ <div class="card" id="msg" hidden></div>
+ <div id="list" hidden>
+  <div class="tools"><input id="q" type="search" placeholder="Zoek op e-mailadres…"><button class="btn" id="rf" type="button">Vernieuwen</button></div>
+  <div class="mu" id="cnt" style="margin:0 2px 10px"></div>
+  <div id="users"></div>
+ </div>
+</main>
+<script src="firebase-config.js"></script>
+<script src="fb.js"></script>
+<script>
+(async function(){
+function $(i){return document.getElementById(i)}
+function ee(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function p2(n){return(n<10?'0':'')+n}
+function fd(t){if(!t)return '–';var d=new Date(t);return d.getDate()+'-'+(d.getMonth()+1)+'-'+d.getFullYear()+' '+p2(d.getHours())+':'+p2(d.getMinutes())}
+function ago(t){if(!t)return '';var m=(Date.now()-t)/6e4;if(m<60)return 'net';var h=m/60;if(h<24)return Math.round(h)+' uur geleden';var d=Math.round(h/24);return d+(d===1?' dag':' dagen')+' geleden'}
+function kb(n){n=(n||0)/1024;return n<1024?Math.max(1,Math.round(n))+' kB':(n/1024).toFixed(1)+' MB'}
+function show(h){var m=$('msg');m.innerHTML=h;m.hidden=!h}
+var C=window.MIT_FIREBASE||{},ADMIN=String(C.adminEmail||'').toLowerCase(),auth,db,USERS=[];
+if(!C.apiKey||String(C.apiKey).indexOf('VUL')===0){show('<b>Nog niet ingesteld.</b><p class="mu">Vul eerst firebase-config.js in (zie INSTALLATIE.txt).</p>');return}
+show('<p class="mu">Firebase laden…</p>');
+try{var F=await window.mitFB();auth=F.auth;db=F.db;show('')}catch(e){show('<b>Firebase kon niet geladen worden.</b><p class="mu">Controleer je internet en laad de pagina opnieuw.</p>');return}
+function err(e){var c=(e&&e.code)||'';return ({'auth/invalid-credential':'E-mailadres of wachtwoord klopt niet.','auth/invalid-login-credentials':'E-mailadres of wachtwoord klopt niet.','auth/wrong-password':'E-mailadres of wachtwoord klopt niet.','auth/user-not-found':'Er is geen account met dit e-mailadres. Maak het eerst aan in de app.','auth/too-many-requests':'Te vaak geprobeerd. Wacht een paar minuten.','auth/network-request-failed':'Geen internetverbinding.','permission-denied':'Geen toegang. Controleer of de Firestore-regels uit INSTALLATIE.txt (met jouw e-mailadres) zijn gepubliceerd en of je e-mailadres is bevestigd.'})[c]||('Er ging iets mis'+(c?' ('+c+')':'')+'.')}
+
+$('lf').onsubmit=async function(e){e.preventDefault();$('le').textContent='';$('lb').disabled=true;
+ try{await auth.signInWithEmailAndPassword($('lm').value.trim(),$('lp').value);$('lp').value=''}catch(x){$('le').textContent=err(x)}$('lb').disabled=false};
+$('out').onclick=function(){auth.signOut()};
+$('rf').onclick=function(){load()};
+$('q').oninput=function(){render()};
+
+auth.onAuthStateChanged(async function(u){
+ $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;show('');
+ if(!u){$('who').textContent='Gebruikers en back-ups';if(ADMIN)$('lm').value=ADMIN;return}
+ $('who').textContent='Ingelogd als '+u.email;
+ if(ADMIN&&String(u.email).toLowerCase()!==ADMIN){show('<b>Geen beheerder.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot het beheer. Log in met '+ee(ADMIN)+'.</p>');return}
+ try{await u.reload()}catch(x){}
+ if(!auth.currentUser.emailVerified){
+  show('<b>Bevestig eerst je e-mailadres</b><p class="mu">Ter beveiliging werkt het beheer pas als bevestigd is dat '+ee(u.email)+' echt van jou is. Klik op de knop, open de mail en klik op de link. Kom daarna hier terug en klik op "Ik heb bevestigd".</p><div class="tools"><button class="btn pr" id="vf" type="button">Bevestigingsmail sturen</button><button class="btn" id="vd" type="button">Ik heb bevestigd</button></div><div class="mu" id="vs"></div>');
+  $('vf').onclick=async function(){try{await auth.sendEmailVerification(auth.currentUser);$('vs').innerHTML='<span class="ok">Mail verstuurd. Kijk ook bij ongewenste mail.</span>'}catch(x){$('vs').textContent=err(x)}};
+  $('vd').onclick=async function(){try{await auth.currentUser.reload();await auth.currentUser.getIdToken(true)}catch(x){}if(auth.currentUser.emailVerified){show('');load()}else $('vs').textContent='Nog niet bevestigd. Klik eerst op de link in de mail.'};
+  return}
+ load()});
+
+async function load(){show('');$('list').hidden=false;$('users').innerHTML='<p class="mu">Laden…</p>';
+ try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();
+  USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});render()}
+ catch(e){$('users').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}}
+
+function render(){var f=$('q').value.trim().toLowerCase(),a=USERS.filter(function(u){return !f||String(u.email||'').toLowerCase().indexOf(f)>=0});
+ $('cnt').textContent=USERS.length+' gebruiker'+(USERS.length===1?'':'s')+(f?' · '+a.length+' gevonden':'')+' · nieuwste activiteit bovenaan';
+ if(!a.length){$('users').innerHTML='<p class="mu">'+(USERS.length?'Niemand gevonden.':'Nog geen gebruikers. Gebruikers verschijnen hier zodra ze de app (nieuwe versie) hebben geopend en zijn ingelogd.')+'</p>';return}
+ $('users').innerHTML=a.map(function(u){var old=!u.lastBackup||Date.now()-u.lastBackup>7*864e5;
+  return '<div class="u" data-u="'+ee(u.uid)+'"><div class="uh"><div><b>'+ee(u.email||'(onbekend e-mailadres)')+'</b>'+(old?'<span class="tag old">'+(u.lastBackup?'back-up ouder dan 7 dagen':'nog geen back-up')+'</span>':'')+
+  '<div class="mu">Laatst actief: '+fd(u.last)+(u.last?' ('+ago(u.last)+')':'')+' · '+ee(u.dev||'')+'<br>Laatste back-up: '+fd(u.lastBackup)+(u.size?' · '+kb(u.size):'')+(u.since?' · account sinds '+fd(u.since).split(' ')[0]:'')+'</div></div>'+
+  '<button class="btn" type="button" data-open>Back-ups</button></div><div class="bl" hidden></div></div>'}).join('');
+ $('users').querySelectorAll('.u').forEach(function(el){el.querySelector('.uh').onclick=function(){toggle(el)}})}
+
+async function toggle(el){var bl=el.querySelector('.bl'),uid=el.dataset.u;if(!bl.hidden){bl.hidden=true;return}bl.hidden=false;bl.innerHTML='<p class="mu">Laden…</p>';
+ try{var q=await db.collection('users').doc(uid).collection('backups').orderBy('t','desc').get();
+  if(!q.docs.length){bl.innerHTML='<p class="mu">Geen back-ups.</p>';return}
+  bl.innerHTML=q.docs.map(function(d){var o=d.data();return '<div class="br"><span>'+fd(o.t)+' · '+ee(o.dev||'')+' · '+kb(o.size)+(o.auto?'':' · handmatig')+'</span><button class="btn" type="button" data-dl="'+ee(d.id)+'">Downloaden</button></div>'}).join('');
+  bl.querySelectorAll('[data-dl]').forEach(function(b){b.onclick=function(){dl(uid,b.dataset.dl,b,el)}})}
+ catch(e){bl.innerHTML='<p class="er">'+ee(err(e))+'</p>'}}
+
+async function dl(uid,id,b,el){var t=b.textContent;b.disabled=true;b.textContent='Ophalen…';
+ try{var ref=db.collection('users').doc(uid).collection('backups').doc(id),m=await ref.get(),n=+(m.data()||{}).parts||1,a=[];
+  for(var i=0;i<n;i++){var p=await ref.collection('parts').doc(String(i)).get();if(!p.exists)throw {code:'deel '+(i+1)+' van '+n+' ontbreekt'};a.push(p.data().d)}
+  var txt=a.join('');JSON.parse(txt);
+  var u=USERS.filter(function(x){return x.uid===uid})[0]||{},who=String(u.email||uid).split('@')[0].replace(/[^\w.-]+/g,'_');
+  var url=URL.createObjectURL(new Blob([txt],{type:'application/json'})),x=document.createElement('a');x.href=url;x.download='werkbonnen-backup-'+id+'-'+who+'.json';document.body.appendChild(x);x.click();
+  setTimeout(function(){x.remove();URL.revokeObjectURL(url)},4000);b.textContent='Gedownload'}
+ catch(e){b.textContent=t;alertBox(el,'Downloaden mislukt: '+err(e))}
+ b.disabled=false;setTimeout(function(){if(b.textContent==='Gedownload')b.textContent=t},4000)}
+function alertBox(el,t){var p=document.createElement('p');p.className='er';p.textContent=t;el.querySelector('.bl').appendChild(p)}
+})();
+</script>
+</body>
+</html>

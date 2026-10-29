@@ -2,7 +2,8 @@ MIT Werkbonnen - installeerbare app (PWA)
 
 INHOUD
 index.html (de app met keuze Werkbonnen / Weeklijsten), manifest.webmanifest,
-sw.js (voor offline gebruik), iconen.
+sw.js (voor offline gebruik), firebase-config.js (gegevens voor account en online back-up),
+fb.js (laadt Firebase), beheer.html (beheerpagina), iconen.
 
 STAP 1 - Zet de map online (HTTPS is verplicht voor installeren)
 Kies een van deze mogelijkheden:
@@ -37,8 +38,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v83,
-  verhoog naar v84 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v91,
+  verhoog naar v92 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -47,6 +48,8 @@ BIJLAGEN BIJ AANVULLEND RAPPORT
 - Bijlagen worden achter de PDF van de bon gezet (ook in de verzamel-PDF van de weeklijst).
   Foto's worden verkleind zodat de PDF niet te groot wordt. Ze gaan mee in de back-up.
 - Staat Aanvullend rapport op Nee, dan worden de bijlagen niet meegenomen (wel bewaard).
+- Kantoor krijgt altijd alle bijlagen. De klant alleen de bijlagen met een vinkje bij "Ook naar klant"
+  (standaard uit).
 
 PAPIEREN WERKBON SCANNEN
 - Startscherm > "Werkbon importeren" > Bon scannen. De camera opent; maak een foto van de bon.
@@ -124,6 +127,17 @@ Tik op "Als PDF".
   kunt toevoegen.
 Naam van het bestand: naam-werkordernummer (Werkrapport) of servicerapport-werkbonnummer.
 
+INVULVELDEN VOOR KANTOOR IN DE WERKBON-PDF
+De PDF van een werkbon heeft invulvelden; de rest van de tekst staat vast. Kantoor opent de PDF in
+Adobe Acrobat Reader (of Edge/Chrome), vult aan of past aan en kiest Opslaan.
+Invulbaar: Project nr., Werkorder nr., Gecontroleerd door, Paraaf, de vinkjes Regie / Aangenomen werk /
+Contract / Garantie, de kolommen Aantal / à / Bedrag bij de uren, Code M/S/L/K / Aantal / à / Bedrag bij
+de materialen (ook op de vervolgbladen), Totaal (exclusief BTW), BTW % en €, en Totaal te betalen bedrag.
+De waarden die de monteur al invulde staan er alvast in; Totaal (exclusief BTW) wordt voorgerekend.
+In de verzamel-PDF van de weeklijst staan dezelfde waarden als vaste tekst (geen invulvelden).
+De PDF voor de KLANT (Verzenden naar klant) is niet bewerkbaar: alle waarden staan er als vaste tekst in.
+De opgeslagen PDF en de PDF naar kantoor blijven bewerkbaar.
+
 UREN NAAR DE WEEKLIJST
 Zodra je bij Uren een datum en een eindtijd invult, staan de uren binnen een paar seconden ook in de
 weeklijst (opdrachtgever, projectnr. en uren). Pas je tijden later aan, dan wordt de weeklijst bijgewerkt.
@@ -145,3 +159,80 @@ BACK-UP (HANDMATIG)
 Je bonnen en weeklijsten staan op je toestel. Maak daarom af en toe een back-up: op het startscherm
 "Back-up maken" en kies waar het bestand heen moet (mail, Drive, WhatsApp). Na een crash of nieuwe telefoon:
 installeer de app, tik op "Terugzetten" en kies het back-upbestand. De gemaakte PDF's staan los van de app.
+
+ACCOUNT EN ONLINE BACK-UP (FIREBASE) - EENMALIG INSTELLEN DOOR DE BEHEERDER
+Monteurs maken in de app zelf eenmalig een account aan met hun e-mailadres en een zelfgekozen
+wachtwoord. Firebase maakt dat account automatisch en veilig aan (het wachtwoord wordt niet in de app
+of bij MIT bewaard). Daarna worden de back-ups van werkbonnen en weeklijsten vanzelf in dat account
+opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst (zonder account).
+
+1. Ga naar console.firebase.google.com en log in met een Google-account van MIT.
+   "Project toevoegen" > naam bijv. mit-werkbonnen > Google Analytics mag uit > Project maken.
+   Het gratis abonnement (Spark) is genoeg.
+2. Inloggen aanzetten: links Build > Authentication > Aan de slag > tabblad Sign-in method >
+   E-mail/wachtwoord > eerste schakelaar AAN > Opslaan.
+   Tabblad Settings > Authorized domains > Add domain: vul je app-adres in
+   (bijv. mit-werkbon.vercel.app of je eigen domein).
+3. Opslag aanzetten: Build > Firestore Database > Database maken > locatie europe-west4 (Nederland)
+   of eur3 > "Starten in productiemodus" > Maken.
+   Tabblad Regels (Rules): vervang alles door onderstaande tekst en kies Publiceren.
+   Hiermee kan iedere gebruiker alleen zijn EIGEN back-ups lezen en schrijven. Alleen de beheerder
+   (het e-mailadres hieronder, na bevestiging van dat adres) mag de back-ups van iedereen LEZEN:
+
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       function isBeheerder() {
+         return request.auth != null
+           && request.auth.token.email == 'a.f.vanderhulst@gmail.com'
+           && request.auth.token.email_verified == true;
+       }
+       match /users/{uid}/{document=**} {
+         allow read, write: if request.auth != null && request.auth.uid == uid;
+         allow read: if isBeheerder();
+       }
+     }
+   }
+
+   Ander beheerdersadres? Pas het dan aan in deze regels EN in firebase-config.js (adminEmail).
+
+4. Web-app koppelen: tandwieltje naast "Projectoverzicht" > Projectinstellingen > onderaan
+   "Jouw apps" > het icoon </> (Web) > bijnaam MIT Werkbon > App registreren (Hosting NIET aanvinken).
+   Je ziet nu een blok "const firebaseConfig = { apiKey: ..., authDomain: ..., projectId: ..., appId: ... }".
+5. Open firebase-config.js in Kladblok en vul apiKey, authDomain, projectId en appId in met die
+   waarden (tussen de aanhalingstekens). Opslaan en de map opnieuw online zetten (Vercel/Netlify).
+   (Deze sleutel is geen geheim: hij hoort in de app. De beveiliging zit in de regels van stap 3.)
+
+ZO WERKT HET VOOR DE MONTEUR
+- Eerste keer openen: scherm "Account aanmaken": e-mailadres, zelfgekozen wachtwoord (minimaal 6 tekens),
+  nog een keer het wachtwoord > Account aanmaken. Hierna blijft hij ingelogd; dit hoeft maar 1 keer.
+- Al een account (bijv. nieuwe telefoon of computer)? Tik op Inloggen. Staat er nog niets op het toestel,
+  dan vraagt de app of de laatste back-up uit het account teruggezet moet worden.
+- Wachtwoord vergeten: Inloggen > "Wachtwoord vergeten?" > je krijgt een e-mail met een link.
+- Back-ups gaan automatisch naar het account: kort na het openen, na wijzigingen (hooguit elk kwartier),
+  bij het wegklikken van de app en op het dagelijkse back-uptijdstip. Per dag wordt 1 back-up bewaard
+  (de laatste van die dag), de laatste 30 dagen blijven staan. Alles gaat mee: bonnen, weeklijsten,
+  storingsdienst en bijlagen/foto's.
+- Zonder internet werkt de app gewoon; de online back-up wordt gemaakt zodra er weer internet is.
+- Op de telefoon is de dagelijkse melding "Tijd voor de back-up" niet meer nodig zolang je bent ingelogd.
+- Tandwieltje > "Account en online back-up": zien wanneer de laatste back-up was, nu een back-up maken,
+  een eerdere back-up terugzetten, wachtwoord wijzigen en uitloggen. Uitloggen laat de bonnen op het
+  toestel staan.
+- Beheerder: in de Firebase console onder Authentication > Users zie je alle accounts en kun je er een
+  uitschakelen, verwijderen of een wachtwoord-reset sturen.
+
+BEHEERPAGINA - WIE GEBRUIKT DE APP EN BACK-UPS DOWNLOADEN
+- Open in de browser:  <jouw app-adres>/beheer.html   (bijv. https://mit-werkbon.vercel.app/beheer.html)
+  Er staat geen knop naar deze pagina in de app; bewaar het adres als bladwijzer.
+- Log in met het beheerdersaccount (a.f.vanderhulst@gmail.com). Heb je dat account nog niet, maak het dan
+  eerst aan in de app (Account aanmaken), net als een monteur.
+- De eerste keer: klik "Bevestigingsmail sturen", klik op de link in die mail en daarna "Ik heb bevestigd".
+  Dit is eenmalig en voorkomt dat iemand anders zich als beheerder voordoet.
+- Je ziet alle gebruikers: e-mailadres, laatst actief, soort toestel, laatste back-up en sinds wanneer het
+  account bestaat. Een rood label betekent: geen back-up, of de laatste is ouder dan 7 dagen.
+- Klik op een gebruiker > Back-ups > Downloaden: je krijgt een normaal back-upbestand
+  (werkbonnen-backup-jjjj-mm-dd-naam.json). Dat kun je bewaren, of op een toestel terugzetten via
+  de app: tandwieltje > Back-up > Terugzetten.
+- De beheerpagina kan alleen lezen; er kan daar niets gewist of gewijzigd worden.
+- Gebruikers verschijnen pas in de lijst nadat ze de nieuwe versie van de app hebben geopend
+  terwijl ze ingelogd zijn.

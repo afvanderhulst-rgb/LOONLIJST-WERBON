@@ -413,7 +413,7 @@ window.openApp=function(w){$('home').hidden=true;$('appWB').hidden=(w!=='wb');$(
   window.initWL(root)}};
 (function(){
 window.bkKeys=function(){return keys()};
-window.bkMark=function(){try{localStorage.setItem('mit-bk-last',String(Date.now()))}catch(e){}window.bkStatus&&window.bkStatus()};
+window.bkMark=function(){try{localStorage.setItem('mit-bk-last',String(Date.now()))}catch(e){}window.bkStatus&&window.bkStatus();try{window.mitCloud&&window.mitCloud.chip()}catch(e){}};
 function keys(){var o={};try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(/^(mit-|wl:|sd:)/.test(k))o[k]=localStorage.getItem(k)}}catch(e){}return o}
 window.bkMake=async function(){var d=new Date(),p=function(n){return(n<10?'0':'')+n},nm='werkbonnen-backup-'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'.json',
  txt=JSON.stringify({v:1,t:d.toISOString(),data:keys(),att:(window.bkAttDump?await window.bkAttDump():{})});
@@ -808,6 +808,9 @@ async function makePdf(){
  function sigC(k,label,lx,top,bh,xmin,xmax){var g=S.sig[k];if(!g||!g.d)return;doc.setFont('helvetica','normal');doc.setFontSize(7.5);
   var cx=lx+doc.getTextWidth(label)/K/2,half=Math.min(cx-xmin,xmax-cx),s=Math.min(2*half/g.w,bh/g.h),dw=g.w*s,dh=g.h*s;
   try{doc.addImage(g.d,'PNG',(cx-dw/2)*K,(top+(bh-dh)/2)*K,dw*K,dh*K)}catch(e){}}
+ // invulvelden voor kantoor (worden na het maken met PDF-lib toegevoegd)
+ var FF=[],FP=0;function fld(n,x,top,w,h,v,al,sz){FF.push({t:'tx',p:FP,n:n,x:x,y:top,w:w,h:h,v:v==null?'':String(v),al:al||'l',s:sz||8.5})}
+ function fcb(n,x,top,sz,on){FF.push({t:'cb',p:FP,n:n,x:x,y:top,w:sz,h:sz,on:!!on})}
  // kop
  doc.setFillColor(BLU[0],BLU[1],BLU[2]);doc.rect(73*K,46*K,80*K,82*K,'F');
  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(27);T('MIT',79,87);
@@ -817,13 +820,13 @@ async function makePdf(){
  lab('Werkrapport',858,161,14.5,true,{align:'right'});
  lab('Project nr.:',72,160,8,true);lab('Werkorder nr.:',281,160,8,true);
  lw(.15,110);Ln(138,164,272,164);Ln(368,164,503,164);
- val(f.pr,142,161,10,null,128);val(f.wo,372,161,11,null,128);
+ fld('Projectnr',139,144,133,19,f.pr,'l',10);fld('Werkordernr',369,144,134,19,f.wo,'l',10);
  lw(.55,20);Ln(71,180,862,180);
  [['Naam',209,f.naam],['Adres',240,f.adres],['Postcode en Plaats',270,f.plaats],['Contactpersoon',301,f.contact]].forEach(function(r){lab(r[0],72,r[1]-1,7.5,false);lab(':',r[0]==='Postcode en Plaats'?181:181,r[1]-1,7.5,false);lw(.15,110);Ln(190,r[1],465,r[1]);val(r[2],193,r[1]-3,10,null,268)});
  lab('Monteur:',488,208,7.5,false);lw(.15,110);Ln(541,209,862,209);val(f.monteur,545,206,10,null,312);
- [['Regie',241],['Aangenomen werk',261],['Contract',282],['Garantie',301]].forEach(function(s){cb(488,s[1],S.soort.indexOf(s[0])>-1);lab(s[0],502,s[1],7.5,false)});
- lab('Gecontroleerd door:',620,239,7.5,false);lw(.15,110);Ln(620,269,862,269);
- lab('Paraaf:',620,301,7.5,false);lw(.15,110);Ln(662,300,862,300);
+ [['Regie',241],['Aangenomen werk',261],['Contract',282],['Garantie',301]].forEach(function(s){fcb('Soort '+s[0],488,s[1]-8,9,S.soort.indexOf(s[0])>-1);lab(s[0],502,s[1],7.5,false)});
+ lab('Gecontroleerd door:',620,239,7.5,false);lw(.15,110);Ln(620,269,862,269);fld('Gecontroleerd door',621,248,241,20,'','l',10);
+ lab('Paraaf:',620,301,7.5,false);lw(.15,110);Ln(662,300,862,300);fld('Paraaf',663,281,199,18,'','l',10);
  lw(.55,20);Ln(70,326,862,326);
  lab('Omschrijving van de aard van de storing c.q. werkzaamheden volgens opgave klant, zie werkorder:',71,355,7.5,false);
  var ps=String(f.storing||'').replace(/^\s+|\s+$/g,''),pw=String(f.werk||'').replace(/^\s+|\s+$/g,''),paras=(ps&&pw?ps+NL+NL+pw:ps||pw).split(NL),RW=[[408,405],[432,405],[457,405],[482,405],[507,788],[531,788],[556,788],[581,788],[606,788],[630,788]];
@@ -861,7 +864,7 @@ cand.some(function(c){sz=c;for(var e=0;e<=6;e++){sl=slots(1,e);L=wrap(sz,sl);if(
  ['Datum','Aanvang reistijd','Aanvang werktijd','Einde werktijd','Einde reistijd','Werkuren monteur','Reisuren monteur'].forEach(function(s,j){lab(s,70,rt(j)+17,7.5,false)});
  var RL=['reis','werk','u1','u2','u3','auto','voor'],RN=['reisuren','werkuren','','','','Autokosten','Voorrijtarief'];
  RN.forEach(function(s,j){var y=rt(j)+17;if(s)lab(s,563,y,7.5,false);else{lab('Uren',563,y,7.5,false);lab('%',597,y,7.5,false);var t=((S.lines[RL[j]]||{}).t||'').replace(/[^0-9]/g,'');if(t)val(t,577,y,8.5)}});
- RL.forEach(function(k,j){var v=S.lines[k]||{},y=rt(j)+17,n=num(v.n),r=num(v.r);if(v.n)val(v.n,679,y,8.5,{align:'center'});if(v.r)val(v.r,727,y,8.5,{align:'center'});if(n&&r)val(e2(n*r),828,y,8.5,{align:'right'})});
+ var TOT=0;RL.forEach(function(k,j){var v=S.lines[k]||{},t=rt(j)+1.5,n=num(v.n),r=num(v.r);if(n&&r)TOT+=n*r;fld('Uren '+(j+1)+' aantal',656,t,46,22,v.n,'c');fld('Uren '+(j+1)+' a',704,t,46,22,v.r,'c');fld('Uren '+(j+1)+' bedrag',752,t,79,22,n&&r?e2(n*r):'','r')});
  S.days.forEach(function(d,di){var idx=slot[di],p=String(d.datum||'').split('-');
   var c=dayCalc(d),cx=cols[idx]+24.5,gg=function(v,j){if(v)val(v,cx,rt(j)+17,8,{align:'center'})};
   gg(p.length===3?p[0]+'/'+p[1]:d.datum,0);gg(d.rs,1);gg(d.ws,2);gg(d.we,3);gg(d.re,4);gg(fh(c.wu),5);gg(fh(c.ru),6)});
@@ -869,21 +872,24 @@ cand.some(function(c){sz=c;for(var e=0;e<=6;e++){sl=slots(1,e);L=wrap(sz,sl);if(
  lab('Verwerkte materialen:',70,877+o,7.5,false);lab('Code M/S/L/K',563,877+o,7.5,true);
  var NR=Math.max(2,Math.floor((1106-882-o)/24.9+0.01)),PH=(1106-882-o)/NR,MT=882+o;lw(.2,90);for(i=0;i<=NR;i++)Ln(68,MT+PH*i,862,MT+PH*i);
  var MR=function(m,top){var y=top+17,n=num(m.n),r=num(m.r);val(m.o,72,y,9,null,475);val(m.c,604,y,9,{align:'center'});if(m.n)val(m.n,679,y,8.5,{align:'center'});if(m.r)val(m.r,727,y,8.5,{align:'center'});if(n&&r)val(e2(n*r),828,y,8.5,{align:'right'})};
+ var MF=function(m,top,k,rh){m=m||{};var t=top+1.5,hh=(rh||PH)-3,n=num(m.n),r=num(m.r);val(m.o,72,top+17,9,null,475);fld('Materiaal '+(k+1)+' code',554,t,100,hh,m.c,'c');fld('Materiaal '+(k+1)+' aantal',656,t,46,hh,m.n,'c');fld('Materiaal '+(k+1)+' a',704,t,46,hh,m.r,'c');fld('Materiaal '+(k+1)+' bedrag',752,t,79,hh,n&&r?e2(n*r):'','r')};
+ S.mats.forEach(function(m){var n=num(m.n),r=num(m.r);if(n&&r)TOT+=n*r});
  var more=S.mats.length>NR,first=more?S.mats.slice(0,NR-1):S.mats,extra=more?S.mats.slice(NR-1):[];
- first.forEach(function(m,j){MR(m,MT+PH*j)});
+ var MI=0;for(var mj=0;mj<(more?NR-1:NR);mj++)MF(first[mj],MT+PH*mj,MI++);
  if(more)lab('Vervolg blad 2',72,MT+PH*(NR-1)+17,9,true);
  lab('Levering materiaal: M=magazijn / S=serv.auto / L=leverancier / K=klant',68,1123,7.5,true);
  lw(.2,90);Rr(751,1106,111,122);Ln(751,1147,862,1147);Ln(751,1188,862,1188);
  lab('Totaal (exclusief BTW)',562,1140,7.5,false);lab('€',723,1140,7.5,false);lab('BTW',563,1183,7.5,false);lab('%',661,1183,7.5,false);lab('€',723,1183,7.5,false);lab('Totaal te betalen bedrag',562,1227,7.5,false);lab('€',723,1227,7.5,false);
+ fld('Totaal excl BTW',753,1122,106,23,TOT?e2(TOT):'','r',9.5);fld('BTW procent',598,1166,60,22,'','c',9.5);fld('BTW bedrag',753,1165,106,23,'','r',9.5);fld('Totaal te betalen',753,1206,106,21,'','r',9.5);
  lab('Handtekening monteur:',68,1167,7.5,false);lw(.15,110);sigC('mon','Handtekening monteur:',68,1172,52,66,287);
  lab('Handtekening klant:',67,1245,7.5,false);lab('Naam klant:',311,1245,7.5,false);Ln(311,1285,530,1285);sigC('klant','Handtekening klant:',67,1250,50,66,286);val(f.klant,313,1282,10,null,215);
  var pg=1,H=24.9;
- function newPage(){doc.addPage();pg++;lab('MIT Installatietechniek - Werkrapport',68,62,12,true);lab((f.wo?'Werkorder nr.: '+f.wo:f.pr?'Project nr.: '+f.pr:'Werkorder nr.: -')+'     Naam: '+(f.naam||'-')+'     Blad '+pg,68,84,9,false);lw(.55,20);Ln(68,96,862,96);return 124}
+ function newPage(){doc.addPage();pg++;FP=pg-1;lab('MIT Installatietechniek - Werkrapport',68,62,12,true);lab((f.wo?'Werkorder nr.: '+f.wo:f.pr?'Project nr.: '+f.pr:'Werkorder nr.: -')+'     Naam: '+(f.naam||'-')+'     Blad '+pg,68,84,9,false);lw(.55,20);Ln(68,96,862,96);return 124}
  function matTable(list,top,vervolg){var n=list.length+1+(vervolg?1:0);lw(.2,90);
   for(var k=0;k<=n;k++)Ln(68,top+H*k,862,top+H*k);
   [68,553,655,703,751,832,862].forEach(function(x){Ln(x,top,x,top+H*n)});
   lab('Verwerkte materialen (vervolg):',72,top+17,8,true);lab('Code M/S/L/K',563,top+17,7.5,true);lab('Aantal',679,top+17,7.5,false,{align:'center'});lab('à',727,top+17,7.5,false,{align:'center'});lab('Bedrag',792,top+17,7.5,false,{align:'center'});
-  list.forEach(function(m,k){MR(m,top+H*(k+1))});
+  list.forEach(function(m,k){MF(m,top+H*(k+1),MI++,H)});
   if(vervolg)lab(vervolg,72,top+H*(list.length+1)+17,9,true);
   return top+H*n}
  if(rest.length||extra.length){
@@ -904,7 +910,7 @@ cand.some(function(c){sz=c;for(var e=0;e<=6;e++){sl=slots(1,e);L=wrap(sz,sl);if(
   if(!S.pdfSfx||S.pdfKey!==key){var rk=same.filter(function(i){return idk(i)<idk(S.id)}).length;S.pdfSfx=rk?'.'+(rk+1):'-';S.pdfKey=key;if(TO){S.pdfSfx=null}else{try{save()}catch(e){}}}
   sfx=S.pdfSfx==='-'?'':S.pdfSfx}catch(e){}}
  var name=(nm&&wn?nm+'-'+wn+sfx:nm||wn||'werkrapport')+'.pdf';
- return{blob:doc.output('blob'),name:name}
+ return{blob:doc.output('blob'),name:name,fields:FF}
 }
 async function deliverPdf(blob,name,ask){var dl=null;try{dl=await window.claude.use('downloads')}catch(e){}
  if(dl){try{await dl.save({filename:name,data:blob});st('PDF opgeslagen');return}catch(e){if(e&&e.code==='declined')return}}
@@ -919,12 +925,13 @@ async function sendMail(kind){
  var to=kind==='klant'?String(S.f.email||'').trim():'';
  if(kind==='klant'&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)){toast('Vul eerst een geldig e-mailadres van de klant in.');return}
  var cc='';if(false){var o=String(($('office')&&$('office').value)||'').trim();if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o)&&o.toLowerCase()!==to.toLowerCase())cc=o}
- var r=await makePdf();if(!r)return;
+ var r=await makePdf();if(!r)return;var rs=r; // rs = volledige kantoorversie (bewerkbaar, alle bijlagen)
+ if(kind==='klant'){window.__wbKlant=true;var rk=null;try{rk=await makePdf()}finally{window.__wbKlant=false}if(!rk)return;r=rk} // klantversie: vast, alleen gekozen bijlagen
  var m=mailInfo(),subj=m.title+(m.naam?' '+m.naam:'')+(m.nr?' '+m.nr:''),
   body='Beste,'+NL+NL+'Hierbij het '+m.title.toLowerCase()+(m.nr?' (nummer '+m.nr+')':'')+(m.naam?' voor '+m.naam:'')+'.';
  var pf=null;try{pf=new File([r.blob],r.name,{type:'application/pdf'})}catch(e){}
  if(pf&&navigator.canShare&&navigator.canShare({files:[pf]})){
-  var sd={files:[pf],title:subj,text:body+(to?NL+NL+'mailto:'+to:'')},pers=function(){try{deliverPdf(r.blob,r.name)}catch(e){}},
+  var sd={files:[pf],title:subj,text:body+(to?NL+NL+'mailto:'+to:'')},pers=function(){try{deliverPdf(rs.blob,rs.name)}catch(e){}},
    okT=function(){S.sentAt=Date.now();save();toast(to?'Kies je mail-app: de PDF zit er al als bijlage in. Het adres '+to+' is gekopieerd en staat als link onderaan de tekst.':'Kies je mail-app: de PDF zit er al als bijlage in.',9000)};
   if(to)copyTxt(to);
   var sp=null;try{sp=navigator.share(sd)}catch(e){sp=Promise.reject(e)}
@@ -933,8 +940,10 @@ async function sendMail(kind){
    if(e&&e.name==='AbortError')return;
    if(e&&e.name==='NotAllowedError'){shareAsk(sd,okT);return}}}
  if(window.claude){mailDialog(to,subj,body,r,cc);return}
- await deliverPdf(r.blob,r.name);
- toast('Voeg de PDF "'+r.name+'" toe als bijlage in de e-mail die nu opent.',9000);
+ var tree=false;try{tree=r!==rs&&window.fsOK&&window.fsOK()&&!!(await window.fsRootName())}catch(e){}
+ if(tree){await deliverPdf(rs.blob,rs.name);var u=URL.createObjectURL(r.blob),a=document.createElement('a');a.href=u;a.download=r.name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},4000);
+  toast('Voeg de PDF "'+r.name+'" uit je map Downloads toe als bijlage (dat is de versie voor de klant). De bewerkbare versie staat in je opslagmap.',10000)}
+ else{await deliverPdf(r.blob,r.name);toast('Voeg de PDF "'+r.name+'" toe als bijlage in de e-mail die nu opent.',9000)}
  S.sentAt=Date.now();save();openMail(to,subj,body,cc)}
 function shareAsk(sd,okT){var o=document.createElement('div');o.className='ov';o.style.zIndex=40;o.innerHTML='<div class="ovc" style="text-align:center"><b>De PDF is klaar</b><p class="hd">Tik op de knop om je mail-app te openen met de PDF als bijlage.</p><button class="btn" style="width:100%;background:var(--ac);color:#fff" id="shgo">Mail openen</button><button class="btn del" style="width:100%;margin-top:8px" id="shno">Sluiten</button></div>';document.body.appendChild(o);
  o.querySelector('#shno').onclick=function(){o.remove()};
@@ -1137,6 +1146,7 @@ async function render(){
  if(fs){try{root=await window.fsRootName()}catch(e){}try{inb=await window.fsInboxQuiet()}catch(e){}}
  var mc={};try{mc=JSON.parse(localStorage.getItem('mit-mail'))||{}}catch(e){}
  var h='<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Instellingen</b><button class="sb" id="stClose" type="button">Sluiten</button></div>';
+ if(window.mitCloud)h+=window.mitCloud.html();
  h+='<h3>Mappen</h3>';
  if(fs){
   h+='<div class="row"><div><div class="lb">Opslagmap voor PDF\'s</div><div class="vl">'+(root?esc(root)+'\\WERKBONNEN\\jaar\\Week':'Nog niet gekozen. Wordt gevraagd bij de eerste PDF.')+'</div></div><button class="sb" id="stRoot" type="button">'+(root?'Wijzigen':'Kiezen')+'</button></div>';
@@ -1153,6 +1163,7 @@ async function render(){
  if(fs)h+='<div class="row"><div><div class="lb">Back-upmap</div><div class="vl">'+(bq.h?esc(bq.h.name)+'\\MIT-BACKUP_'+(bq.state==='perm'?' (toestemming nodig)':''):'Kies eerst de opslagmap (hierboven); de back-up komt in de map MIT-BACKUP_ daarin.')+'<br>Verandert mee met de opslagmap. De laatste 30 back-ups blijven bewaard.</div></div></div>';
  h+='<div class="row"><div class="vl">Laatste back-up: '+(lst?fd(lst):'nog geen')+'</div><div style="display:flex;gap:6px"><button class="sb" id="stBk" type="button">Nu maken</button><button class="sb" id="stRs" type="button">Terugzetten</button></div></div>';
  box.innerHTML=h;
+ if(window.mitCloud)window.mitCloud.bind(render);
  var q=function(id){return document.getElementById(id)};
  q('stClose').onclick=close;
  if(q('stRoot'))q('stRoot').onclick=async function(){var ok=false;try{await window.fsPickRoot();ok=true;toast('Opslagmap gewijzigd.',3000)}catch(e){}if(ok&&window.bkAuto){try{await window.bkAuto.recheck()}catch(e){}}render()};
@@ -1190,10 +1201,12 @@ async function toFolder(){if(!(window.fsOK&&window.fsOK()))return 'nofs';
  try{var all=[];for await (var e of dir.values()){if(e.kind==='file'&&/^werkbonnen-backup-\d{4}-\d{2}-\d{2}\.json$/.test(e.name))all.push(e.name)}
   all.sort();while(all.length>KEEP){await dir.removeEntry(all.shift())}}catch(e){}
  return 'ok:'+dir.name+'\\'+b.name}
-async function run(manual){if(busy)return;busy=true;var r='';
+async function run(manual){if(busy)return;busy=true;var r='',cl='';
+ try{if(window.mitCloud&&window.mitCloud.ready())cl=await window.mitCloud.backup(manual===true?'hand':'auto')}catch(e){}
  try{r=await toFolder()}catch(e){r='fout'}
  busy=false;
- if(r.indexOf('ok:')===0){done();toast('Automatische back-up gemaakt: '+r.slice(3),5000);return true}
+ if(r.indexOf('ok:')===0){done();toast('Automatische back-up gemaakt: '+r.slice(3)+(cl==='ok'?' (ook in je account)':''),5000);return true}
+ if(cl==='ok'){done();toast('Back-up opgeslagen in je account.',4000);return true}
  if(manual!=='stil'||r!==lastWhy)showBanner(r);lastWhy=r;return false}
 // Telefoon of geen toestemming: melding met een knop
 function showBanner(why){var el=document.getElementById('bkBanner');if(!el){el=document.createElement('div');el.id='bkBanner';
@@ -1403,8 +1416,8 @@ var urls=[];
 async function renderAtt(){var box=document.getElementById('attBox');if(!box)return;
  var on=S&&S.yn&&S.yn.aanv==='ja';box.hidden=!on;if(!on)return;
  urls.forEach(function(u){URL.revokeObjectURL(u)});urls=[];
- var L=S.att||[],h='<div class="ah">Bijlagen bij aanvullend rapport</div><div class="hd" style="font-size:13px">Worden achter de PDF van deze bon gezet.</div>';
- h+=L.length?'<div class="al">'+L.map(function(a){return '<div class="ai" data-a="'+a.id+'">'+(a.type==='img'?'<img alt="">':'<div class="pdfi">PDF</div>')+'<div class="an">'+esc(a.name)+'<div class="hd" style="font-size:12px">'+Math.max(1,Math.round((a.size||0)/1024))+' kB</div></div><button type="button" class="btn del" data-rm="'+a.id+'">Verwijderen</button></div>'}).join('')+'</div>':'<div class="hd" style="font-size:13px;margin:8px 0">Nog geen bijlagen.</div>';
+ var L=S.att||[],h='<div class="ah">Bijlagen bij aanvullend rapport</div><div class="hd" style="font-size:13px">Worden achter de PDF van deze bon gezet. Kantoor krijgt altijd alle bijlagen; de klant alleen de bijlagen met een vinkje bij Ook naar klant.</div>';
+ h+=L.length?'<div class="al">'+L.map(function(a){return '<div class="ai" data-a="'+a.id+'">'+(a.type==='img'?'<img alt="">':'<div class="pdfi">PDF</div>')+'<div class="an">'+esc(a.name)+'<div class="hd" style="font-size:12px">'+Math.max(1,Math.round((a.size||0)/1024))+' kB</div><label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-top:4px"><input type="checkbox" data-kl="'+a.id+'" style="width:auto;margin:0"'+(a.klant?' checked':'')+'> Ook naar klant</label></div><button type="button" class="btn del" data-rm="'+a.id+'">Verwijderen</button></div>'}).join('')+'</div>':'<div class="hd" style="font-size:13px;margin:8px 0">Nog geen bijlagen.</div>';
  h+='<div class="ab"><button type="button" class="btn" id="attFileBtn">Bestand(en) toevoegen</button><button type="button" class="btn" id="attCamBtn">Foto(\'s) maken</button></div>'+
   '<input type="file" id="attFileIn" accept="application/pdf,.pdf,image/*" multiple hidden><input type="file" id="attCamIn" accept="image/*" capture="environment" multiple hidden>';
  box.innerHTML=h;
@@ -1413,6 +1426,7 @@ async function renderAtt(){var box=document.getElementById('attBox');if(!box)ret
  document.getElementById('attCamBtn').onclick=function(){ci.value='';ci.click()};
  fi.onchange=function(){addFiles(fi.files)};ci.onchange=function(){addFiles(ci.files)};
  box.querySelectorAll('[data-rm]').forEach(function(b){arm(b,function(){removeAtt(b.dataset.rm)})});
+ box.querySelectorAll('[data-kl]').forEach(function(c){c.onchange=function(){(S.att||[]).forEach(function(a){if(a.id===c.dataset.kl)a.klant=c.checked});save()}});
  var bid=S.id;for(var i=0;i<L.length;i++){if(L[i].type!=='img')continue;try{var v=await get(key(bid,L[i].id));if(!v||S.id!==bid)continue;var u=URL.createObjectURL(v.blob);urls.push(u);var im=box.querySelector('[data-a="'+L[i].id+'"] img');if(im)im.src=u}catch(e){}}}
 // vak onder de ja/nee-vragen
 (function(){var yn=document.getElementById('yn');if(yn&&!document.getElementById('attBox')){var d=document.createElement('div');d.id='attBox';d.hidden=true;yn.parentNode.insertBefore(d,yn.nextSibling)}})();
@@ -1420,9 +1434,9 @@ var _ryn=renderYN;renderYN=function(){var r=_ryn.apply(this,arguments);try{rende
 // PDF: bijlagen achter de bon zetten
 function loadPL(){if(window.PDFLib)return Promise.resolve();return new Promise(function(ok,no){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';s.onload=ok;s.onerror=function(){no(new Error('pdf-lib'))};document.head.appendChild(s)})}
 function asc(s){return String(s||'').replace(/[^\x20-\x7E -ÿ]/g,'?')}
-async function mergeAtt(mainBlob,bon){await loadPL();var P=window.PDFLib,out=await P.PDFDocument.create(),font=await out.embedFont(P.StandardFonts.Helvetica);
+async function mergeAtt(mainBlob,bon,list){await loadPL();var P=window.PDFLib,out=await P.PDFDocument.create(),font=await out.embedFont(P.StandardFonts.Helvetica);
  var m=await P.PDFDocument.load(await mainBlob.arrayBuffer(),{ignoreEncryption:true});(await out.copyPages(m,m.getPageIndices())).forEach(function(p){out.addPage(p)});
- var L=bon.att||[],miss=0;
+ var L=list||bon.att||[],miss=0;
  for(var i=0;i<L.length;i++){var v=await get(key(bon.id,L[i].id));if(!v){miss++;continue}
   try{if(v.type==='pdf'){var d=await P.PDFDocument.load(await v.blob.arrayBuffer(),{ignoreEncryption:true});(await out.copyPages(d,d.getPageIndices())).forEach(function(p){out.addPage(p)})}
    else{var img=await out.embedJpg(await v.blob.arrayBuffer()),land=img.width>img.height,W=land?842:595,H=land?595:842,M=28,T=22;
@@ -1433,7 +1447,8 @@ async function mergeAtt(mainBlob,bon){await loadPL();var P=window.PDFLib,out=awa
  return new Blob([await out.save()],{type:'application/pdf'})}
 var _mk=makePdf;makePdf=async function(){var bon=S,r=await _mk.apply(this,arguments);
  if(!r||!bon||!bon.yn||bon.yn.aanv!=='ja'||!(bon.att&&bon.att.length))return r;
- try{return {blob:await mergeAtt(r.blob,bon),name:r.name}}catch(e){toast('De bijlagen konden niet aan de PDF worden toegevoegd (eerste keer internet nodig). De PDF is zonder bijlagen gemaakt.',7000);return r}};
+ var list=window.__wbKlant?bon.att.filter(function(a){return a.klant}):bon.att;if(!list.length)return r;
+ try{return {blob:await mergeAtt(r.blob,bon,list),name:r.name,fields:r.fields}}catch(e){toast('De bijlagen konden niet aan de PDF worden toegevoegd (eerste keer internet nodig). De PDF is zonder bijlagen gemaakt.',7000);return r}};
 // bon verwijderen: bijlagen ook weg
 var _del=delBon;delBon=async function(id){try{var ks=await allKeys();for(var i=0;i<ks.length;i++)if(String(ks[i]).indexOf(id+'|')===0)await del(ks[i])}catch(e){}return _del.apply(this,arguments)};
 // back-up: bijlagen mee
@@ -1442,6 +1457,237 @@ window.bkAttDump=async function(){var o={};try{var ks=await allKeys();for(var i=
 window.bkAttLoad=async function(att){for(var k in att){try{var a=att[k],bl=await (await fetch(a.data)).blob();await put(k,{blob:bl,name:a.name,type:a.type,w:a.w,h:a.h})}catch(e){}}};
 window.attRender=renderAtt;window.attAdd=addFiles;
 try{renderAtt()}catch(e){}
+})();
+</script>
+<script>
+/* Invulvelden voor kantoor: na het maken van de werkbon-PDF met PDF-lib echte formuliervelden toevoegen */
+(function(){
+function loadPL(){if(window.PDFLib)return Promise.resolve();return new Promise(function(ok,no){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';s.onload=ok;s.onerror=function(){no(new Error('pdf-lib'))};document.head.appendChild(s)})}
+async function addFields(blob,FF,flat){await loadPL();var P=window.PDFLib,d=await P.PDFDocument.load(await blob.arrayBuffer(),{ignoreEncryption:true}),pg=d.getPage(0),
+  W=pg.getWidth(),H=pg.getHeight(),sx=W/924,sy=H/1307,font=await d.embedFont(P.StandardFonts.Helvetica),ink=P.rgb(10/255,15/255,70/255),grey=P.rgb(.24,.24,.24),used={};
+ var clean=function(v){return String(v||'').replace(/[^\x20-\x7E -ÿ€]/g,'?')};
+ if(flat){ // verzamel-PDF: waarden als vaste tekst (geen formulier)
+  FF.forEach(function(f){var pg=d.getPage(f.p||0),x=f.x*sx,y=H-(f.y+f.h)*sy,w=f.w*sx,h=f.h*sy;
+   if(f.t==='cb'){pg.drawRectangle({x:x,y:y,width:w,height:h,borderWidth:.6,borderColor:grey});if(f.on){pg.drawLine({start:{x:x+1.2,y:y+1.2},end:{x:x+w-1.2,y:y+h-1.2},thickness:1,color:ink});pg.drawLine({start:{x:x+1.2,y:y+h-1.2},end:{x:x+w-1.2,y:y+1.2},thickness:1,color:ink})}return}
+   var t=clean(f.v);if(!t)return;var sz=f.s||8.5,tw=font.widthOfTextAtSize(t,sz),tx=f.al==='r'?x+w-2-tw:f.al==='c'?x+(w-tw)/2:x+2;
+   pg.drawText(t,{x:tx,y:y+(h-sz)/2+sz*0.22,size:sz,font:font,color:ink})});
+  return new Blob([await d.save()],{type:'application/pdf'})}
+ var form=d.getForm();
+ FF.forEach(function(f){var pg=d.getPage(f.p||0),n=f.n,i=2;while(used[n])n=f.n+' ('+(i++)+')';used[n]=1;
+  var r={x:f.x*sx,y:H-(f.y+f.h)*sy,width:f.w*sx,height:f.h*sy,borderWidth:0,textColor:ink,font:font};
+  if(f.t==='cb'){var c=form.createCheckBox(n);c.addToPage(pg,{x:r.x,y:r.y,width:r.width,height:r.height,borderWidth:.6,borderColor:grey,textColor:ink});if(f.on)c.check()}
+  else{var t=form.createTextField(n);t.setText(clean(f.v));t.setAlignment(f.al==='c'?P.TextAlignment.Center:f.al==='r'?P.TextAlignment.Right:P.TextAlignment.Left);
+   t.addToPage(pg,r);t.setFontSize(f.s||8.5)}});
+ form.updateFieldAppearances(font);
+ return new Blob([await d.save()],{type:'application/pdf'})}
+var _mk=makePdf;makePdf=async function(){var r=await _mk.apply(this,arguments);if(!r||!r.fields||!r.fields.length)return r;
+ try{return {blob:await addFields(r.blob,r.fields,!!(window.__wbFlat||window.__wbKlant)),name:r.name}}
+ catch(e){toast('De invulvelden konden niet worden toegevoegd (eerste keer internet nodig). De PDF is zonder invulvelden gemaakt.',7000);return {blob:r.blob,name:r.name}}};
+// verzamel-PDF van de weeklijst: velden vastzetten (samenvoegen kan geen formulieren meenemen)
+var _cw=window.collectWeek;if(_cw)window.collectWeek=async function(){window.__wbFlat=true;try{return await _cw.apply(this,arguments)}finally{window.__wbFlat=false}};
+})();
+</script>
+<style>
+#authOv{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(40px + env(safe-area-inset-top,0px)) 16px 24px}
+#authOv[hidden]{display:none}
+#authOv .ac{width:100%;max-width:420px;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:20px 18px;box-shadow:0 2px 10px #0002}
+#authOv h1{font-size:20px;margin:0 0 4px;color:var(--ac)}
+#authOv p{font-size:14px;color:var(--mu);margin:0 0 14px}
+#authOv .tb{display:flex;gap:6px;margin:0 0 6px}
+#authOv .tb button{flex:1;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:8px;padding:10px;font:inherit}
+#authOv .tb button.on{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+#authOv .go{width:100%;margin-top:14px;background:var(--ac);color:#fff}
+#authOv .lk{background:none;border:0;color:var(--ac);font:inherit;font-size:14px;padding:8px 0;text-decoration:underline;cursor:pointer}
+#authOv .er{font-size:14px;color:#b3402f;margin-top:10px}#authOv .er:empty{display:none}#authOv .er:not(:empty){background:#b3402f14;border:1px solid #b3402f66;border-radius:8px;padding:10px}#authOv .er.ok:not(:empty){background:transparent;border-color:var(--ok)}
+#authOv .ok{color:var(--ok)}
+#authOv .sh{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mu);margin-top:8px}
+#authOv .sh input{width:auto;margin:0}
+#acct{font-size:13px;color:var(--mu);margin:0 0 14px;padding:10px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--card)}
+#acct a{color:var(--ac)}
+#clAsk{position:fixed;inset:0;z-index:61;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+#clAsk[hidden]{display:none}
+#clAsk .ac{background:var(--card);color:var(--tx);border-radius:14px;padding:18px;max-width:420px;width:100%}
+#clAsk .bt{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+</style>
+<div id="authOv" hidden><div class="ac" role="dialog" aria-label="Inloggen">
+ <h1>MIT Werkbonnen</h1>
+ <p id="auIntro">Maak eenmalig een account aan met je e-mailadres en een zelfgekozen wachtwoord. Je back-ups worden dan automatisch in je account bewaard.</p>
+ <div class="tb"><button type="button" id="auTabR" class="on">Account aanmaken</button><button type="button" id="auTabL">Inloggen</button></div>
+ <form id="auForm" autocomplete="on" novalidate>
+  <label for="auMail">E-mailadres</label><input id="auMail" type="email" autocomplete="username" inputmode="email" required>
+  <label for="auPw">Wachtwoord <span id="auPwHint">(minimaal 6 tekens)</span></label><input id="auPw" type="password" autocomplete="new-password" required>
+  <div id="auPw2Box"><label for="auPw2">Wachtwoord herhalen</label><input id="auPw2" type="password" autocomplete="new-password"></div>
+  <label class="sh"><input type="checkbox" id="auShow"> Wachtwoord tonen</label>
+  <div class="er" id="auErr" role="alert"></div>
+  <button type="submit" class="btn go" id="auGo">Account aanmaken</button>
+ </form>
+ <button type="button" class="lk" id="auForgot" hidden>Wachtwoord vergeten?</button>
+ <button type="button" class="lk" id="auSkip" hidden>Zonder account verder (geen online back-up)</button>
+</div></div>
+<div id="clAsk" hidden><div class="ac"><div id="clAskT"></div><div class="bt"><button type="button" class="btn del" id="clAskNo">Nee</button><button type="button" class="btn" id="clAskYes">Ja</button></div></div></div>
+<script src="firebase-config.js"></script>
+<script src="fb.js"></script>
+<script>
+/* Account (Firebase, e-mail + wachtwoord) en online back-up van werkbonnen en weeklijsten */
+(function(){
+var C=window.MIT_FIREBASE,BASE='https://www.gstatic.com/firebasejs/10.12.2/';
+var ON=!!(C&&C.apiKey&&String(C.apiKey).indexOf('VUL')!==0)&&!window.claude;
+var auth=null,db=null,user=null,mode='reg',busy=false,CH=300000,KEEP=30,sdkP=null,sdkOk=null;
+var K={uid:'cl:uid',mail:'cl:mail',last:'cl:last',hash:'cl:hash',skip:'cl:skip'};
+function $(i){return document.getElementById(i)}
+function g(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function s(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,String(v))}catch(e){}}
+function tst(t,ms){try{toast(t,ms)}catch(e){}}
+function ee(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function p2(n){return(n<10?'0':'')+n}
+function fd(t){var d=new Date(t);return d.getDate()+'-'+(d.getMonth()+1)+'-'+d.getFullYear()+' '+p2(d.getHours())+':'+p2(d.getMinutes())}
+function wait(p,ms){return Promise.race([p,new Promise(function(ok,no){setTimeout(function(){no({code:'timeout'})},ms)})])}
+function hash(t){var h=2166136261;for(var i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+':'+t.length}
+function col(){return db.collection('users').doc(user.uid).collection('backups')}
+function dev(){return (navigator.userAgentData&&navigator.userAgentData.platform)||(/iPhone|iPad/.test(navigator.userAgent)?'iPhone/iPad':/Android/.test(navigator.userAgent)?'Android':'Computer')}
+function profile(x){if(!user||!db)return;var o={email:user.email||'',last:Date.now(),dev:dev()};for(var k in x)o[k]=x[k];try{db.collection('users').doc(user.uid).set(o,{merge:true}).catch(function(){})}catch(e){}}
+function msg(e){var c=(e&&e.code)||'';return ({
+ 'auth/invalid-email':'Dit e-mailadres klopt niet.',
+ 'auth/missing-email':'Vul je e-mailadres in.',
+ 'auth/email-already-in-use':'Er bestaat al een account met dit e-mailadres. Kies "Inloggen".',
+ 'auth/weak-password':'Kies een wachtwoord van minimaal 6 tekens.',
+ 'auth/missing-password':'Vul een wachtwoord in.',
+ 'auth/invalid-credential':'E-mailadres of wachtwoord klopt niet.',
+ 'auth/invalid-login-credentials':'E-mailadres of wachtwoord klopt niet.',
+ 'auth/wrong-password':'E-mailadres of wachtwoord klopt niet.',
+ 'auth/user-not-found':'Er is geen account met dit e-mailadres. Kies "Account aanmaken".',
+ 'auth/user-disabled':'Dit account is uitgeschakeld. Neem contact op met kantoor.',
+ 'auth/too-many-requests':'Te vaak geprobeerd. Wacht een paar minuten.',
+ 'auth/network-request-failed':'Geen internetverbinding. Probeer het opnieuw.',
+ 'auth/operation-not-allowed':'Inloggen met e-mail/wachtwoord staat nog niet aan in Firebase. Beheerder: Authentication > Sign-in method > E-mail/wachtwoord aanzetten.',
+ 'auth/configuration-not-found':'Inloggen is in Firebase nog niet gestart. Beheerder: Build > Authentication > Aan de slag, en daarna E-mail/wachtwoord aanzetten.',
+ 'auth/admin-restricted-operation':'Zelf een account aanmaken is in Firebase uitgezet. Beheerder: Authentication > Settings > User actions > "Enable create (sign-up)" aanzetten.',
+ 'auth/unauthorized-domain':'Dit adres staat niet bij Authorized domains in Firebase. Beheerder: Authentication > Settings > Authorized domains > dit adres toevoegen: '+location.hostname,
+ 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':'De apiKey in firebase-config.js klopt niet.',
+ 'auth/invalid-api-key':'De apiKey in firebase-config.js klopt niet.',
+ 'auth/app-not-authorized':'Deze app is niet gekoppeld aan het Firebase-project (controleer firebase-config.js).',
+ 'auth/internal-error':'Firebase gaf een interne fout. Probeer het over een minuut opnieuw.',
+ 'nosdk':'Firebase kon niet geladen worden. Controleer je internet en open de app opnieuw.',
+ 'permission-denied':'Geen toegang tot de online opslag (controleer de Firestore-regels).',
+ 'timeout':'De inlogserver van Firebase antwoordt niet. Controleer je internet en probeer het opnieuw.',
+ 'sdk-timeout':'Het laden van Firebase duurt te lang. Controleer je internet, sluit de app helemaal af en open hem opnieuw.'
+})[c]||('Er ging iets mis'+(c?' ('+c+')':'')+'.')}
+
+/* ---------- inlogscherm ---------- */
+function setMode(m){mode=m;var r=m==='reg';$('auTabR').className=r?'on':'';$('auTabL').className=r?'':'on';
+ $('auPw2Box').hidden=!r;$('auPwHint').hidden=!r;$('auForgot').hidden=r;$('auGo').textContent=r?'Account aanmaken':'Inloggen';
+ $('auPw').autocomplete=r?'new-password':'current-password';$('auErr').textContent='';$('auErr').className='er'}
+function showLogin(off){var o=$('authOv');o.hidden=false;
+ $('auSkip').hidden=!off;
+ if(off){$('auErr').className='er';$('auErr').textContent='Geen internet. Voor het aanmaken van een account of inloggen is internet nodig.'}
+ if(g(K.mail)){$('auMail').value=g(K.mail);setMode('login')}}
+function hideLogin(){$('authOv').hidden=true}
+function initForm(){
+ $('auTabR').onclick=function(){setMode('reg')};$('auTabL').onclick=function(){setMode('login')};
+ $('auShow').onchange=function(){var t=this.checked?'text':'password';$('auPw').type=t;$('auPw2').type=t};
+ $('auSkip').onclick=function(){try{sessionStorage.setItem(K.skip,'1')}catch(e){}hideLogin()};
+ $('auForgot').onclick=async function(){var m=$('auMail').value.trim(),er=$('auErr');
+  if(!m){er.className='er';er.textContent='Vul eerst je e-mailadres in.';return}
+  if(!auth){er.className='er';er.textContent=msg({code:'auth/network-request-failed'});return}
+  try{await auth.sendPasswordResetEmail(m);er.className='er ok';er.textContent='Je krijgt een e-mail om een nieuw wachtwoord te kiezen. Kijk ook bij ongewenste mail.'}
+  catch(e){er.className='er';er.textContent=msg(e)}try{er.scrollIntoView({block:'center'})}catch(x){}};
+ $('auForm').onsubmit=async function(ev){ev.preventDefault();if(busy)return;
+  var m=$('auMail').value.trim(),p=$('auPw').value,er=$('auErr');er.className='er';er.textContent='';
+  if(!m){er.textContent=msg({code:'auth/missing-email'});return}
+  if(!p){er.textContent=msg({code:'auth/missing-password'});return}
+  if(mode==='reg'){if(p.length<6){er.textContent=msg({code:'auth/weak-password'});return}
+   if(p!==$('auPw2').value){er.textContent='De twee wachtwoorden zijn niet hetzelfde.';return}}
+  busy=true;$('auGo').disabled=true;$('auGo').textContent='Even geduld…';var keep=mode;
+  try{if(!auth){try{await wait(sdkP,30000)}catch(x){throw {code:'sdk-timeout'}}}if(!auth)throw {code:'nosdk'};
+   fresh=true;if(mode==='reg')await wait(auth.createUserWithEmailAndPassword(m,p),30000);else await wait(auth.signInWithEmailAndPassword(m,p),30000);
+   $('auPw').value='';$('auPw2').value='';if(auth.currentUser){user=auth.currentUser;hideLogin();chip()}}
+  catch(e){fresh=false;try{console.warn('MIT account:',e)}catch(x){}busy=false;$('auGo').disabled=false;setMode(keep);er.className='er';er.textContent=msg(e);try{er.scrollIntoView({block:'center',behavior:'smooth'})}catch(x){};return}
+  busy=false;$('auGo').disabled=false;setMode(keep)}}
+var fresh=false;
+
+/* ---------- vraagvenster ---------- */
+function ask(html,yes,no){return new Promise(function(ok){$('clAskT').innerHTML=html;$('clAskYes').textContent=yes||'Ja';$('clAskNo').textContent=no||'Nee';$('clAsk').hidden=false;
+ $('clAskYes').onclick=function(){$('clAsk').hidden=true;ok(true)};$('clAskNo').onclick=function(){$('clAsk').hidden=true;ok(false)}})}
+
+/* ---------- back-up naar account ---------- */
+async function payload(){var d=new Date();return JSON.stringify({v:1,t:d.toISOString(),cloud:true,data:window.bkKeys(),att:(window.bkAttDump?await window.bkAttDump():{})})}
+var upBusy=false;
+async function backup(why){ // why: 'hand' | 'auto' | 'wijz'
+ if(!user||!db)return 'off';if(!navigator.onLine)return 'offline';if(upBusy)return 'busy';upBusy=true;
+ try{var txt=await payload(),h=hash(txt);
+  if(why!=='hand'&&h===g(K.hash)&&Date.now()-(+g(K.last)||0)<864e5){upBusy=false;return 'ok'} // niets veranderd
+  var d=new Date(),id=d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()),ref=col().doc(id),n=Math.max(1,Math.ceil(txt.length/CH)),old=0;
+  try{var o=await wait(ref.get(),30000);if(o.exists)old=+(o.data().parts)||0}catch(e){if(e&&e.code==='permission-denied')throw e}
+  for(var i=0;i<n;i++)await wait(ref.collection('parts').doc(String(i)).set({d:txt.slice(i*CH,(i+1)*CH)}),90000);
+  await wait(ref.set({t:d.getTime(),parts:n,size:txt.length,auto:why!=='hand',dev:dev()}),60000);
+  for(var j=n;j<old;j++){try{await ref.collection('parts').doc(String(j)).delete()}catch(e){}}
+  s(K.last,d.getTime());s(K.hash,h);upBusy=false;chip();prune();profile({lastBackup:d.getTime(),size:txt.length});return 'ok'}
+ catch(e){upBusy=false;if(why==='hand')tst('Online back-up mislukt: '+msg(e),6000);return 'fout'}}
+async function prune(){try{var q=await col().orderBy('t','desc').get(),ds=q.docs.slice(KEEP);
+ for(var i=0;i<ds.length;i++){var ps=await ds[i].ref.collection('parts').get();for(var k=0;k<ps.docs.length;k++)await ps.docs[k].ref.delete();await ds[i].ref.delete()}}catch(e){}}
+async function list(n){var q=await wait(col().orderBy('t','desc').limit(n||KEEP).get(),30000);return q.docs.map(function(d){var o=d.data();o.id=d.id;return o})}
+async function restore(id){tst('Back-up wordt opgehaald…',8000);
+ try{var ref=col().doc(id),m=await wait(ref.get(),30000);if(!m.exists)throw {code:'leeg'};var n=+m.data().parts||1,a=[];
+  for(var i=0;i<n;i++){var p=await wait(ref.collection('parts').doc(String(i)).get(),60000);a.push(p.exists?p.data().d:'')}
+  window.bkRestore(new File([a.join('')],'werkbonnen-backup-'+id+'.json',{type:'application/json'}))}
+ catch(e){tst('Terugzetten mislukt: '+msg(e),6000)}}
+function hasLocal(){try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k.indexOf('mit-wr:')===0||/^wl:\d/.test(k))return true}}catch(e){}return false}
+
+/* ---------- regel op het startscherm ---------- */
+function chip(){var el=$('acct');if(!el){var a=$('bkSt');if(!a)return;el=document.createElement('div');el.id='acct';a.parentNode.insertBefore(el,a)}
+ if(!ON){el.hidden=true;return}el.hidden=false;var l=+g(K.last)||0;
+ if(user)el.innerHTML='Account: <b>'+ee(user.email)+'</b><br>Online back-up: '+(l?fd(l):'nog geen')+' · <a href="#" id="acctGo">Beheren</a>';
+ else el.innerHTML='Geen account: back-ups staan alleen op dit apparaat. <a href="#" id="acctGo">Inloggen of account aanmaken</a>';
+ $('acctGo').onclick=function(e){e.preventDefault();if(user&&window.openSettings)window.openSettings();else showLogin(!auth)}}
+
+/* ---------- onderdeel in Instellingen ---------- */
+function html(){if(!ON)return '';var l=+g(K.last)||0,h='<h3>Account en online back-up</h3>';
+ if(!user)return h+'<div class="row"><div class="vl">Niet ingelogd. Back-ups worden niet online bewaard.</div><button class="sb" id="clIn" type="button">Inloggen</button></div>';
+ h+='<div class="row"><div><div class="lb">'+ee(user.email)+'</div><div class="vl">Back-ups worden automatisch in je account bewaard (na wijzigingen en elke dag). De laatste '+KEEP+' dagen blijven bewaard.</div></div><button class="sb" id="clOut" type="button">Uitloggen</button></div>';
+ h+='<div class="row"><div class="vl">Laatste online back-up: '+(l?fd(l):'nog geen')+'</div><button class="sb" id="clNow" type="button">Nu opslaan</button></div>';
+ h+='<div class="row" style="display:block"><div class="lb" style="margin-bottom:6px">Online back-ups</div><div id="clList" class="vl">Laden…</div></div>';
+ h+='<div class="row"><div class="vl">Wachtwoord wijzigen: je krijgt een e-mail met een link.</div><button class="sb" id="clPw" type="button">E-mail sturen</button></div>';
+ return h}
+function bind(rerender){var q=$;
+ if(q('clIn'))q('clIn').onclick=function(){document.getElementById('ovSet').hidden=true;showLogin(!auth)};
+ if(q('clOut'))q('clOut').onclick=async function(){var ok=await ask('<b>Uitloggen?</b><p class="hd" style="font-size:14px">Er wordt eerst nog een online back-up gemaakt. Je bonnen en weeklijsten blijven op dit apparaat staan.</p>','Uitloggen','Annuleren');if(!ok)return;
+  await backup('auto');try{await auth.signOut()}catch(e){}document.getElementById('ovSet').hidden=true};
+ if(q('clNow'))q('clNow').onclick=async function(){this.disabled=true;this.textContent='Bezig…';var r=await backup('hand');if(r==='ok')tst('Online back-up opgeslagen.',3000);else if(r==='offline')tst('Geen internet. De back-up wordt gemaakt zodra je weer online bent.',5000);rerender&&rerender()};
+ if(q('clPw'))q('clPw').onclick=async function(){try{await auth.sendPasswordResetEmail(user.email);tst('E-mail verstuurd naar '+user.email,5000)}catch(e){tst(msg(e),5000)}};
+ if(q('clList'))list(10).then(function(a){var el=q('clList');if(!el)return;if(!a.length){el.textContent='Nog geen online back-ups.';return}
+  el.innerHTML=a.map(function(b){return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed var(--bd)"><span>'+fd(b.t)+' · '+ee(b.dev||'')+' · '+Math.max(1,Math.round((b.size||0)/1024))+' kB</span><button class="sb" type="button" data-rs="'+ee(b.id)+'">Terugzetten</button></div>'}).join('');
+  el.querySelectorAll('[data-rs]').forEach(function(b){b.onclick=async function(){var ok=await ask('<b>Back-up terugzetten?</b><p class="hd" style="font-size:14px">De bonnen en weeklijsten uit deze back-up worden op dit apparaat gezet. Bonnen met dezelfde naam worden overschreven.</p>','Terugzetten','Annuleren');if(ok)restore(b.dataset.rs)}})})
+  .catch(function(e){var el=q('clList');if(el)el.textContent=navigator.onLine?msg(e):'Geen internet: de lijst kan nu niet worden opgehaald.'})}
+
+/* ---------- na inloggen ---------- */
+async function afterLogin(){
+ var wasFresh=fresh;fresh=false;profile(wasFresh?{since:Date.now()}:{});
+ if(!hasLocal()){ // nieuw toestel of na herinstallatie: laatste back-up aanbieden
+  try{var a=await list(1);if(a.length){var ok=await ask('<b>Back-up gevonden</b><p class="hd" style="font-size:14px">In je account staat een back-up van '+fd(a[0].t)+'. Wil je je bonnen en weeklijsten op dit apparaat terugzetten?</p>','Terugzetten','Niet nu');if(ok){restore(a[0].id);return}}}catch(e){}}
+ else if(wasFresh)setTimeout(function(){backup('auto')},1500);
+ setTimeout(function(){backup('auto')},20000)}
+
+/* ---------- start ---------- */
+async function start(){
+ if(!ON){chip();return}
+ initForm();setMode('reg');
+ var known=!!g(K.uid),skip=false;try{skip=sessionStorage.getItem(K.skip)==='1'}catch(e){}
+ if(!known&&!skip)showLogin(false);
+ chip();
+ sdkP=new Promise(function(ok){sdkOk=ok});
+ try{var F=await wait(window.mitFB(),30000);auth=F.auth;db=F.db}
+ catch(e){sdkOk();try{console.warn('MIT account laden:',e)}catch(x){}if(!known&&!skip)showLogin(true);return}
+ sdkOk();
+ var started=false;auth.onAuthStateChanged(function(u){user=u||null;
+  if(u){s(K.uid,u.uid);s(K.mail,u.email);hideLogin();chip();if(!started){started=true;afterLogin()}}
+  else{started=false;s(K.uid,null);s(K.last,null);s(K.hash,null);chip();var sk=false;try{sk=sessionStorage.getItem(K.skip)==='1'}catch(e){}if(!sk)showLogin(false)}});
+ // na wijzigingen: hooguit elke 15 minuten een online back-up, en bij het wegklikken van de app
+ setInterval(function(){if(user&&document.visibilityState==='visible'&&Date.now()-(+g(K.last)||0)>15*60e3)backup('wijz')},5*60e3);
+ document.addEventListener('visibilitychange',function(){if(user&&document.visibilityState==='hidden')backup('wijz')});
+ window.addEventListener('online',function(){if(user)setTimeout(function(){backup('wijz')},3000)})}
+
+window.mitCloud={on:function(){return ON},ready:function(){return !!(user&&db)},backup:backup,html:html,bind:bind,chip:chip};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
 </script>
 </body>

@@ -415,12 +415,30 @@ window.openApp=function(w){$('home').hidden=true;$('appWB').hidden=(w!=='wb');$(
 window.bkKeys=function(){return keys()};
 window.bkMark=function(){try{localStorage.setItem('mit-bk-last',String(Date.now()))}catch(e){}window.bkStatus&&window.bkStatus();try{window.mitCloud&&window.mitCloud.chip()}catch(e){}};
 function keys(){var o={};try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(/^(mit-|wl:|sd:)/.test(k))o[k]=localStorage.getItem(k)}}catch(e){}return o}
-window.bkMake=async function(){var d=new Date(),p=function(n){return(n<10?'0':'')+n},nm='werkbonnen-backup-'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'.json',
- txt=JSON.stringify({v:1,t:d.toISOString(),data:keys(),att:(window.bkAttDump?await window.bkAttDump():{})});
- if(window.claude){try{var dl=await window.claude.use('downloads');if(dl){await dl.save({filename:nm,data:txt});window.bkMark();return}}catch(e){if(e&&e.code==='declined')return}}
- var f=new File([txt],nm,{type:'application/json'});
- try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Back-up werkbonnen'});window.bkMark();return}}catch(e){if(e&&e.name==='AbortError')return}
- var u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=nm;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(u)},4000);window.bkMark();toast('Back-up gedownload: '+nm,5000)};
+var PREP=null;
+async function bkFile(){var d=new Date(),p=function(n){return(n<10?'0':'')+n},nm='werkbonnen-backup-'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'.json',
+ txt=JSON.stringify({v:1,t:d.toISOString(),data:keys(),att:(window.bkAttDump?await window.bkAttDump():{})});return {nm:nm,txt:txt,f:new File([txt],nm,{type:'application/json'}),t:Date.now()}}
+// vooraf klaarzetten, zodat de knop het deelmenu direct kan openen (iPhone eist dat)
+window.bkPrepare=async function(){try{PREP=await bkFile()}catch(e){PREP=null}return PREP};
+function canShareF(f){try{return !!(navigator.canShare&&navigator.canShare({files:[f]}))}catch(e){return false}}
+function shareNow(b){return navigator.share({files:[b.f],title:'Back-up werkbonnen'}).then(function(){window.bkMark();return true},function(e){if(e&&e.name==='AbortError')return false;throw e})}
+function download(b){var u=URL.createObjectURL(b.f),a=document.createElement('a');a.href=u;a.download=b.nm;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(u)},4000);window.bkMark();toast('Back-up gedownload: '+b.nm,5000)}
+// tweede stap als het toestel het deelmenu weigerde: knop die direct deelt
+function shareStep(b){var o=document.getElementById('bkShareOv');if(!o){o=document.createElement('div');o.id='bkShareOv';
+  o.style.cssText='position:fixed;inset:0;z-index:62;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';document.body.appendChild(o)}
+ o.innerHTML='<div style="background:var(--card);color:var(--tx);border-radius:14px;padding:18px;max-width:380px;width:100%;text-align:center"><b>Back-up is klaar</b><p style="font-size:14px;color:var(--mu);margin:8px 0 14px">Tik op Opslaan en kies waar het bestand heen moet (Bestanden, Drive, mail).</p><div style="display:flex;gap:8px;justify-content:center"><button type="button" id="bkShX" class="btn del" style="width:auto">Annuleren</button><button type="button" id="bkShGo" class="btn" style="width:auto">Opslaan</button></div></div>';
+ o.style.display='flex';
+ document.getElementById('bkShX').onclick=function(){o.style.display='none'};
+ document.getElementById('bkShGo').onclick=function(){o.style.display='none';if(canShareF(b.f))shareNow(b).catch(function(){download(b)});else download(b)}}
+window.bkMake=async function(){
+ var b=(PREP&&Date.now()-PREP.t<5*60e3)?PREP:null;PREP=null;
+ if(window.claude){if(!b)b=await bkFile();try{var dl=await window.claude.use('downloads');if(dl){await dl.save({filename:b.nm,data:b.txt});window.bkMark();return}}catch(e){if(e&&e.code==='declined')return}}
+ if(b){ // klaar: direct delen binnen de tik
+  if(canShareF(b.f)){try{await shareNow(b)}catch(e){shareStep(b)}return}
+  download(b);return}
+ b=await bkFile();
+ if(canShareF(b.f)){try{await shareNow(b)}catch(e){shareStep(b)}return} // geweigerd na het wachten: tweede tik
+ download(b)};
 window.bkRestore=function(file){var r=new FileReader();r.onload=function(){try{var j=JSON.parse(r.result);if(!j||!j.data)throw 0;var n=0;for(var k in j.data){if(/^(mit-|wl:|sd:)/.test(k)){localStorage.setItem(k,j.data[k]);n++}}var fin=function(){toast('Teruggezet: '+n+' onderdelen. De app laadt opnieuw.',3000);setTimeout(function(){location.reload()},1200)};if(j.att&&window.bkAttLoad)window.bkAttLoad(j.att).then(fin,fin);else fin()}catch(e){toast('Dit is geen geldige back-up.',5000)}};r.readAsText(file)};
 window.addEventListener('load',function(){var m=document.getElementById('bkMk'),s=document.getElementById('bkRs'),f=document.getElementById('bkFile');if(!m)return;
  window.bkStatus=function(){var e=document.getElementById('bkSt');if(!e)return;var l=0,n=Object.keys(keys()).length;try{l=+localStorage.getItem('mit-bk-last')||0}catch(x){}
@@ -1174,7 +1192,7 @@ async function render(){
  if(q('stBkDir'))q('stBkDir').onclick=async function(){try{await window.fsPickBk();toast('Back-upmap gekozen.',3000)}catch(e){}render()};
  var sv=function(){if(window.bkAuto)window.bkAuto.setCfg({on:q('stAbOn').checked,tijd:q('stAbT').value||'18:00'})};q('stAbOn').onchange=sv;q('stAbT').onchange=sv;
  q('stRs').onclick=function(){var f=document.getElementById('bkFile');if(f)f.click()}}
-window.openSettings=function(){ov.hidden=false;render()};
+window.openSettings=function(){ov.hidden=false;render();try{window.bkPrepare&&window.bkPrepare()}catch(e){}};
 document.getElementById('gear').onclick=window.openSettings;
 ov.addEventListener('click',function(e){if(e.target===ov)close()});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!ov.hidden)close()});
@@ -1209,20 +1227,28 @@ async function run(manual){if(busy)return;busy=true;var r='',cl='';
  if(cl==='ok'){done();toast('Back-up opgeslagen in je account.',4000);return true}
  if(manual!=='stil'||r!==lastWhy)showBanner(r);lastWhy=r;return false}
 // Telefoon of geen toestemming: melding met een knop
-function showBanner(why){var el=document.getElementById('bkBanner');if(!el){el=document.createElement('div');el.id='bkBanner';
+function showBanner(why){var el=document.getElementById('bkBanner');if(!el){el=document.createElement('div');el.id='bkBanner';el.className='bkBanner';
   el.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:35;background:var(--ac);color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 4px 16px #0004;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;max-width:560px;margin:0 auto';
   document.body.appendChild(el)}
  var t=why==='perm'?'Back-up van vandaag: de app heeft toestemming nodig voor de back-upmap.':why==='none'?'Back-up van vandaag: kies eerst de opslagmap (tandwieltje). De back-up komt in de map MIT-BACKUP_ daarin.':'Tijd voor de back-up van vandaag (werkbonnen en weeklijsten).';
  el.innerHTML='<span style="font-size:14px;flex:1;min-width:180px">'+t+'</span><span style="display:flex;gap:8px"><button id="bkbGo" type="button" style="width:auto;padding:8px 14px;margin:0;background:#fff;color:var(--ac);border:0;border-radius:10px;font-weight:600">'+(why==='perm'?'Toegang geven':why==='none'?'Instellingen':'Back-up maken')+'</button><button id="bkbLater" type="button" style="width:auto;padding:8px 10px;margin:0;background:transparent;color:#fff;border:1px solid #fff8;border-radius:10px">Later</button></span>';
- el.hidden=false;
- document.getElementById('bkbLater').onclick=function(){el.hidden=true;snooze=Date.now()};
+ el.hidden=false;el.style.display='flex';
+ if(why!=='perm'&&why!=='none'&&window.bkPrepare)window.bkPrepare();
+ document.getElementById('bkbLater').onclick=function(){hideBanner();snooze=Date.now();try{localStorage.setItem('bk:snooze',String(snooze))}catch(e){}};
  document.getElementById('bkbGo').onclick=async function(){
+  if(why!=='perm'&&why!=='none'&&window.mitCloud&&window.mitCloud.ready()){var bt=this;bt.textContent='Bezig…';
+   var c='';try{c=await window.mitCloud.backup('hand')}catch(e){}
+   if(c==='ok'){done();toast('Back-up opgeslagen in je account.',4000);return}bt.textContent='Back-up maken'}
   if(why==='perm'){try{var q=await window.fsBkQuiet();if(q.h&&await q.h.requestPermission({mode:'readwrite'})==='granted'){await run(true);return}}catch(e){}return}
   if(why==='none'){el.hidden=true;window.openSettings&&window.openSettings();return}
   var before=+localStorage.getItem('mit-bk-last')||0;await window.bkMake();if((+localStorage.getItem('mit-bk-last')||0)>before)done()}}
-function hideBanner(){var el=document.getElementById('bkBanner');if(el)el.hidden=true}
-var snooze=0,lastWhy='';
-function tick(){if(!isDue()){hideBanner();return}if(Date.now()-snooze<3600e3)return;var el=document.getElementById('bkBanner'),shown=el&&!el.hidden;
+function hideBanner(){var el=document.getElementById('bkBanner');if(el){el.hidden=true;el.style.display='none'}}
+var snooze=0,lastWhy='',T0=Date.now();try{snooze=+localStorage.getItem('bk:snooze')||0}catch(e){}
+function cloudPending(){var known=false;try{known=!!localStorage.getItem('cl:uid')}catch(e){}return known&&window.mitCloud&&!window.mitCloud.ready()&&Date.now()-T0<90e3}
+function tick(){if(!isDue()){hideBanner();return}if(Date.now()-snooze<3600e3)return;
+ if(cloudPending())return; // account wordt nog geladen: niet onnodig de melding tonen
+ var el=document.getElementById('bkBanner'),shown=el&&!el.hidden;
+ if(shown&&window.mitCloud&&window.mitCloud.ready()){run('stil');return} // inmiddels ingelogd: online back-up, melding weg
  if(shown&&(lastWhy==='none'||lastWhy==='perm'||lastWhy==='fout')){run('stil');return} // opnieuw proberen, map kan inmiddels gekozen zijn
  if(shown)return;run(false)}
 async function recheck(){snooze=0;if(isDue())await run('stil');else hideBanner()}

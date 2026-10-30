@@ -44,6 +44,14 @@ header .btn{background:transparent;color:#fff;border-color:#fff8;font-weight:400
 .kl{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:8px}
 .kl .ka{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .kl input{margin-top:6px}
+table.rt{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border:1px solid var(--bd);border-radius:12px;overflow:hidden}
+table.rt th,table.rt td{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:middle}
+table.rt th{font-size:12px;color:var(--mu);font-weight:600}
+table.rt input[type=text]{padding:6px;font-size:14px;min-width:140px}
+table.rt tr.bv td{background:#c2570c14}
+table.rt tr.leeg td{color:var(--mu)}
+.rsec{margin:16px 0 6px;font-weight:600}
+.scroll{overflow-x:auto}
 </style>
 </head>
 <body>
@@ -58,7 +66,7 @@ header .btn{background:transparent;color:#fff;border-color:#fff8;font-weight:400
   <div class="er" id="le" role="alert"></div>
  </div>
  <div class="card" id="msg" hidden></div>
- <div class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="k">Klanten</button></div>
+ <div class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="k">Klanten</button><button type="button" data-tab="r">Rooster</button></div>
  <div id="list" hidden>
   <div class="tools"><input id="q" type="search" placeholder="Zoek op e-mailadres…"><button class="btn" id="rf" type="button">Vernieuwen</button></div>
   <div class="mu" id="cnt" style="margin:0 2px 10px"></div>
@@ -66,6 +74,12 @@ header .btn{background:transparent;color:#fff;border-color:#fff8;font-weight:400
   <div class="card" style="margin-top:16px"><b>Toegang tot het klantenbestand intrekken</b><p class="mu">Ook voor iemand die nog niet in de lijst staat. Alleen e-mailadressen die eindigen op @mit-installatietechniek.com hebben toegang.</p>
    <div class="tools" style="margin:0"><input id="blm" type="email" placeholder="naam@mit-installatietechniek.com"><button class="btn dg" id="blb" type="button">Intrekken</button></div>
    <div id="bll" class="mu" style="margin-top:8px"></div></div>
+ </div>
+ <div id="rlist" hidden>
+  <div class="card"><b>Storingsrooster</b><div class="mu" id="rcur" style="margin-top:4px">Laden…</div>
+   <p class="mu">Kies de PDF van het nieuwe rooster. Je ziet eerst een voorbeeld; pas na <b>Publiceren</b> krijgen alle collega's het in de app.</p>
+   <label class="btn" style="display:inline-block;cursor:pointer">PDF kiezen<input type="file" id="rfile" accept="application/pdf,.pdf" hidden></label> <span class="mu" id="rst"></span></div>
+  <div id="rprev"></div>
  </div>
  <div id="klist" hidden>
   <div class="tools"><input id="kq" type="search" placeholder="Zoek op naam, adres of plaats…"><button class="btn" id="krf" type="button">Vernieuwen</button></div>
@@ -75,6 +89,7 @@ header .btn{background:transparent;color:#fff;border-color:#fff8;font-weight:400
 </main>
 <script src="firebase-config.js"></script>
 <script src="fb.js"></script>
+<script src="rooster.js"></script>
 <script>
 (async function(){
 function $(i){return document.getElementById(i)}
@@ -97,7 +112,7 @@ $('rf').onclick=function(){load()};
 $('q').oninput=function(){render()};
 
 auth.onAuthStateChanged(async function(u){
- $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('tabs').hidden=true;show('');
+ $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('rlist').hidden=true;$('tabs').hidden=true;show('');
  if(!u){$('who').textContent='Gebruikers en back-ups';if(ADMIN)$('lm').value=ADMIN;return}
  $('who').textContent='Ingelogd als '+u.email;
  if(ADMIN&&String(u.email).toLowerCase()!==ADMIN){show('<b>Geen beheerder.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot het beheer. Log in met '+ee(ADMIN)+'.</p>');return}
@@ -110,7 +125,35 @@ auth.onAuthStateChanged(async function(u){
  load()});
 
 var TAB='u';
-$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;TAB=b.dataset.tab;[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x===b)});$('list').hidden=TAB!=='u';$('klist').hidden=TAB!=='k';if(TAB==='k'&&!KL.length)loadK()};
+$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;TAB=b.dataset.tab;[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x===b)});$('list').hidden=TAB!=='u';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR()};
+/* ---------- rooster ---------- */
+var RP=null,RFILE='';
+function fdate(iso){if(!iso)return '';var p=iso.split('-');return +p[2]+'-'+(+p[1])+'-'+p[0].slice(2)}
+async function loadR(){try{var d=await db.collection('rooster').doc('actief').get();if(d.exists){var o=d.data();$('rcur').innerHTML='Gepubliceerd: <b>'+ee(o.titel||'rooster')+'</b>'+(o.bestand?' ('+ee(o.bestand)+')':'')+' · '+fd(o.t)+(o.door?' door '+ee(o.door):'')+' · '+(o.weken||[]).filter(function(w){return w.wie&&w.wie.length}).length+' weken ingedeeld'}else $('rcur').textContent='Nog geen rooster gepubliceerd.'}catch(e){$('rcur').textContent=err(e)}}
+function loadPdfjs(){if(window.pdfjsLib)return Promise.resolve();return new Promise(function(ok,no){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=function(){try{pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'}catch(e){}ok()};s.onerror=no;document.head.appendChild(s)})}
+$('rfile').onchange=async function(){var f=this.files&&this.files[0];this.value='';if(!f)return;RFILE=f.name;$('rst').textContent='PDF lezen…';$('rprev').innerHTML='';
+ try{await loadPdfjs();var doc=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise,pg=await doc.getPage(1),tc=await pg.getTextContent(),vp=pg.getViewport({scale:1});
+  RP=window.mitRooster.parse(tc.items,vp.height);$('rst').textContent='';if(RP.fouten&&RP.fouten.length&&!RP.weken){$('rprev').innerHTML='<div class="card er">'+ee(RP.fouten.join(' '))+' Is dit het storingsrooster als PDF (geen scan)?</div>';return}renderR()}
+ catch(e){$('rst').textContent='';$('rprev').innerHTML='<div class="card er">De PDF kon niet gelezen worden. Controleer je internet en of het de juiste PDF is.</div>'}};
+function renderR(){var r=RP,mon=r.monteurs.filter(function(m){return m.n>0}),toon={};mon.forEach(function(m){toon[m.naam]=m.telNaam||m.naam});
+ var h='<div class="card"><b>Voorbeeld: '+ee(r.titel)+'</b><div class="mu">'+ee(RFILE)+' · '+r.weken.length+' weken, waarvan '+r.weken.filter(function(w){return w.wie.length}).length+' ingedeeld · bouwvak: '+(r.weken.filter(function(w){return w.bouwvak}).map(function(w){return 'week '+w.w}).join(', ')||'geen')+'</div>'+
+  (r.fouten.length?'<p class="er">'+ee(r.fouten.join(' '))+'</p>':'')+'<p class="mu">Controleer de namen en telefoonnummers; je kunt ze hier aanpassen. Bouwvak (overgang om 17:00 in plaats van 08:00) kun je per week aan- of uitvinken.</p></div>';
+ h+='<div class="rsec">Monteurs</div><div class="scroll"><table class="rt"><tr><th>Op het rooster</th><th>Naam in de app</th><th>Telefoon</th><th>Diensten</th></tr>'+
+  mon.map(function(m,i){return '<tr><td>'+ee(m.naam)+'</td><td><input type="text" data-mn="'+i+'" value="'+ee(m.telNaam||m.naam)+'"></td><td><input type="text" data-mt="'+i+'" value="'+ee(m.tel||'')+'" placeholder="geen nummer"></td><td>'+m.n+'</td></tr>'}).join('')+'</table></div>';
+ h+='<div class="rsec">Weken</div><div class="scroll"><table class="rt"><tr><th>Week</th><th>Van (vrijdag)</th><th>Tot (vrijdag)</th><th>Dienst</th><th>Bouwvak</th></tr>'+
+  r.weken.map(function(w,i){return '<tr class="'+(w.bouwvak?'bv':'')+(w.wie.length?'':' leeg')+'"><td>'+w.w+'</td><td>'+fdate(w.s)+'</td><td>'+fdate(w.e)+'</td><td>'+(w.wie.length?ee(w.wie.map(function(n){return toon[n]||n}).join(', ')):'nog niet ingedeeld')+'</td><td><input type="checkbox" data-bv="'+i+'"'+(w.bouwvak?' checked':'')+'></td></tr>'}).join('')+'</table></div>';
+ h+='<div class="rsec">Bij calamiteiten</div><div class="scroll"><table class="rt"><tr><th>Naam</th><th>Telefoon</th></tr>'+
+  r.calamiteiten.map(function(c,i){return '<tr><td><input type="text" data-cn="'+i+'" value="'+ee(c.naam)+'"></td><td><input type="text" data-ct="'+i+'" value="'+ee(c.tel)+'"></td></tr>'}).join('')+'</table></div>';
+ h+='<div class="tools" style="margin-top:16px"><button class="btn pr" id="rpub" type="button">Publiceren voor alle collega\'s</button><button class="btn" id="rcan" type="button">Annuleren</button><span class="mu" id="rps"></span></div>';
+ $('rprev').innerHTML=h;
+ $('rprev').querySelectorAll('[data-bv]').forEach(function(c){c.onchange=function(){r.weken[+c.dataset.bv].bouwvak=c.checked;c.closest('tr').classList.toggle('bv',c.checked)}});
+ $('rcan').onclick=function(){RP=null;$('rprev').innerHTML=''};
+ $('rpub').onclick=async function(){var b=this;b.disabled=true;$('rps').textContent='Publiceren…';
+  var M=mon.map(function(m,i){return {naam:m.naam,toon:$('rprev').querySelector('[data-mn="'+i+'"]').value.trim()||m.naam,tel:$('rprev').querySelector('[data-mt="'+i+'"]').value.trim()}});
+  var CA=r.calamiteiten.map(function(c,i){return {naam:$('rprev').querySelector('[data-cn="'+i+'"]').value.trim(),tel:$('rprev').querySelector('[data-ct="'+i+'"]').value.trim()}}).filter(function(c){return c.naam&&c.tel});
+  var D={titel:r.titel,bestand:RFILE,t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase(),weken:r.weken.map(function(w){return {w:w.w,s:w.s,e:w.e,b:!!w.bouwvak,wie:w.wie}}),monteurs:M,calamiteiten:CA};
+  try{await db.collection('rooster').doc('actief').set(D);$('rps').innerHTML='<span class="ok">Gepubliceerd. Collega\'s krijgen het rooster de volgende keer dat ze de app openen.</span>';RP=null;loadR();setTimeout(function(){$('rprev').innerHTML=''},4000)}
+  catch(e){b.disabled=false;$('rps').textContent='Publiceren mislukt: '+err(e)}}}
 async function loadBlock(){BLOCK={};try{var q=await db.collection('geblokkeerd').get();q.docs.forEach(function(d){BLOCK[d.id]=d.data()||{}})}catch(e){}
  var ks=Object.keys(BLOCK).sort();$('bll').innerHTML=ks.length?'Ingetrokken: '+ks.map(function(k){return '<span style="white-space:nowrap">'+ee(k)+' <a href="#" data-ub="'+ee(k)+'">terugzetten</a></span>'}).join(' · '):'Bij niemand ingetrokken.';
  $('bll').querySelectorAll('[data-ub]').forEach(function(a){a.onclick=function(e){e.preventDefault();setBlock(a.dataset.ub,false)}})}
@@ -119,7 +162,7 @@ async function setBlock(em,on){em=String(em||'').trim().toLowerCase();if(!em)ret
  catch(e){alert0(err(e))}}
 function alert0(t){show('<b>Niet gelukt.</b><p class="mu">'+ee(t)+'</p>');setTimeout(function(){show('')},6000)}
 $('blb').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}setBlock(v,true);$('blm').value=''};
-async function load(){show('');$('tabs').hidden=false;$('list').hidden=TAB!=='u';$('klist').hidden=TAB!=='k';$('users').innerHTML='<p class="mu">Laden…</p>';
+async function load(){show('');$('tabs').hidden=false;$('list').hidden=TAB!=='u';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';if(TAB==='r')loadR();$('users').innerHTML='<p class="mu">Laden…</p>';
  try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();
   USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();render()}
  catch(e){$('users').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}

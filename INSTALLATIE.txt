@@ -3,7 +3,7 @@ MIT Werkbonnen - installeerbare app (PWA)
 INHOUD
 index.html (de app met keuze Werkbonnen / Weeklijsten), manifest.webmanifest,
 sw.js (voor offline gebruik), firebase-config.js (gegevens voor account en online back-up),
-fb.js (laadt Firebase), beheer.html (beheerpagina), iconen.
+fb.js (laadt Firebase), rooster.js (leest het storingsrooster), beheer.html (beheerpagina), iconen.
 
 STAP 1 - Zet de map online (HTTPS is verplicht voor installeren)
 Kies een van deze mogelijkheden:
@@ -38,8 +38,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v103,
-  verhoog naar v104 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v105,
+  verhoog naar v106 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -69,7 +69,7 @@ Computer: Outlook > bijlage > Opslaan als > je gekozen werkbon-map (zie hieronde
 
 WERKBON UIT DE MAIL IN DE APP ZETTEN
 Computer (Windows, app geinstalleerd via Chrome of Edge):
-- Eenmalig: startscherm > "Werkbonnen uit de mail opslaan" > Map kiezen.
+- Eenmalig: startscherm > Werkbon importeren > "Werkbonnen uit de mail opslaan" > Map kiezen.
   Kies (of maak) de map waar je werkbon-PDF's uit de mail in opslaat, bijv. Documenten\Werkbonnen mail.
   Kies "Bij elk bezoek toestaan" als de browser om toestemming vraagt.
   Tip: sleep die map in Verkenner naar "Snelle toegang", dan staat hij altijd links in het opslaan-venster.
@@ -173,6 +173,26 @@ KLANTENBESTAND (GEDEELD MET COLLEGA'S)
   onderaan een e-mailadres invullen. Terugzetten kan op dezelfde plek. Zijn eigen back-ups blijven werken.
 - Let op: de Firestore-regels hierboven zijn hiervoor uitgebreid. Plak ze opnieuw en kies Publiceren.
 
+STORINGSROOSTER
+- Beheerder: beheer.html > Rooster > PDF kiezen (de PDF van het storingsrooster, zoals 000_Storingsrooster_2026).
+  Je ziet een voorbeeld: alle weken (vrijdag tot vrijdag) met wie dienst heeft, de bouwvakweken (overgang 17:00),
+  de monteurs met telefoonnummer en de calamiteitennummers. Namen, nummers en bouwvak kun je daar aanpassen.
+  Klik Publiceren voor alle collega's. Nieuwe versie van het rooster? Zelfde stappen; de oude wordt vervangen.
+- De namen op het rooster worden gekoppeld aan de telefoonlijst onderaan het rooster (kleine spelverschillen
+  zoals Heman/Herman Bakker of Asis baa/Asis Sbaa worden opgevangen). In de app wordt de spelling van de
+  telefoonlijst getoond.
+- Monteur: de app koppelt hem via zijn naam (Mijn gegevens / weeklijst) aan het rooster en vraagt een keer
+  "Je staat in het storingsrooster als ... Klopt dat?". Anders kiest hij zichzelf uit de lijst.
+  Wijzigen: tandwieltje > Storingsdienst > Wijzigen.
+- Startscherm: kaart Storingsdienst met wie nu en volgende week dienst heeft en je eigen eerstvolgende dienst.
+  Tik erop: wie heeft dienst (met Bel-knop), mijn diensten, het hele rooster en Bij calamiteiten (met Bel-knop).
+- Herinneringen (aan/uit per soort onder tandwieltje > Storingsdienst): een week vooraf, de dag ervoor (vanaf
+  donderdag 12:00) en na afloop "verstuur de storingsdienstlijst" (blijft terugkomen tot hij verstuurd is;
+  Nu versturen opent de juiste week). Meldingen verschijnen als de app open is.
+- Alleen zichtbaar voor collega's met toegang tot het klantenbestand (zelfde regels). De Firestore-regels
+  hierboven zijn hiervoor uitgebreid met "match /rooster": opnieuw plakken en Publiceren.
+- Ruilen twee monteurs een dienst? Pas het rooster aan en publiceer het opnieuw.
+
 WEEKLIJST VERSTUREN NAAR LEIDINGGEVENDE
 - Weeklijsten > kies de week > Versturen naar leidinggevende > e-mailadres > Verzenden.
 - In de e-mail gaan mee: de weeklijst (PDF), alle werkbonnen van die week als losse PDF's met hun bijlagen
@@ -257,6 +277,10 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
          allow read: if isMit() || isBeheerder();
          allow create, update: if (isMit() || isBeheerder()) && klantOk();
          allow delete: if isBeheerder();
+       }
+       match /rooster/{doc} {
+         allow read: if isMit() || isBeheerder();
+         allow write: if isBeheerder();
        }
        match /geblokkeerd/{email} {
          allow get: if request.auth != null && request.auth.token.email == email;

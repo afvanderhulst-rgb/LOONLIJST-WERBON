@@ -35,6 +35,15 @@ header .btn{background:transparent;color:#fff;border-color:#fff8;font-weight:400
 .br{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--bd);flex-wrap:wrap}
 .br:last-child{border-bottom:0}
 [hidden]{display:none!important}
+.tabs{display:flex;gap:8px;margin:0 0 14px}
+.tabs button{flex:1;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:10px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.tag.ok{background:transparent;border:1px solid var(--ok);color:var(--ok)}
+.btn.sm{padding:6px 10px;font-size:14px}
+.btn.dg{border-color:var(--er);color:var(--er);background:transparent}
+.kl{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.kl .ka{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.kl input{margin-top:6px}
 </style>
 </head>
 <body>
@@ -49,10 +58,19 @@ header .btn{background:transparent;color:#fff;border-color:#fff8;font-weight:400
   <div class="er" id="le" role="alert"></div>
  </div>
  <div class="card" id="msg" hidden></div>
+ <div class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="k">Klanten</button></div>
  <div id="list" hidden>
   <div class="tools"><input id="q" type="search" placeholder="Zoek op e-mailadres…"><button class="btn" id="rf" type="button">Vernieuwen</button></div>
   <div class="mu" id="cnt" style="margin:0 2px 10px"></div>
   <div id="users"></div>
+  <div class="card" style="margin-top:16px"><b>Toegang tot het klantenbestand intrekken</b><p class="mu">Ook voor iemand die nog niet in de lijst staat. Alleen e-mailadressen die eindigen op @mit-installatietechniek.com hebben toegang.</p>
+   <div class="tools" style="margin:0"><input id="blm" type="email" placeholder="naam@mit-installatietechniek.com"><button class="btn dg" id="blb" type="button">Intrekken</button></div>
+   <div id="bll" class="mu" style="margin-top:8px"></div></div>
+ </div>
+ <div id="klist" hidden>
+  <div class="tools"><input id="kq" type="search" placeholder="Zoek op naam, adres of plaats…"><button class="btn" id="krf" type="button">Vernieuwen</button></div>
+  <div class="mu" id="kcnt" style="margin:0 2px 10px"></div>
+  <div id="klanten"></div>
  </div>
 </main>
 <script src="firebase-config.js"></script>
@@ -66,7 +84,7 @@ function fd(t){if(!t)return '–';var d=new Date(t);return d.getDate()+'-'+(d.ge
 function ago(t){if(!t)return '';var m=(Date.now()-t)/6e4;if(m<60)return 'net';var h=m/60;if(h<24)return Math.round(h)+' uur geleden';var d=Math.round(h/24);return d+(d===1?' dag':' dagen')+' geleden'}
 function kb(n){n=(n||0)/1024;return n<1024?Math.max(1,Math.round(n))+' kB':(n/1024).toFixed(1)+' MB'}
 function show(h){var m=$('msg');m.innerHTML=h;m.hidden=!h}
-var C=window.MIT_FIREBASE||{},ADMIN=String(C.adminEmail||'').toLowerCase(),auth,db,USERS=[];
+var C=window.MIT_FIREBASE||{},ADMIN=String(C.adminEmail||'').toLowerCase(),auth,db,USERS=[],BLOCK={},KL=[],DOM='@mit-installatietechniek.com';
 if(!C.apiKey||String(C.apiKey).indexOf('VUL')===0){show('<b>Nog niet ingesteld.</b><p class="mu">Vul eerst firebase-config.js in (zie INSTALLATIE.txt).</p>');return}
 show('<p class="mu">Firebase laden…</p>');
 try{var F=await window.mitFB();auth=F.auth;db=F.db;show('')}catch(e){show('<b>Firebase kon niet geladen worden.</b><p class="mu">Controleer je internet en laad de pagina opnieuw.</p>');return}
@@ -79,7 +97,7 @@ $('rf').onclick=function(){load()};
 $('q').oninput=function(){render()};
 
 auth.onAuthStateChanged(async function(u){
- $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;show('');
+ $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('tabs').hidden=true;show('');
  if(!u){$('who').textContent='Gebruikers en back-ups';if(ADMIN)$('lm').value=ADMIN;return}
  $('who').textContent='Ingelogd als '+u.email;
  if(ADMIN&&String(u.email).toLowerCase()!==ADMIN){show('<b>Geen beheerder.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot het beheer. Log in met '+ee(ADMIN)+'.</p>');return}
@@ -91,19 +109,54 @@ auth.onAuthStateChanged(async function(u){
   return}
  load()});
 
-async function load(){show('');$('list').hidden=false;$('users').innerHTML='<p class="mu">Laden…</p>';
+var TAB='u';
+$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;TAB=b.dataset.tab;[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x===b)});$('list').hidden=TAB!=='u';$('klist').hidden=TAB!=='k';if(TAB==='k'&&!KL.length)loadK()};
+async function loadBlock(){BLOCK={};try{var q=await db.collection('geblokkeerd').get();q.docs.forEach(function(d){BLOCK[d.id]=d.data()||{}})}catch(e){}
+ var ks=Object.keys(BLOCK).sort();$('bll').innerHTML=ks.length?'Ingetrokken: '+ks.map(function(k){return '<span style="white-space:nowrap">'+ee(k)+' <a href="#" data-ub="'+ee(k)+'">terugzetten</a></span>'}).join(' · '):'Bij niemand ingetrokken.';
+ $('bll').querySelectorAll('[data-ub]').forEach(function(a){a.onclick=function(e){e.preventDefault();setBlock(a.dataset.ub,false)}})}
+async function setBlock(em,on){em=String(em||'').trim().toLowerCase();if(!em)return;
+ try{if(on)await db.collection('geblokkeerd').doc(em).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()});else await db.collection('geblokkeerd').doc(em).delete();await loadBlock();render()}
+ catch(e){alert0(err(e))}}
+function alert0(t){show('<b>Niet gelukt.</b><p class="mu">'+ee(t)+'</p>');setTimeout(function(){show('')},6000)}
+$('blb').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}setBlock(v,true);$('blm').value=''};
+async function load(){show('');$('tabs').hidden=false;$('list').hidden=TAB!=='u';$('klist').hidden=TAB!=='k';$('users').innerHTML='<p class="mu">Laden…</p>';
  try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();
-  USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});render()}
- catch(e){$('users').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}}
+  USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();render()}
+ catch(e){$('users').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}
+ if(TAB==='k')loadK()}
+/* ---------- klanten ---------- */
+function normK(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'')}
+async function loadK(){$('klanten').innerHTML='<p class="mu">Laden…</p>';
+ try{var q=await db.collection('klanten').get();KL=q.docs.map(function(d){var o=d.data()||{};o.id=d.id;return o}).sort(function(a,b){return String(a.naam).localeCompare(String(b.naam),'nl')});renderK()}
+ catch(e){$('klanten').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}}
+$('krf').onclick=loadK;$('kq').oninput=function(){renderK()};
+function renderK(){var f=normK($('kq').value),a=KL.filter(function(k){return !f||normK(k.naam+' '+k.adres+' '+k.plaats).indexOf(f)>=0});
+ $('kcnt').textContent=KL.length+' klant'+(KL.length===1?'':'en')+(f?' · '+a.length+' gevonden':'')+' · op naam gesorteerd';
+ if(!a.length){$('klanten').innerHTML='<p class="mu">'+(KL.length?'Geen klanten gevonden.':'Nog geen klanten. Ze komen er vanzelf in als collega\'s bonnen versturen.')+'</p>';return}
+ $('klanten').innerHTML=a.map(function(k){return '<div class="kl" data-k="'+ee(k.id)+'"><b>'+ee(k.naam)+'</b><div class="mu">'+ee([k.adres,k.plaats].filter(Boolean).join(', '))+'<br>Laatst bijgewerkt '+fd(k.t)+(k.door?' door '+ee(k.door):'')+'</div>'+
+  '<div class="ka"><button class="btn sm" type="button" data-e>Wijzigen</button><button class="btn sm dg" type="button" data-x>Verwijderen</button></div></div>'}).join('');
+ $('klanten').querySelectorAll('.kl').forEach(function(el){var id=el.dataset.k,k=KL.filter(function(x){return x.id===id})[0];
+  el.querySelector('[data-e]').onclick=function(){editK(el,k)};
+  var x=el.querySelector('[data-x]');x.onclick=async function(){if(x.dataset.sure!=='1'){x.dataset.sure='1';x.textContent='Zeker weten?';setTimeout(function(){x.dataset.sure='';x.textContent='Verwijderen'},4000);return}
+   try{await db.collection('klanten').doc(id).delete();KL=KL.filter(function(y){return y.id!==id});renderK()}catch(e){alert0(err(e))}}})}
+function editK(el,k){el.innerHTML='<label>Naam</label><input data-f="naam" value="'+ee(k.naam)+'"><label>Adres</label><input data-f="adres" value="'+ee(k.adres)+'"><label>Postcode en plaats</label><input data-f="plaats" value="'+ee(k.plaats)+'">'+
+  '<div class="ka"><button class="btn sm pr" type="button" data-s>Opslaan</button><button class="btn sm" type="button" data-c>Annuleren</button></div>';
+ el.querySelector('[data-c]').onclick=renderK;
+ el.querySelector('[data-s]').onclick=async function(){var v={};['naam','adres','plaats'].forEach(function(f){v[f]=el.querySelector('[data-f="'+f+'"]').value.replace(/\s+/g,' ').trim()});if(!v.naam){alert0('Naam mag niet leeg zijn.');return}
+  var d={naam:v.naam,adres:v.adres,plaats:v.plaats,zoek:normK(v.naam+' '+v.adres+' '+v.plaats).slice(0,400),door:String(auth.currentUser.email||'').toLowerCase(),t:Date.now()};
+  try{await db.collection('klanten').doc(k.id).set(d);Object.assign(k,d);renderK()}catch(e){alert0(err(e))}}}
 
 function render(){var f=$('q').value.trim().toLowerCase(),a=USERS.filter(function(u){return !f||String(u.email||'').toLowerCase().indexOf(f)>=0});
  $('cnt').textContent=USERS.length+' gebruiker'+(USERS.length===1?'':'s')+(f?' · '+a.length+' gevonden':'')+' · nieuwste activiteit bovenaan';
  if(!a.length){$('users').innerHTML='<p class="mu">'+(USERS.length?'Niemand gevonden.':'Nog geen gebruikers. Gebruikers verschijnen hier zodra ze de app (nieuwe versie) hebben geopend en zijn ingelogd.')+'</p>';return}
  $('users').innerHTML=a.map(function(u){var old=!u.lastBackup||Date.now()-u.lastBackup>7*864e5;
   return '<div class="u" data-u="'+ee(u.uid)+'"><div class="uh"><div><b>'+ee(u.email||'(onbekend e-mailadres)')+'</b>'+(old?'<span class="tag old">'+(u.lastBackup?'back-up ouder dan 7 dagen':'nog geen back-up')+'</span>':'')+
-  '<div class="mu">Laatst actief: '+fd(u.last)+(u.last?' ('+ago(u.last)+')':'')+' · '+ee(u.dev||'')+'<br>Laatste back-up: '+fd(u.lastBackup)+(u.size?' · '+kb(u.size):'')+(u.since?' · account sinds '+fd(u.since).split(' ')[0]:'')+'</div></div>'+
-  '<button class="btn" type="button" data-open>Back-ups</button></div><div class="bl" hidden></div></div>'}).join('');
- $('users').querySelectorAll('.u').forEach(function(el){el.querySelector('.uh').onclick=function(){toggle(el)}})}
+  (acc(u)?(BLOCK[String(u.email||'').toLowerCase()]?'<span class="tag old">klantenbestand: ingetrokken</span>':'<span class="tag ok">klantenbestand: toegang</span>'):'')+'<div class="mu">Laatst actief: '+fd(u.last)+(u.last?' ('+ago(u.last)+')':'')+' · '+ee(u.dev||'')+'<br>Laatste back-up: '+fd(u.lastBackup)+(u.size?' · '+kb(u.size):'')+(u.since?' · account sinds '+fd(u.since).split(' ')[0]:'')+'</div></div>'+
+  '<div style="display:flex;gap:6px;flex-wrap:wrap">'+acc(u)+'<button class="btn" type="button" data-open>Back-ups</button></div></div><div class="bl" hidden></div></div>'}).join('');
+ $('users').querySelectorAll('.u').forEach(function(el){el.querySelector('.uh').onclick=function(e){if(e.target.closest('[data-blk]'))return;toggle(el)}});
+ $('users').querySelectorAll('[data-blk]').forEach(function(b){b.onclick=function(e){e.stopPropagation();setBlock(b.dataset.blk,b.dataset.on==='1')}})}
+function acc(u){var em=String(u.email||'').toLowerCase();if(!em||em===ADMIN||em.slice(-DOM.length)!==DOM)return '';
+ return BLOCK[em]?'<button class="btn sm" type="button" data-blk="'+ee(em)+'" data-on="0">Toegang klanten terugzetten</button>':'<button class="btn sm dg" type="button" data-blk="'+ee(em)+'" data-on="1">Toegang klanten intrekken</button>'}
 
 async function toggle(el){var bl=el.querySelector('.bl'),uid=el.dataset.u;if(!bl.hidden){bl.hidden=true;return}bl.hidden=false;bl.innerHTML='<p class="mu">Laden…</p>';
  try{var q=await db.collection('users').doc(uid).collection('backups').orderBy('t','desc').get();

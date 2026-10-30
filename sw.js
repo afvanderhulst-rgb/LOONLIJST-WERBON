@@ -1,4 +1,4 @@
-var V='mit-werkbon-v97';
+var V='mit-werkbon-v103';
 var FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','firebase-config.js','fb.js'];
 var CDN=['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){

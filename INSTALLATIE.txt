@@ -38,8 +38,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v97,
-  verhoog naar v98 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v103,
+  verhoog naar v104 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -83,6 +83,9 @@ Computer (Windows, app geinstalleerd via Chrome of Edge):
   Locatie wijzigen naar Downloads\Werkbonnen (of zet "Vragen waar elk bestand moet worden opgeslagen" aan).
 
 INSTELLINGEN (tandwieltje rechtsboven)
+- De onderdelen zijn ingeklapt; tik op een kopje om het uit te vouwen. Open kopjes worden onthouden.
+- Info (onderaan): de handleiding voor monteurs, per onderwerp, ook zonder internet. Pas bij een nieuwe
+  versie ook APPV (versienummer) en APPT (datum en tijd) in index.html aan; die staan onder Info.
 - Opslagmap voor PDF's: waar de app de gemaakte werkbonnen/weeklijsten opslaat (WERKBONNEN\jaar\Week).
 - Map voor werkbonnen uit de mail: de map waar de app naar kijkt. Wijzigen of uitzetten.
 - Back-up: aan/uit, tijdstip, nu maken en terugzetten.
@@ -140,6 +143,35 @@ gaan, zijn deze velden invulbaar. In de verzamel-PDF begint elke veldnaam met he
 (bijv. "Bon 29038 - Gecontroleerd door"), zodat de bonnen elkaar niet overschrijven.
 De PDF voor de KLANT (Verzenden naar klant) is niet bewerkbaar: alle waarden staan er als vaste tekst in.
 De opgeslagen PDF en de PDF naar kantoor blijven bewerkbaar.
+
+GEMAK VOOR DE MONTEUR
+- Mijn gegevens (tandwieltje): naam en handtekening een keer instellen. Ze komen vanzelf bij Monteur en
+  Handtekening monteur op elke nieuwe bon, en bij Naam en handtekening op de weeklijst. Per bon te wijzigen.
+- Afronden: de app laat eerst zien wat nog ontbreekt. Rood = moet eerst (werkordernr./projectnr., naam klant,
+  datum en werktijden). Grijs = mag ontbreken (adres, monteur, werkzaamheden, handtekeningen) -> Toch afronden.
+  Tik op een regel om direct naar dat onderdeel te gaan.
+- Mijn bonnen: elke bon heeft een label Open (nog niet afgerond), Afgerond (PDF gemaakt, nog niet verstuurd)
+  of Verstuurd. Knop "Niet verstuurd" toont alleen die bonnen. Bij een afgeronde bon die je op een andere
+  manier hebt verstuurd: tik op "Is verstuurd".
+- Startscherm: "X bonnen nog niet verstuurd" -> tik erop om ze te zien.
+- Herinnering weeklijst (tandwieltje): elke vrijdag vanaf 14:00 (instelbaar) een melding als de weeklijst
+  van die week uren heeft maar nog niet naar de leidinggevende is verstuurd. "Nu versturen" opent hem direct;
+  "Later" verbergt de melding 3 uur. Na het versturen verdwijnt de melding vanzelf.
+
+KLANTENBESTAND (GEDEELD MET COLLEGA'S)
+- Wie: iedereen die in de app is ingelogd met een e-mailadres dat eindigt op @mit-installatietechniek.com
+  en dat adres eenmalig heeft bevestigd (tandwieltje > Klantenbestand > Bevestigingsmail sturen, link in de
+  mail aantikken, dan "Ik heb bevestigd"). De beheerder heeft ook toegang.
+- Wat: alleen naam, adres en postcode + plaats. Komt er vanzelf in als iemand een bon verstuurt of afrondt
+  waarin naam en adres of plaats zijn ingevuld. Bestaat de klant al (zelfde naam en postcode), dan wordt
+  hij bijgewerkt.
+- Gebruik: typ bij Naam de eerste letters en kies de klant uit het lijstje ("naam · adres, plaats").
+  Adres en postcode en plaats worden dan ingevuld. Werkt ook zonder internet (laatst opgehaalde lijst).
+- Beheer (beheer.html > Klanten): zoeken, wijzigen en verwijderen. Dubbele klant? Wijzig de juiste en
+  verwijder de andere. Alleen de beheerder kan verwijderen.
+- Toegang intrekken (beheer.html > Gebruikers): knop "Toegang klanten intrekken" bij de collega, of
+  onderaan een e-mailadres invullen. Terugzetten kan op dezelfde plek. Zijn eigen back-ups blijven werken.
+- Let op: de Firestore-regels hierboven zijn hiervoor uitgebreid. Plak ze opnieuw en kies Publiceren.
 
 WEEKLIJST VERSTUREN NAAR LEIDINGGEVENDE
 - Weeklijsten > kies de week > Versturen naar leidinggevende > e-mailadres > Verzenden.
@@ -203,14 +235,38 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
            && request.auth.token.email == 'a.f.vanderhulst@gmail.com'
            && request.auth.token.email_verified == true;
        }
+       function isMit() {
+         return request.auth != null
+           && request.auth.token.email_verified == true
+           && request.auth.token.email.matches('.*@mit-installatietechniek[.]com$')
+           && !exists(/databases/$(database)/documents/geblokkeerd/$(request.auth.token.email));
+       }
+       function klantOk() {
+         let d = request.resource.data;
+         return d.keys().hasOnly(['naam','adres','plaats','zoek','door','t'])
+           && d.naam is string && d.naam.size() > 0 && d.naam.size() <= 200
+           && d.adres is string && d.adres.size() <= 200
+           && d.plaats is string && d.plaats.size() <= 200
+           && d.door == request.auth.token.email;
+       }
        match /users/{uid}/{document=**} {
          allow read, write: if request.auth != null && request.auth.uid == uid;
          allow read: if isBeheerder();
+       }
+       match /klanten/{id} {
+         allow read: if isMit() || isBeheerder();
+         allow create, update: if (isMit() || isBeheerder()) && klantOk();
+         allow delete: if isBeheerder();
+       }
+       match /geblokkeerd/{email} {
+         allow get: if request.auth != null && request.auth.token.email == email;
+         allow read, write: if isBeheerder();
        }
      }
    }
 
    Ander beheerdersadres? Pas het dan aan in deze regels EN in firebase-config.js (adminEmail).
+   Wijzig je later iets aan de app met een nieuwe versie van deze regels: altijd opnieuw Publiceren.
 
 4. Web-app koppelen: tandwieltje naast "Projectoverzicht" > Projectinstellingen > onderaan
    "Jouw apps" > het icoon </> (Web) > bijnaam MIT Werkbon > App registreren (Hosting NIET aanvinken).

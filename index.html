@@ -223,7 +223,7 @@ input:focus{outline:2px solid var(--acc);border-color:transparent}
   <div class="day"><div class="dh"><span>Handtekening</span><button class="del" id="sigclr" style="font-size:14px;color:var(--acc)">Wissen</button></div><div style="padding:10px 14px"><img id="sigimg" alt="" style="display:none;width:100%;height:90px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:8px"><button class="sigb" id="sigbtn">Handtekening zetten</button></div></div>
   <div class="tot" id="tot"></div>
   <div class="acts">
-    <button class="p" id="mgbtn" hidden style="flex-basis:100%">Verstuur naar leidinggevende</button><button class="p" id="prnbtn" style="flex-basis:100%">Print PDF (weeklijst + alle werkbonnen)</button>
+    <button class="p" id="mgbtn" hidden style="flex-basis:100%">Verstuur naar leidinggevende</button><div id="mghint" style="flex-basis:100%;text-align:center;font-size:14px;color:var(--mute);padding:6px 0">Zet hierboven je handtekening, dan verschijnt de knop Verstuur naar leidinggevende.</div>
   </div>
 </div></div>
 <datalist id="dlog"></datalist><datalist id="dlpn"></datalist>
@@ -236,7 +236,7 @@ try{const ov=localStorage.getItem('wl:2026-43');if(ov){const o=JSON.parse(ov),r=
  (o.d||[]).forEach(dag=>(dag||[]).forEach(x=>{const v=['og','pn','gu','ru','ou','du','on'].map(k=>String((x||{})[k]||'').trim());if(v.some(Boolean))r.push(v.join('|'))}));
  const vb=['Lidl Almere|29000|7||||','Lidl Tiel|2901|1||||','Lidl Almere|2905|7||||'];
  if(r.length===3&&r.every(x=>vb.indexOf(x)>=0)&&Object.keys(o).every(k=>k==='d'))localStorage.removeItem('wl:2026-43')}}catch(e){}
-const MODES={weeklijst:{t:'Weeklijst',p:'wl',D:['Ma','Di','Wo','Do','Vr','Za','Zo'],O:[0,1,2,3,4,5,6]},storing:{t:'Storingsdienst',p:'sd',D:['Vr','Za','Zo','Ma','Di','Wo','Do'],O:[-3,-2,-1,0,1,2,3]}};
+const MODES={weeklijst:{t:'Weeklijst',p:'wl',D:['Za','Zo','Ma','Di','Wo','Do','Vr'],O:[-2,-1,0,1,2,3,4]},storing:{t:'Storingsdienst',p:'sd',D:['Vr','Za','Zo','Ma','Di','Wo','Do'],O:[-3,-2,-1,0,1,2,3]}};
 let mode;try{mode=localStorage.getItem('wl:mode')}catch(e){}
 if(!MODES[mode])mode='weeklijst';
 let DAGEN=MODES[mode].D,OFF=MODES[mode].O;
@@ -253,10 +253,10 @@ const pnW=v=>'calc('+Math.max(7,String(v||'').length+2)+'ch + 16px)';
 function laad(){
   data=null;const s=store.get(key());
   if(s){try{data=JSON.parse(s)}catch(e){data=null}}
-  if(!data){data={d:DAGEN.map(()=>[leeg()])}}
+  if(!data){data={d:DAGEN.map(()=>[leeg()])};if(mode==='weeklijst')data.v=2}
   render();
 }
-const bewaar=()=>store.set(key(),JSON.stringify(data));
+const bewaar=()=>{if(mode==='weeklijst')data.v=2;store.set(key(),JSON.stringify(data))};
 const n=v=>parseFloat(String(v).replace(',','.'))||0;
 const f=x=>(Math.round(x*100)/100).toString().replace('.',',');
 const fm=x=>(Math.round(x*100)/100).toFixed(2).replace('.',',');
@@ -300,7 +300,7 @@ const buildPdf=()=>{
   if(!window.jspdf){toast('PDF-bibliotheek kon niet laden.');return}
   const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});const m=maandag(jaar,wk);
   const W=[15.6,80.9,18.9,11.6,11.6,11.6,21.4,25.4],X0=6.2,X=[];W.reduce((a,w,i)=>(X[i]=a,a+w),X0);const XR=X0+197,Y0=14.5;
-  const slots=i=>Math.max((mode==='weeklijst'&&i>=5)?2:7,data.d[i].length);let sum=0;DAGEN.forEach((_,i)=>sum+=slots(i));
+  const slots=i=>Math.max((mode==='weeklijst'&&/^(Za|Zo)$/.test(DAGEN[i]))?2:7,data.d[i].length);let sum=0;DAGEN.forEach((_,i)=>sum+=slots(i));
   const RH=Math.min(4.763,(262-30.7-7.4-18.3)/(sum+3));
   doc.setLineWidth(.15);doc.setFontSize(Math.min(10,RH*2.1));doc.setFont('helvetica','normal');
   {let need=0;data.d.forEach(rows=>(rows||[]).forEach(e=>{if(e&&e.pn)need=Math.max(need,doc.getTextWidth(String(e.pn))+2.4)}));
@@ -340,7 +340,7 @@ const buildPdf=()=>{
 };
 const cv=$('sig'),cx=cv.getContext('2d');let sigData=store.get('wl:sig')||'',dr=false,drew=false;
 cx.lineWidth=5;cx.lineCap='round';cx.lineJoin='round';cx.strokeStyle='#111';
-const showSig=()=>{$('mgbtn').hidden=!sigData;const im=$('sigimg');if(sigData){im.src=sigData;im.style.display='block';$('sigbtn').textContent='Handtekening opnieuw zetten'}else{im.style.display='none';$('sigbtn').textContent='Handtekening zetten'}};
+const showSig=()=>{$('mgbtn').hidden=!sigData;if($('mghint'))$('mghint').hidden=!!sigData;const im=$('sigimg');if(sigData){im.src=sigData;im.style.display='block';$('sigbtn').textContent='Handtekening opnieuw zetten'}else{im.style.display='none';$('sigbtn').textContent='Handtekening zetten'}};
 const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*600/r.width,(e.clientY-r.top)*200/r.height]};
 cv.addEventListener('pointerdown',e=>{dr=true;drew=true;try{cv.setPointerCapture(e.pointerId)}catch(x){}const[x,y]=pt(e);cx.beginPath();cx.moveTo(x,y);cx.lineTo(x+.1,y+.1);cx.stroke();e.preventDefault()});
 cv.addEventListener('pointermove',e=>{if(!dr)return;const[x,y]=pt(e);cx.lineTo(x,y);cx.stroke();cx.beginPath();cx.moveTo(x,y)});
@@ -365,37 +365,50 @@ const summ=async()=>{const L=[],m=maandag(jaar,wk);let tot=0,over=0;
   if(!data.d.some(rows=>rows.some(r=>String(r.pn||'')===id&&String(r.og||'')===String(bf.naam||'').trim())))L.push({t:'⚠ '+nm+' staat nog niet in de lijst. Maak eerst de PDF van die bon.',w:1});
   if(!(b.sig&&b.sig.klant&&b.sig.klant.d))L.push({t:'⚠ '+nm+': nog geen handtekening van de klant.',w:1})});
  return L};
-$('mgbtn').onclick=async()=>{$('mgmail').value=store.get('wl:mgr')||'';$('mginfo').textContent=(sdM()?'Storingsdienst':'Weeklijst')+' week '+wk+' ('+jaar+') en alle werkbonnen van die week gaan in 1 e-mail.';$('mgsum').textContent='Controleren...';$('mgov').hidden=false;
+$('mgbtn').onclick=async()=>{$('mgmail').value=store.get('wl:mgr')||'';$('mginfo').textContent=(sdM()?'Storingsdienst':'Weeklijst')+' week '+wk+' ('+jaar+'), alle werkbonnen los (met bijlagen) en de verzamel-PDF (zonder bijlagen) gaan in 1 e-mail.';$('mgsum').textContent='Controleren...';$('mgov').hidden=false;
  try{const L=await summ(),el=$('mgsum');el.innerHTML='';L.forEach(x=>{const d=document.createElement('div');d.textContent=x.t;if(x.w){d.style.color='#b3402f';d.style.fontWeight='600'}el.appendChild(d)})}catch(e){$('mgsum').textContent=''}};
 $('mgcan').onclick=()=>{$('mgov').hidden=true};
 const loadPL=()=>new Promise((res,rej)=>{if(window.PDFLib)return res();const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)});
-$('prnbtn').onclick=async()=>{const b=$('prnbtn'),t0=b.textContent;if(b.disabled)return;b.disabled=true;b.textContent='Verzamel-PDF maken...';
- try{const main=buildPdf();if(!main){toast('De PDF kon niet gemaakt worden.',5000);return}
-  let bons=[];try{bons=await window.collectWeek(jaar,wk,sdM())}catch(e){}
+// weeklijst + alle werkbonnen van de week (met bijlagen en invulvelden) in 1 PDF
+const maakVerzamel=async()=>{const main=buildPdf();if(!main)return null;
+  let bons=[];window.__wbNoAtt=true;try{bons=await window.collectWeek(jaar,wk,sdM(),{raw:true})}catch(e){}finally{window.__wbNoAtt=false}
   await loadPL();const out=await window.PDFLib.PDFDocument.create();
-  const add=async(buf)=>{const d=await window.PDFLib.PDFDocument.load(buf,{ignoreEncryption:true});const pp=await out.copyPages(d,d.getPageIndices());pp.forEach(p=>out.addPage(p))};
-  await add(main.data.slice(0));for(const x of bons){try{await add(await x.blob.arrayBuffer())}catch(e){}}
-  const bytes=await out.save(),name=(sdM()?'Storingsdienst':'Weeklijst')+'_week-'+wk+'-'+jaar+'_verzamel.pdf',blob=new Blob([bytes],{type:'application/pdf'});
+  const add=async(buf)=>{const d=await window.PDFLib.PDFDocument.load(buf,{ignoreEncryption:true});const pp=await out.copyPages(d,d.getPageIndices());pp.forEach(p=>out.addPage(p));return pp};
+  await add(main.data.slice(0));const ctx={};let nr=0;
+  for(const x of bons){try{const pp=await add(await x.blob.arrayBuffer());nr++;
+   if(x.fields&&x.fields.length&&window.wbFieldsInto){const wo=String((x.name||'').replace(/\.pdf$/i,'').split('-').pop()||nr).replace(/[^\w ]/g,'');await window.wbFieldsInto(out,pp,x.fields,'Bon '+(wo||nr)+' - ',ctx)}}catch(e){}}
+  try{window.wbFieldsDone&&window.wbFieldsDone(ctx)}catch(e){}
+  const bytes=await out.save(),nm=($('naam').value||'').trim().replace(/[^\w\- ]+/g,'').replace(/\s+/g,'_'),name=(sdM()?'Storingsdienst':'Weeklijst')+'_week-'+wk+'-'+jaar+(nm?'_'+nm:'')+'_verzamel.pdf';
+  return {blob:new Blob([bytes],{type:'application/pdf'}),name,n:bons.length}};
+if($('prnbtn'))$('prnbtn').onclick=async()=>{const b=$('prnbtn'),t0=b.textContent;if(b.disabled)return;b.disabled=true;b.textContent='Verzamel-PDF maken...';
+ try{const v=await maakVerzamel();if(!v){toast('De PDF kon niet gemaakt worden.',5000);return}
+  const name=v.name,blob=v.blob,bons={length:v.n};
   try{await opslaan(name,blob)}catch(e){}
   if(window.wbPrintAsk)window.wbPrintAsk(blob,name,bons.length)}
  catch(e){toast('Verzamel-PDF maken is niet gelukt. Controleer je internetverbinding en probeer opnieuw.',6000)}finally{b.disabled=false;b.textContent=t0}};
 
 const okMail=()=>{const v=$('mgmail').value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){toast('Vul een geldig e-mailadres in.',4000);return null}store.set('wl:mgr',v);return v};
-const mailTxt=n=>({subj:(sdM()?'Storingsdienst':'Weeklijst')+' week '+wk+' '+jaar+' - '+$('naam').value,body:'Hierbij de '+(sdM()?'storingsdienst':'weeklijst')+' van week '+wk+' ('+jaar+') met '+n+' werkbon'+(n===1?'':'nen')+'.'});
+const mailTxt=n=>({subj:(sdM()?'Storingsdienst':'Weeklijst')+' week '+wk+' '+jaar+' - '+$('naam').value,body:'Hierbij de '+(sdM()?'storingsdienst':'weeklijst')+' van week '+wk+' ('+jaar+') met '+n+' werkbon'+(n===1?'':'nen')+' (los, met bijlagen) en de verzamel-PDF (weeklijst + werkbonnen, zonder bijlagen).'});
 const openMt=(to,sub,body)=>{const u='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);try{window.top.location.href=u}catch(e){location.href=u}};
 const loadZip=()=>new Promise((res,rej)=>{if(window.JSZip)return res();const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)});
 $('mgmt').onclick=()=>{const to=okMail();if(to){const t=mailTxt(0);openMt(to,t.subj,t.body.replace(/ met 0 werkbonnen\./,'.'))}};
 $('mgsend').onclick=async()=>{const to=okMail();if(!to)return;const b=$('mgsend');b.disabled=true;b.textContent='Bezig...';
  try{const main=buildPdf();if(!main){toast('De PDF kon niet gemaakt worden.',5000);return}
   opslaan(main.name,main.data.slice(0));const list=[new File([main.data],main.name,{type:'application/pdf'})];let bons=[];
-  try{bons=await window.collectWeek(jaar,wk,sdM())}catch(e){}
+  b.textContent='Werkbonnen maken...';try{bons=await window.collectWeek(jaar,wk,sdM())}catch(e){}
   const seen={};bons.forEach(x=>{let nm=x.name;if(seen[nm]){nm=nm.replace(/\.pdf$/,'')+'-'+seen[nm]+'.pdf'}seen[x.name]=(seen[x.name]||0)+1;list.push(new File([x.blob],nm,{type:'application/pdf'}))});
+  b.textContent='Verzamel-PDF maken...';let v=null;try{v=await maakVerzamel()}catch(e){}
+  if(v){list.push(new File([v.blob],v.name,{type:'application/pdf'}));try{await opslaan(v.name,v.blob)}catch(e){}}
   const t=mailTxt(bons.length);try{navigator.clipboard.writeText(to).catch(function(){})}catch(e){}
-  if(navigator.canShare&&navigator.canShare({files:list})){try{await navigator.share({files:list,title:t.subj,text:'Aan: '+to+NL+NL+t.body});$('mgov').hidden=true;toast('Kies je mail-app. Het adres '+to+' is gekopieerd.',7000);return}catch(e){if(e&&e.name==='AbortError')return}}
+  const deel=async()=>{await navigator.share({files:list,title:t.subj,text:'Aan: '+to+NL+NL+t.body});$('mgov').hidden=true;toast('Kies je mail-app. Het adres '+to+' is gekopieerd.',7000)};
+  if(navigator.canShare&&navigator.canShare({files:list})){
+   try{await deel();return}catch(e){if(e&&e.name==='AbortError')return;
+    // iPhone weigert delen na het wachten: tweede tik
+    b.disabled=false;b.textContent='Tik nu om te versturen';b.onclick0=b.onclick;b.onclick=async()=>{b.onclick=b.onclick0;b.textContent='Verzenden';try{await deel()}catch(x){if(!(x&&x.name==='AbortError'))toast('Versturen is niet gelukt.',5000)}};return}}
   await loadZip();const z=new window.JSZip();list.forEach(f=>z.file(f.name,f));const zb=await z.generateAsync({type:'blob'});
   await opslaan((sdM()?'Storingsdienst':'Weeklijst')+'_week-'+wk+'-'+jaar+'.zip',zb);
   $('mgov').hidden=true;openMt(to,t.subj,t.body+NL+NL+'(Voeg de opgeslagen zip met de PDFs toe als bijlage.)')}
- catch(e){toast('Versturen is niet gelukt.',5000)}finally{b.disabled=false;b.textContent='Verzenden'}};
+ catch(e){toast('Versturen is niet gelukt.',5000)}finally{b.disabled=false;if(b.textContent!=='Tik nu om te versturen')b.textContent='Verzenden'}};
 root.querySelector('.seg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.m===mode)return;mode=b.dataset.m;DAGEN=MODES[mode].D;OFF=MODES[mode].O;store.set('wl:mode',mode);laad()});
 (function start(){const nu=new Date();const d=new Date(Date.UTC(nu.getFullYear(),nu.getMonth(),nu.getDate()));d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));jaar=d.getUTCFullYear();wk=Math.ceil(((d-new Date(Date.UTC(jaar,0,1)))/864e5+1)/7);laad()})();
 
@@ -479,7 +492,7 @@ window.saveTree=async function(name,data,y,w,top){
   try{var bh=await r.getFileHandle('werkbonnen-backup.json',{create:true}),bw=await bh.createWritable();await bw.write(JSON.stringify({v:1,t:new Date().toISOString(),data:window.bkKeys()}));await bw.close();window.bkMark()}catch(e){}toast('Opgeslagen in '+r.name+'/'+(top||'WERKBONNEN')+'/'+y+'/Week '+w+'/'+name,6000);return true}
  catch(e){return false}};
 window.weekOf=function(datum,sd){var p=String(datum||'').split('-');if(p.length!==3||p[2].length!==4)return null;var dt=new Date(Date.UTC(+p[2],+p[1]-1,+p[0]));if(isNaN(dt))return null;
- var dow=(dt.getUTCDay()+6)%7,mon=new Date(dt);mon.setUTCDate(dt.getUTCDate()-dow+(sd&&dow>=4?7:0));var t=new Date(mon);t.setUTCDate(t.getUTCDate()+3);var y=t.getUTCFullYear();return{y:y,w:Math.ceil(((t-new Date(Date.UTC(y,0,1)))/864e5+1)/7)}};
+ var dow=(dt.getUTCDay()+6)%7,mon=new Date(dt);mon.setUTCDate(dt.getUTCDate()-dow+((sd?dow>=4:dow>=5)?7:0));var t=new Date(mon);t.setUTCDate(t.getUTCDate()+3);var y=t.getUTCFullYear();return{y:y,w:Math.ceil(((t-new Date(Date.UTC(y,0,1)))/864e5+1)/7)}};
 })();
 window.wbPrintAsk=function(blob,name,n){var o=document.createElement('div');o.className='ov';o.style.zIndex=40;o.innerHTML='<div class="ovc" style="text-align:center"><b>Verzamel-PDF is klaar</b><p class="hd">Weeklijst + '+n+' werkbon'+(n===1?'':'nen')+' in 1 PDF. De PDF is opgeslagen.</p><button class="btn" style="width:100%;background:var(--ac);color:#fff" id="vpr">Afdrukken / delen</button><button class="btn" style="width:100%;margin-top:8px" id="vop">PDF openen</button><button class="btn del" style="width:100%;margin-top:8px" id="vno">Sluiten</button></div>';document.body.appendChild(o);
  var f=null;try{f=new File([blob],name,{type:'application/pdf'})}catch(e){}
@@ -499,12 +512,12 @@ window.toWeeklijst=function(silent){
  grp.forEach(function(d){var p=String(d.datum||'').split('-');if(p.length!==3||p[2].length!==4)return;
   var c={wu:d.wu,ru:d.ru};
   var dt=new Date(Date.UTC(+p[2],+p[1]-1,+p[0]));if(isNaN(dt))return;
-  var dow=(dt.getUTCDay()+6)%7,mon=new Date(dt);mon.setUTCDate(dt.getUTCDate()-dow+(SD&&dow>=4?7:0));
+  var dow=(dt.getUTCDay()+6)%7,mon=new Date(dt);mon.setUTCDate(dt.getUTCDate()-dow+((SD?dow>=4:dow>=5)?7:0)); // storingsdienst vr-do, weeklijst za-vr
   var t=new Date(mon);t.setUTCDate(t.getUTCDate()+3);var y=t.getUTCFullYear(),wn=Math.ceil(((t-new Date(Date.UTC(y,0,1)))/864e5+1)/7);
-  var off=Math.round((dt-mon)/864e5),idx=off+(SD?3:0);
+  var off=Math.round((dt-mon)/864e5),idx=off+(SD?3:2);
   var key=(SD?'sd:':'wl:')+y+'-'+wn,W=weeks[key];
   if(!W){var raw=null;try{raw=JSON.parse(localStorage.getItem(key))}catch(e){}
-   if(!raw||!raw.d||raw.d.length!==7)raw={d:[0,1,2,3,4,5,6].map(function(){return[{og:'',pn:'',gu:'',ru:'',ou:'',du:'',on:''}]})};W=weeks[key]={k:key,y:y,w:wn,data:raw}}
+   if(!raw||!raw.d||raw.d.length!==7)raw={d:[0,1,2,3,4,5,6].map(function(){return[{og:'',pn:'',gu:'',ru:'',ou:'',du:'',on:''}]})};if(!SD)raw.v=2;W=weeks[key]={k:key,y:y,w:wn,data:raw}}
   var rows=W.data.d[idx],row=null;
   rows.forEach(function(r){if(!row&&pn&&r.pn===pn&&r.og===og)row=r});
   if(!row)rows.forEach(function(r){if(!row&&!r.og&&!r.pn&&!r.gu&&!r.ru&&!r.ou&&!r.du&&!r.on)row=r});
@@ -546,6 +559,22 @@ keys.forEach(function(k){var raw;try{raw=JSON.parse(localStorage.getItem(k))}cat
 keys.forEach(function(k){localStorage.removeItem(k)});
 Object.keys(out).forEach(function(nk){out[nk].d.forEach(function(r,i){if(!r.length)out[nk].d[i]=[{og:'',pn:'',gu:'',ru:'',ou:'',du:'',on:''}]});localStorage.setItem(nk,JSON.stringify(out[nk]))});
 localStorage.setItem('wl:mig2','1')}catch(e){}})();
+(window.wlMig3=function(){try{
+ var E=function(){return {og:'',pn:'',gu:'',ru:'',ou:'',du:'',on:''}},isE=function(r){return !r||!(r.og||r.pn||r.gu||r.ru||r.ou||r.du||r.on)};
+ var mon=function(y,w){var j4=new Date(Date.UTC(y,0,4)),d=(j4.getUTCDay()+6)%7,m=new Date(j4);m.setUTCDate(j4.getUTCDate()-d+(w-1)*7);return m};
+ var wkOf=function(m){var t=new Date(m);t.setUTCDate(t.getUTCDate()+3);var y=t.getUTCFullYear();return {y:y,w:Math.ceil(((t-new Date(Date.UTC(y,0,1)))/864e5+1)/7)}};
+ var old=[],keep={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i),m=/^wl:(\d{4})-(\d{1,2})$/.exec(k||'');if(!m)continue;var o=null;try{o=JSON.parse(localStorage.getItem(k))}catch(e){}
+  if(!o||!o.d||o.d.length!==7)continue;if(o.v===2)keep[k]=o;else old.push({k:k,y:+m[1],w:+m[2],o:o})}
+ if(!old.length)return;
+ var out={},get=function(k){if(!out[k]){var ex=keep[k];out[k]=ex?ex:{v:2,d:[0,1,2,3,4,5,6].map(function(){return []})}}return out[k]},
+  put=function(k,idx,rows){var W=get(k),r=(rows||[]).filter(function(x){return !isE(x)});if(!r.length)return;W.d[idx]=W.d[idx].filter(function(x){return !isE(x)}).concat(r)};
+ old.forEach(function(x){var k='wl:'+x.y+'-'+x.w;get(k);
+  for(var j=0;j<5;j++)put(k,j+2,x.o.d[j]); // ma-vr: zelfde week, plek 2-6
+  var m=mon(x.y,x.w);m.setUTCDate(m.getUTCDate()+7);var nx=wkOf(m),k2='wl:'+nx.y+'-'+nx.w;
+  if(!isE((x.o.d[5]||[])[0])||!isE((x.o.d[6]||[])[0])||(x.o.d[5]||[]).some(function(r){return !isE(r)})||(x.o.d[6]||[]).some(function(r){return !isE(r)})){put(k2,0,x.o.d[5]);put(k2,1,x.o.d[6])} // za-zo: volgende week, plek 0-1
+ });
+ for(var k3 in out){var W=out[k3];W.v=2;W.d=W.d.map(function(r){return r&&r.length?r:[E()]});localStorage.setItem(k3,JSON.stringify(W))}
+}catch(e){}})();
 (function(){
 function $(i){return document.getElementById(i)}
 var TABS=['Opdracht','Werk','Uren','Materialen','Afronden'],cur=0,lastId=null;
@@ -1488,6 +1517,7 @@ async function mergeAtt(mainBlob,bon,list){await loadPL();var P=window.PDFLib,ou
  if(miss)toast(miss+' bijlage(n) konden niet in de PDF worden gezet.',5000);
  return new Blob([await out.save()],{type:'application/pdf'})}
 var _mk=makePdf;makePdf=async function(){var bon=S,r=await _mk.apply(this,arguments);
+ if(window.__wbNoAtt)return r; // verzamel-PDF: zonder bijlagen
  if(!r||!bon||!bon.yn||bon.yn.aanv!=='ja'||!(bon.att&&bon.att.length))return r;
  var list=window.__wbKlant?bon.att.filter(function(a){return a.klant}):bon.att;if(!list.length)return r;
  try{return {blob:await mergeAtt(r.blob,bon,list),name:r.name,fields:r.fields}}catch(e){toast('De bijlagen konden niet aan de PDF worden toegevoegd (eerste keer internet nodig). De PDF is zonder bijlagen gemaakt.',7000);return r}};
@@ -1522,11 +1552,25 @@ async function addFields(blob,FF,flat){await loadPL();var P=window.PDFLib,d=awai
    t.addToPage(pg,r);t.setFontSize(f.s||8.5)}});
  form.updateFieldAppearances(font);
  return new Blob([await d.save()],{type:'application/pdf'})}
+// invulvelden in een samengevoegd document: pages = de pagina's van deze bon, pre = voorvoegsel voor unieke namen
+window.wbFieldsInto=async function(d,pages,FF,pre,ctx){var P=window.PDFLib;if(!ctx.font){ctx.font=await d.embedFont(P.StandardFonts.Helvetica);ctx.form=d.getForm();ctx.used={}}
+ var font=ctx.font,form=ctx.form,ink=P.rgb(10/255,15/255,70/255),grey=P.rgb(.24,.24,.24),
+  clean=function(v){return String(v||'').replace(/[^\x20-\x7E -ÿ€]/g,'?')};
+ FF.forEach(function(f){var pg=pages[f.p||0];if(!pg)return;var W=pg.getWidth(),H=pg.getHeight(),sx=W/924,sy=H/1307,
+   n=(pre+f.n).replace(/\./g,' '),i=2;while(ctx.used[n])n=(pre+f.n).replace(/\./g,' ')+' ('+(i++)+')';ctx.used[n]=1;
+  var r={x:f.x*sx,y:H-(f.y+f.h)*sy,width:f.w*sx,height:f.h*sy,borderWidth:0,textColor:ink,font:font};
+  if(f.t==='cb'){var c=form.createCheckBox(n);c.addToPage(pg,{x:r.x,y:r.y,width:r.width,height:r.height,borderWidth:.6,borderColor:grey,textColor:ink});if(f.on)c.check()}
+  else{var tf=form.createTextField(n);tf.setText(clean(f.v));tf.setAlignment(f.al==='c'?P.TextAlignment.Center:f.al==='r'?P.TextAlignment.Right:P.TextAlignment.Left);tf.addToPage(pg,r);tf.setFontSize(f.s||8.5)}})};
+window.wbFieldsDone=function(ctx){if(ctx&&ctx.form&&ctx.font)ctx.form.updateFieldAppearances(ctx.font)};
 var _mk=makePdf;makePdf=async function(){var r=await _mk.apply(this,arguments);if(!r||!r.fields||!r.fields.length)return r;
+ if(window.__wbRaw)return {blob:r.blob,fields:r.fields,name:r.name}; // ruw: velden worden later toegevoegd
  try{return {blob:await addFields(r.blob,r.fields,!!(window.__wbFlat||window.__wbKlant)),name:r.name}}
  catch(e){toast('De invulvelden konden niet worden toegevoegd (eerste keer internet nodig). De PDF is zonder invulvelden gemaakt.',7000);return {blob:r.blob,name:r.name}}};
-// verzamel-PDF van de weeklijst: velden vastzetten (samenvoegen kan geen formulieren meenemen)
-var _cw=window.collectWeek;if(_cw)window.collectWeek=async function(){window.__wbFlat=true;try{return await _cw.apply(this,arguments)}finally{window.__wbFlat=false}};
+// werkbonnen van een week: met invulvelden (zoals bij Afronden). opt.raw = zonder velden, met de veldlijst erbij (voor de verzamel-PDF)
+var _cw=window.collectWeek;if(_cw)window.collectWeek=async function(y,w,sd,opt){var a;window.__wbRaw=true;try{a=await _cw.call(this,y,w,sd)}finally{window.__wbRaw=false}
+ if(opt&&opt.raw)return a;
+ for(var i=0;i<a.length;i++){var x=a[i];if(x.fields&&x.fields.length){try{x.blob=await addFields(x.blob,x.fields,false)}catch(e){}}delete x.fields}
+ return a};
 })();
 </script>
 <style>

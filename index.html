@@ -1360,7 +1360,7 @@ async function scan(file){
   await worker.terminate();worker=null;
   if(!g||!(g.wb||g.wadres||g.storing))throw new Error('Er zijn geen gegevens gelezen. Maak een scherpere foto (recht van boven, genoeg licht) en probeer het opnieuw.');
   prog('Klaar',100,'');
-  try{save()}catch(e){}S=blank();mapWR(g);S.bron='scan';init();save('Bewaard');
+  try{save()}catch(e){}S=blank();mapScan(g);S.bron='scan';init();save('Bewaard');
   try{window.openApp('wb')}catch(e){}try{listClose()}catch(e){}window.scrollTo(0,0);
   $$('scanOv').hidden=true;
   var n=['wb','wadres','storing','da'].filter(function(k2){return g[k2]}).length;
@@ -1368,6 +1368,22 @@ async function scan(file){
  }catch(e){try{if(worker)await worker.terminate()}catch(x2){}fail((e&&e.message)||String(e))}
  stage=0}
 window.scanBon=scan;
+/* Scan: alleen werkbonnr., klant, adres, postcode+plaats, telefoon en omschrijving overnemen (geen datum) */
+function mapScan(g){
+ var L=String(g.wadres||'').split('\n').map(function(s){return s.replace(/\s+/g,' ').trim()}).filter(Boolean);
+ var isTel=function(s){return (s.replace(/\D/g,'').length>=9)&&/^[\d\s()+\-.\/]+$/.test(s)};
+ var isPc=function(s){return /\b\d{4}\s?[A-Za-z]{2}\b/.test(s)};
+ var tel='',pc='',adr='',naam='',rest=[];
+ L.forEach(function(s){if(!tel&&isTel(s))tel=s;else if(!pc&&isPc(s))pc=s;else rest.push(s)});
+ // adres = regel met een huisnummer (vlak voor de postcode), naam = eerste overige regel
+ for(var i=rest.length-1;i>=0;i--){if(/[A-Za-z].*\d/.test(rest[i])&&!adr&&i>0){adr=rest.splice(i,1)[0];break}}
+ naam=rest.shift()||'';if(!adr)adr=rest.shift()||'';
+ S.f.wo=String(g.wb||'').replace(/[Oo]/g,'0').replace(/[Il|]/g,'1').replace(/\D/g,'');S.f.naam=naam;S.f.adres=adr;S.f.plaats=pc.replace(/^(\d{4})\s?([A-Za-z]{2})\b/,function(m,a,b){return a+' '+b.toUpperCase()});S.f.contact=tel;
+ if(g.storing){var s=String(g.storing).split('\n').map(function(x){return x.trim()}).filter(Boolean);
+  var body=s.slice(1).reduce(function(acc,l){return !acc?l:(/\s[a-z]$/.test(acc)&&/^[a-z]/.test(l)?acc+l:acc+' '+l)},'');
+  S.f.storing=s.length>1?s[0]+'\n'+body.replace(/\s+/g,' '):s.join('')}
+}
+window.mapScan=mapScan;
 })();
 </script>
 <style>

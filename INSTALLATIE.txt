@@ -5,6 +5,9 @@ index.html (de app met keuze Werkbonnen / Weeklijsten), manifest.webmanifest,
 sw.js (voor offline gebruik), firebase-config.js (gegevens voor account en online back-up),
 fb.js (laadt Firebase), rooster.js (leest het storingsrooster), beheer.html (beheerpagina), iconen.
 
+HUIDIG ADRES VAN DE APP:  https://loonlijst-werkbon.vercel.app
+Beheerpagina:             https://loonlijst-werkbon.vercel.app/beheer.html
+
 STAP 1 - Zet de map online (HTTPS is verplicht voor installeren)
 Kies een van deze mogelijkheden:
 - Netlify Drop: ga naar app.netlify.com/drop en sleep de uitgepakte map erin.
@@ -38,8 +41,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v105,
-  verhoog naar v106 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v108,
+  verhoog naar v109 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -193,6 +196,25 @@ STORINGSROOSTER
   hierboven zijn hiervoor uitgebreid met "match /rooster": opnieuw plakken en Publiceren.
 - Ruilen twee monteurs een dienst? Pas het rooster aan en publiceer het opnieuw.
 
+VERGOEDING STORINGSDIENST (STORINGSDIENSTLIJST)
+- Weeklijsten > Storingsdienst: bij elke dag staat een vinkje "Storingsdienst". Aanvinken zet een regel
+  "Storingsdienst" op die dag met bij EUR onkosten:
+    EUR 20,00  maandag t/m vrijdag
+    EUR 35,00  zaterdag en zondag
+    EUR 50,00  feestdag (gaat voor weekend)
+  Uitvinken haalt de regel weer weg. Het bedrag is daarna nog met de hand te wijzigen.
+- Storingsbon (werkbon met STORINGSDIENST: JA): EUR 25,00 per dag per bon. Loopt de bon over meerdere dagen,
+  dan EUR 25,00 op elke dag. Twee keer op dezelfde dag naar dezelfde opdracht = een keer EUR 25,00.
+- Feestdagen (zoals op het storingsrooster / DGI-reglement): Nieuwjaarsdag, 1e en 2e Paasdag, Koningsdag
+  (27 april, of 26 april als 27 april op zondag valt), Bevrijdingsdag (5 mei), Hemelvaartsdag, 1e en 2e
+  Pinksterdag, Sinterklaas (5 dec), 1e en 2e Kerstdag, Oudjaarsdag (31 dec). Wordt elk jaar vanzelf
+  uitgerekend. De feestdag staat naast het vinkje.
+- Koppeling met het storingsrooster: heeft de monteur volgens het gepubliceerde rooster die week dienst, dan
+  staat bovenaan de storingsdienstlijst "Volgens het storingsrooster heb jij deze week dienst" en worden alle
+  dagen een keer automatisch aangevinkt (ook als de lijst al bestond door een storingsbon). Geruild? Vink de
+  dagen uit; ze worden daarna niet opnieuw aangevinkt.
+- De bedragen staan ook in de PDF van de storingsdienstlijst en in het totaal.
+
 WEEKLIJST VERSTUREN NAAR LEIDINGGEVENDE
 - Weeklijsten > kies de week > Versturen naar leidinggevende > e-mailadres > Verzenden.
 - In de e-mail gaan mee: de weeklijst (PDF), alle werkbonnen van die week als losse PDF's met hun bijlagen
@@ -240,7 +262,7 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
 2. Inloggen aanzetten: links Build > Authentication > Aan de slag > tabblad Sign-in method >
    E-mail/wachtwoord > eerste schakelaar AAN > Opslaan.
    Tabblad Settings > Authorized domains > Add domain: vul je app-adres in
-   (bijv. mit-werkbon.vercel.app of je eigen domein).
+   (loonlijst-werkbon.vercel.app, of je eigen domein).
 3. Opslag aanzetten: Build > Firestore Database > Database maken > locatie europe-west4 (Nederland)
    of eur3 > "Starten in productiemodus" > Maken.
    Tabblad Regels (Rules): vervang alles door onderstaande tekst en kies Publiceren.
@@ -318,7 +340,7 @@ ZO WERKT HET VOOR DE MONTEUR
   uitschakelen, verwijderen of een wachtwoord-reset sturen.
 
 BEHEERPAGINA - WIE GEBRUIKT DE APP EN BACK-UPS DOWNLOADEN
-- Open in de browser:  <jouw app-adres>/beheer.html   (bijv. https://mit-werkbon.vercel.app/beheer.html)
+- Open in de browser:  <jouw app-adres>/beheer.html   (https://loonlijst-werkbon.vercel.app/beheer.html)
   Er staat geen knop naar deze pagina in de app; bewaar het adres als bladwijzer.
 - Log in met het beheerdersaccount (a.f.vanderhulst@gmail.com). Heb je dat account nog niet, maak het dan
   eerst aan in de app (Account aanmaken), net als een monteur.

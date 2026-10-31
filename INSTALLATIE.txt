@@ -42,8 +42,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v110,
-  verhoog naar v111 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v111,
+  verhoog naar v112 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -119,7 +119,7 @@ AANGELEVERDE WERKBONNEN IMPORTEREN (zonder Claude)
 E-MAIL VERZENDEN
 Onder Afronding staan de velden "E-mailadres klant" en "E-mailadres kantoor" met knoppen
 "Verzenden naar klant" en "Verzenden naar kantoor". Het kantooradres wordt onthouden
-(standaard info@mit-installatietechniek.com; pas het veld aan om het te wijzigen).
+(standaard storingen@mit-installatietechniek.com; pas het veld aan om het te wijzigen).
 - De PDF wordt gedownload en je mail-app opent met het ingevulde e-mailadres bij "Aan",
   plus onderwerp en tekst. Op Android kies je zelf welke mail-app je gebruikt.
   Voeg de gedownloade PDF zelf toe als bijlage (een mail-link kan geen bijlage meesturen).
@@ -327,6 +327,12 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
    (Deze sleutel is geen geheim: hij hoort in de app. De beveiliging zit in de regels van stap 3.)
 
 ZO WERKT HET VOOR DE MONTEUR
+- Account aanmaken vraagt voor- en achternaam, e-mailadres en wachtwoord. Daarna 4 stappen:
+  1 Instellingen (naam, e-mailadres leidinggevende, e-mailadres kantoor - standaard storingen@mit-installatietechniek.com,
+  herinnering weeklijst), 2 Handtekening, 3 E-mailadres bevestigen (mail gaat vanzelf; "Ik heb bevestigd"), 4 Klaar
+  (met tip om de app op het startscherm te zetten). Afsluiten halverwege? Bij openen gaat de app verder waar hij was.
+- Startscherm: kaart "Eerste keer" met wat nog niet klaar is (naam, handtekening, e-mail bevestigd, rooster,
+  app op startscherm). Tik op een regel om het af te maken. Verdwijnt als alles klaar is (of via Verbergen).
 - Eerste keer openen: scherm "Account aanmaken": e-mailadres, zelfgekozen wachtwoord (minimaal 6 tekens),
   nog een keer het wachtwoord > Account aanmaken. Hierna blijft hij ingelogd; dit hoeft maar 1 keer.
 - Al een account (bijv. nieuwe telefoon of computer)? Tik op Inloggen. Staat er nog niets op het toestel,

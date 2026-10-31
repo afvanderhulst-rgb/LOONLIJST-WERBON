@@ -3,7 +3,8 @@ MIT Werkbonnen - installeerbare app (PWA)
 INHOUD
 index.html (de app met keuze Werkbonnen / Weeklijsten), manifest.webmanifest,
 sw.js (voor offline gebruik), firebase-config.js (gegevens voor account en online back-up),
-fb.js (laadt Firebase), rooster.js (leest het storingsrooster), beheer.html (beheerpagina), iconen.
+fb.js (laadt Firebase), rooster.js (leest het storingsrooster), beheer.html (beheerpagina), handleiding.pdf (handleiding
+voor monteurs, link onder tandwieltje > Info), iconen.
 
 HUIDIG ADRES VAN DE APP:  https://loonlijst-werkbon.vercel.app
 Beheerpagina:             https://loonlijst-werkbon.vercel.app/beheer.html
@@ -41,8 +42,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v109,
-  verhoog naar v110 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v110,
+  verhoog naar v111 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.

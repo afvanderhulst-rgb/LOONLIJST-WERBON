@@ -41,8 +41,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v108,
-  verhoog naar v109 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v109,
+  verhoog naar v110 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -226,6 +226,10 @@ WEEKLIJST VERSTUREN NAAR LEIDINGGEVENDE
 - Lukt delen niet (bijv. op een computer), dan wordt de PDF opgeslagen en opent je mail; voeg hem zelf toe.
 
 UREN NAAR DE WEEKLIJST
+- Per dag worden de eerste 8 uur gewone uren, de rest overuren. Pas je bij een regel uit een bon zelf de
+  gewone uren, overuren of reisuren aan (bijv. overuren naar gewone uren om op een andere dag te gebruiken),
+  dan blijft jouw verdeling altijd staan, ook als de bon later opnieuw wordt opgeslagen of afgerond.
+  Veranderen daarna de tijden op de bon, dan krijg je een melding om je verdeling te controleren.
 De weeklijst loopt van zaterdag t/m vrijdag (weeknummer = de week van die maandag t/m vrijdag).
 De storingsdienst loopt van vrijdag t/m donderdag. Bestaande weeklijsten worden bij de eerste start
 van deze versie vanzelf omgezet: zaterdag en zondag schuiven naar de volgende week.

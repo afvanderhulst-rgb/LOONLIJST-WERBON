@@ -1,8 +1,8 @@
-var V='mit-werkbon-v111';
-var FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','firebase-config.js','fb.js','rooster.js','handleiding.pdf'];
-var CDN=['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'];
+var V='mit-werkbon-v115';
+var FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','firebase-config.js','fb.js','rooster.js','libs.js','handleiding.pdf'];
+var CDN=['lib/jspdf.umd.min.js','lib/pdf.min.js','lib/pdf.worker.min.js','lib/pdf-lib.min.js','lib/jszip.min.js','lib/firebase/firebase-app.js','lib/firebase/firebase-auth.js','lib/firebase/firebase-firestore.js']; // eigen adres; ontbrekende worden overgeslagen
 self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){
- return c.addAll(FILES).then(function(){return Promise.all(CDN.map(function(u){return fetch(u,{mode:'no-cors'}).then(function(r){return c.put(u,r)}).catch(function(){})}))})}).then(function(){return self.skipWaiting()}))});
+ return c.addAll(FILES).then(function(){return Promise.all(CDN.map(function(u){return fetch(u).then(function(r){if(r.ok)return c.put(u,r)}).catch(function(){})}))})}).then(function(){return self.skipWaiting()}))});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(n){return n!==V&&n!=='mit-share'}).map(function(n){return caches.delete(n)}))}).then(function(){return self.clients.claim()}))});
 self.addEventListener('fetch',function(e){
  var u=new URL(e.request.url);

@@ -1,0 +1,8 @@
+{
+  "name": "mit-werkbon",
+  "private": true,
+  "description": "MIT Werkbonnen. Vercel voert bij publiceren 'node build.mjs' uit: dat haalt de externe onderdelen op en zet ze in dist/lib.",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

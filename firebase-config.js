@@ -8,5 +8,7 @@ window.MIT_FIREBASE = {
   projectId: "backup-loonlijst-werkbon-mit",
   appId: "1:81998897599:web:c3646dc8a4eca739f3c10a",
   // e-mailadres van de beheerder (voor beheer.html); moet ook in de Firestore-regels staan
-  adminEmail: "a.f.vanderhulst@gmail.com"
+  adminEmail: "a.f.vanderhulst@gmail.com",
+  // App Check: de reCAPTCHA v3-sitesleutel (zie INSTALLATIE.txt, "APP CHECK"). Leeg laten = uit.
+  appCheckKey: ""
 };

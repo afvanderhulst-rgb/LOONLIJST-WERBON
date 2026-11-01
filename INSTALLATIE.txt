@@ -3,7 +3,7 @@ MIT Werkbonnen - installeerbare app (PWA)
 INHOUD
 index.html (de app met keuze Werkbonnen / Weeklijsten), manifest.webmanifest,
 sw.js (voor offline gebruik), firebase-config.js (gegevens voor account en online back-up),
-fb.js (laadt Firebase), rooster.js (leest het storingsrooster), beheer.html (beheerpagina), handleiding.pdf (handleiding
+fb.js (laadt Firebase), libs.js (laadt de onderdelen), package.json + build.mjs (voor Vercel), rooster.js (leest het storingsrooster), beheer.html (beheerpagina), handleiding.pdf (handleiding
 voor monteurs, link onder tandwieltje > Info), iconen.
 
 HUIDIG ADRES VAN DE APP:  https://loonlijst-werkbon.vercel.app
@@ -42,8 +42,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v111,
-  verhoog naar v112 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v115,
+  verhoog naar v116 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -216,6 +216,93 @@ VERGOEDING STORINGSDIENST (STORINGSDIENSTLIJST)
   dagen uit; ze worden daarna niet opnieuw aangevinkt.
 - De bedragen staan ook in de PDF van de storingsdienstlijst en in het totaal.
 
+ONDERDELEN VAN HET EIGEN ADRES (PRIVACY) - VERCEL
+- De app gebruikt onderdelen van anderen: jsPDF, pdf-lib, pdf.js, JSZip, Tesseract (scannen) en Firebase.
+  Die worden bij het publiceren door Vercel opgehaald (node build.mjs) en in de map lib/ van de app gezet.
+  De telefoon haalt ze dan van https://loonlijst-werkbon.vercel.app in plaats van cdnjs/jsdelivr/Google,
+  zodat die geen IP-adressen van monteurs zien.
+- Alles staat in vercel.json (buildCommand "node build.mjs", outputDirectory "dist"). In Vercel hoef je niets
+  in te stellen, MITS je de map via GitHub of de Vercel-koppeling publiceert (zodat Vercel kan bouwen).
+  Controleer in Vercel > Project > Settings > Build & Deployment: Framework Preset "Other"; laat Build
+  Command, Output Directory en Install Command op de standaard staan (vercel.json bepaalt ze).
+- Lukt het ophalen van een onderdeel niet, dan mislukt het publiceren NIET: de app haalt dat onderdeel dan
+  automatisch van de oude externe plek (terugval). De app blijft dus altijd werken.
+- Controleren: beheer.html > Gebruikers > helemaal onderaan "Onderdelen van de app" > Controleren.
+  Groen = komt van het eigen adres. Rood = komt nog van buiten (zie het bouwlogboek in Vercel).
+- Firebase blijft voor inloggen en opslaan met Google praten; dat is waar de gegevens staan (verwerkersovereenkomst).
+
+BLOKKEREN (HELE APP)
+- beheer.html > Gebruikers > bij de persoon "Blokkeren" (twee keer tikken ter bevestiging), of onderaan een
+  e-mailadres invullen > "Hele app blokkeren". Deblokkeren met dezelfde knop of via de lijst onderaan.
+- Gevolg: de app controleert bij openen en elke 5 minuten; de persoon wordt afgemeld en ziet "De toegang tot de app
+  is ingetrokken door de beheerder". Klantenbestand en rooster worden van zijn toestel gewist. "Zonder account
+  verder" verdwijnt. De Firestore-regels weigeren hem direct (geen back-ups, klanten of rooster meer).
+- Lukt het toch niet (bijv. hij gebruikt een ander e-mailadres): Firebase console > Authentication > Users >
+  drie puntjes > Disable account.
+- Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
+- Let op: de Firestore-regels hierboven zijn hiervoor uitgebreid (functie geblokkeerd). Opnieuw plakken en Publiceren.
+
+BEVEILIGING CONTROLEREN (EEN KEER)
+- beheer.html > Gebruikers > "Beveiliging controleren" geeft dezelfde lijst met knoppen die meteen de juiste
+  pagina openen, en je kunt afvinken wat klaar is:
+  1. Tweestapsverificatie op het Google-account van de beheerder.
+  2. Firebase > Projectinstellingen: "Data Processing and Security Terms" accepteren (verwerkersovereenkomst).
+  3. Firebase > Projectinstellingen > Algemeen: "Default GCP resource location" begint met europe-/eur.
+  4. Authentication > Settings > User actions: "Email enumeration protection" aan.
+  5. Authentication > Settings > Password policy (als zichtbaar): minimaal 8 tekens.
+  6. Authentication > Settings > Authorized domains: "localhost" verwijderen.
+  7. Authentication > Sign-in method: alleen E-mail/wachtwoord aan.
+  8. App Check (hieronder).
+  9. Firestore-regels: de nieuwste uit dit bestand gepubliceerd.
+
+APP CHECK (AFSCHERMEN TEGEN NEP-APPS EN BOTS)
+App Check zorgt dat alleen JOUW app (op loonlijst-werkbon.vercel.app) bij Firebase kan, niet een script of een
+nagemaakte app. Het gebruikt reCAPTCHA v3 van Google (onzichtbaar, geen plaatjes aanklikken).
+Let op: reCAPTCHA stuurt technische gegevens (zoals IP-adres) naar Google. Noem dat in de privacyafspraken.
+1. Ga naar https://www.google.com/recaptcha/admin/create (inloggen met een Google-account van MIT).
+   Label: MIT Werkbon. Type: "Op basis van score (v3)". Domein: loonlijst-werkbon.vercel.app. Verzenden.
+   Je krijgt een SITESLEUTEL en een GEHEIME SLEUTEL.
+2. Firebase console > Build > App Check > Apps > je web-app > reCAPTCHA > plak de GEHEIME sleutel > Opslaan.
+3. Open firebase-config.js en zet de SITESLEUTEL bij appCheckKey: "..." . Opslaan en naar GitHub (Vercel publiceert).
+4. Controleer: beheer.html > Beveiliging controleren > App Check: "aan".
+5. Laat het een week of twee zo draaien. In Firebase > App Check > APIs zie je hoeveel verzoeken "geverifieerd"
+   zijn. Staat bijna alles op geverifieerd (iedereen heeft de nieuwe versie), kies dan bij Cloud Firestore en
+   Authentication "Enforce" (afdwingen). Vanaf dan weigert Firebase alles wat niet uit jouw app komt.
+   Gaat er na Enforce iets mis (niemand kan meer inloggen): zet het in App Check terug op "Unenforce".
+- De sleutels in firebase-config.js zijn geen geheim; de GEHEIME sleutel hoort alleen in de Firebase console.
+
+WIJZIGINGSLOG KLANTENBESTAND
+- Elke nieuwe of gewijzigde klant wordt vastgelegd (wie, wanneer, oud en nieuw).
+  beheer.html > Klanten > onderaan "Wijzigingen tonen". Bij een wijziging: "Oude gegevens terugzetten" (twee keer tikken).
+- Wijzigingen ouder dan een jaar worden opgeruimd als je de lijst opent.
+- Het log komt uit de app. Iemand die buiten de app om (met eigen scripts) klanten wijzigt, wordt niet gelogd;
+  met App Check aan en afgedwongen kan dat niet meer. In de klant zelf staat altijd wie hem het laatst wijzigde.
+- Nieuwe Firestore-regel: "match /klantlog/{id}". Opnieuw plakken en Publiceren.
+
+EXTERNE GEBRUIKERS TOELATEN
+- beheer.html > Gebruikers > "Externe gebruikers toelaten": vul het e-mailadres in (bijv. van een zzp'er) > Toelaten.
+  Of in de lijst bij die persoon: "Toelaten (klanten + rooster)". Intrekken met dezelfde knop of via de lijst.
+- De persoon maakt zelf een account aan met precies dat adres en bevestigt het (tandwieltje > Klantenbestand >
+  Bevestigingsmail sturen). Daarna krijgt hij klantenbestand en storingsrooster, net als een collega.
+- Blokkeren werkt voor hem hetzelfde als voor collega's.
+- Hiervoor zijn de Firestore-regels uitgebreid (isMit en match /toegang). Opnieuw plakken en Publiceren.
+
+PRIVACY (AVG)
+- In de app: tandwieltje > Info > Privacy legt uit wat er bewaard wordt, waar, hoe lang en welke rechten de monteur heeft.
+  Op het inlogscherm staat een korte versie ("Wat gebeurt er met mijn gegevens?").
+- Bewaartermijn op de telefoons: beheer.html > Gebruikers > "Bewaartermijn op de telefoons". Kies 3 maanden t/m 7 jaar
+  of "Altijd bewaren (oneindig)" en tik Opslaan. Geldt voor iedereen; monteurs zien de termijn maar kunnen hem niet wijzigen.
+  Zolang je niets instelt, wordt niets verwijderd. Alleen VERSTUURDE bonnen (met foto's/bijlagen) ouder dan de termijn
+  worden van het toestel gehaald; open bonnen en weeklijsten blijven staan. De telefoon haalt de termijn op zodra hij online is.
+  Online back-ups blijven 30 dagen bewaard (los hiervan).
+- Account verwijderen (door de monteur zelf): tandwieltje > Account en online back-up > Verwijderen, met wachtwoord.
+  Dit wist het account en alle online back-ups; optioneel ook alles op het toestel.
+- Alles van het toestel wissen (bijv. telefoon inleveren): tandwieltje > Privacy > Wissen. Online back-ups blijven bestaan.
+- Iemand uit dienst die dit niet zelf doet: Firebase console > Authentication > Users > drie puntjes > Delete account,
+  en Firestore Database > users > zijn document > Delete (met subcollecties).
+- Klanten in het gedeelde klantenbestand blijven bestaan na het verwijderen van een account (met het e-mailadres bij "door").
+- Nieuwe Firestore-regel: "match /instellingen/{doc}" (staat in de regels hierboven). Opnieuw plakken en Publiceren.
+
 WEEKLIJST VERSTUREN NAAR LEIDINGGEVENDE
 - Weeklijsten > kies de week > Versturen naar leidinggevende > e-mailadres > Verzenden.
 - In de e-mail gaan mee: de weeklijst (PDF), alle werkbonnen van die week als losse PDF's met hun bijlagen
@@ -285,8 +372,13 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
        function isMit() {
          return request.auth != null
            && request.auth.token.email_verified == true
-           && request.auth.token.email.matches('.*@mit-installatietechniek[.]com$')
+           && (request.auth.token.email.matches('.*@mit-installatietechniek[.]com$')
+               || exists(/databases/$(database)/documents/toegang/$(request.auth.token.email)))
            && !exists(/databases/$(database)/documents/geblokkeerd/$(request.auth.token.email));
+       }
+       function geblokkeerd() {
+         let pad = /databases/$(database)/documents/geblokkeerd/$(request.auth.token.email);
+         return exists(pad) && get(pad).data.get('volledig', false) == true;
        }
        function klantOk() {
          let d = request.resource.data;
@@ -297,7 +389,7 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
            && d.door == request.auth.token.email;
        }
        match /users/{uid}/{document=**} {
-         allow read, write: if request.auth != null && request.auth.uid == uid;
+         allow read, write: if request.auth != null && request.auth.uid == uid && !geblokkeerd();
          allow read: if isBeheerder();
        }
        match /klanten/{id} {
@@ -307,6 +399,20 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
        }
        match /rooster/{doc} {
          allow read: if isMit() || isBeheerder();
+         allow write: if isBeheerder();
+       }
+       match /klantlog/{id} {
+         allow create: if (isMit() || isBeheerder())
+           && request.resource.data.door == request.auth.token.email
+           && request.resource.data.keys().hasOnly(['k','soort','naam','adres','plaats','oud','door','t']);
+         allow read, delete: if isBeheerder();
+       }
+       match /toegang/{email} {
+         allow get: if request.auth != null && request.auth.token.email == email;
+         allow read, write: if isBeheerder();
+       }
+       match /instellingen/{doc} {
+         allow read: if request.auth != null;
          allow write: if isBeheerder();
        }
        match /geblokkeerd/{email} {

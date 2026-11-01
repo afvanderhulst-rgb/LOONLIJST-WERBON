@@ -71,9 +71,18 @@ table.rt tr.leeg td{color:var(--mu)}
   <div class="tools"><input id="q" type="search" placeholder="Zoek op e-mailadres…"><button class="btn" id="rf" type="button">Vernieuwen</button></div>
   <div class="mu" id="cnt" style="margin:0 2px 10px"></div>
   <div id="users"></div>
-  <div class="card" style="margin-top:16px"><b>Toegang tot het klantenbestand intrekken</b><p class="mu">Ook voor iemand die nog niet in de lijst staat. Alleen e-mailadressen die eindigen op @mit-installatietechniek.com hebben toegang.</p>
-   <div class="tools" style="margin:0"><input id="blm" type="email" placeholder="naam@mit-installatietechniek.com"><button class="btn dg" id="blb" type="button">Intrekken</button></div>
+  <div class="card" style="margin-top:16px"><b>Toegang intrekken of blokkeren op e-mailadres</b><p class="mu">Ook voor iemand die nog niet in de lijst staat. <b>Klantenbestand intrekken</b>: geen klanten en rooster meer, de app en eigen back-ups werken nog. <b>Hele app blokkeren</b>: de persoon wordt afgemeld en kan de app niet meer gebruiken (ook geen back-ups).</p>
+   <div class="tools" style="margin:0"><input id="blm" type="email" placeholder="naam@mit-installatietechniek.com"><button class="btn" id="blb" type="button">Klantenbestand intrekken</button><button class="btn dg" id="blf" type="button">Hele app blokkeren</button></div>
    <div id="bll" class="mu" style="margin-top:8px"></div></div>
+  <div class="card"><b>Externe gebruikers toelaten</b><p class="mu">Iemand zonder @mit-installatietechniek.com-adres (bijv. een zzp'er of inlener) krijgt dan ook het klantenbestand en het storingsrooster, net als een collega. Hij moet zelf een account aanmaken met precies dit adres en dat adres bevestigen. Intrekken kan altijd.</p>
+   <div class="tools" style="margin:0"><input id="tlm" type="email" placeholder="naam@gmail.com"><button class="btn pr" id="tlb" type="button">Toelaten</button></div>
+   <div id="tll" class="mu" style="margin-top:8px"></div></div>
+  <div class="card"><b>Bewaartermijn op de telefoons</b><p class="mu">Hoe lang verstuurde werkbonnen (met foto's en bijlagen) op de telefoons van de monteurs blijven staan. Daarna verwijdert de app ze vanzelf van het toestel. Bonnen die nog niet verstuurd zijn blijven altijd staan. Geldt voor iedereen; monteurs kunnen het niet zelf wijzigen.</p>
+   <div class="tools" style="margin:0"><select id="kpSel" style="padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit"><option value="0">Altijd bewaren (oneindig)</option><option value="90">3 maanden</option><option value="182">6 maanden</option><option value="365">1 jaar</option><option value="730">2 jaar</option><option value="1825">5 jaar</option><option value="2555">7 jaar</option></select><button class="btn pr" id="kpSave" type="button">Opslaan</button></div>
+   <div id="kpRes" class="mu" style="margin-top:8px"></div></div>
+  <div class="card"><b>Beveiliging controleren</b><p class="mu">Instellingen die je één keer in Google en Firebase zet. Vink af wat klaar is (wordt alleen op dit apparaat onthouden).</p><div id="sec"></div></div>
+  <div class="card"><b>Onderdelen van de app</b><p class="mu">Controleer na het publiceren of alle onderdelen van jullie eigen adres komen (beter voor privacy en veiligheid). Ontbreekt er een, dan gebruikt de app daarvoor automatisch de externe plek; de app blijft dan gewoon werken.</p>
+   <button class="btn" id="libChk" type="button">Controleren</button><div id="libRes" class="mu" style="margin-top:10px"></div></div>
  </div>
  <div id="rlist" hidden>
   <div class="card"><b>Storingsrooster</b><div class="mu" id="rcur" style="margin-top:4px">Laden…</div>
@@ -85,9 +94,12 @@ table.rt tr.leeg td{color:var(--mu)}
   <div class="tools"><input id="kq" type="search" placeholder="Zoek op naam, adres of plaats…"><button class="btn" id="krf" type="button">Vernieuwen</button></div>
   <div class="mu" id="kcnt" style="margin:0 2px 10px"></div>
   <div id="klanten"></div>
+  <div class="card" style="margin-top:16px"><b>Wijzigingen in het klantenbestand</b><p class="mu">Wie heeft welke klant toegevoegd of gewijzigd. Bij een wijziging kun je de oude gegevens terugzetten. Wijzigingen ouder dan een jaar worden vanzelf opgeruimd.</p>
+   <button class="btn" id="klog" type="button">Wijzigingen tonen</button><div id="klogl" style="margin-top:10px"></div></div>
  </div>
 </main>
 <script src="firebase-config.js"></script>
+<script src="libs.js"></script>
 <script src="fb.js"></script>
 <script src="rooster.js"></script>
 <script>
@@ -99,7 +111,7 @@ function fd(t){if(!t)return '–';var d=new Date(t);return d.getDate()+'-'+(d.ge
 function ago(t){if(!t)return '';var m=(Date.now()-t)/6e4;if(m<60)return 'net';var h=m/60;if(h<24)return Math.round(h)+' uur geleden';var d=Math.round(h/24);return d+(d===1?' dag':' dagen')+' geleden'}
 function kb(n){n=(n||0)/1024;return n<1024?Math.max(1,Math.round(n))+' kB':(n/1024).toFixed(1)+' MB'}
 function show(h){var m=$('msg');m.innerHTML=h;m.hidden=!h}
-var C=window.MIT_FIREBASE||{},ADMIN=String(C.adminEmail||'').toLowerCase(),auth,db,USERS=[],BLOCK={},KL=[],DOM='@mit-installatietechniek.com';
+var C=window.MIT_FIREBASE||{},ADMIN=String(C.adminEmail||'').toLowerCase(),auth,db,USERS=[],BLOCK={},TOE={},KL=[],DOM='@mit-installatietechniek.com';
 if(!C.apiKey||String(C.apiKey).indexOf('VUL')===0){show('<b>Nog niet ingesteld.</b><p class="mu">Vul eerst firebase-config.js in (zie INSTALLATIE.txt).</p>');return}
 show('<p class="mu">Firebase laden…</p>');
 try{var F=await window.mitFB();auth=F.auth;db=F.db;show('')}catch(e){show('<b>Firebase kon niet geladen worden.</b><p class="mu">Controleer je internet en laad de pagina opnieuw.</p>');return}
@@ -130,7 +142,7 @@ $('tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;TAB=
 var RP=null,RFILE='';
 function fdate(iso){if(!iso)return '';var p=iso.split('-');return +p[2]+'-'+(+p[1])+'-'+p[0].slice(2)}
 async function loadR(){try{var d=await db.collection('rooster').doc('actief').get();if(d.exists){var o=d.data();$('rcur').innerHTML='Gepubliceerd: <b>'+ee(o.titel||'rooster')+'</b>'+(o.bestand?' ('+ee(o.bestand)+')':'')+' · '+fd(o.t)+(o.door?' door '+ee(o.door):'')+' · '+(o.weken||[]).filter(function(w){return w.wie&&w.wie.length}).length+' weken ingedeeld'}else $('rcur').textContent='Nog geen rooster gepubliceerd.'}catch(e){$('rcur').textContent=err(e)}}
-function loadPdfjs(){if(window.pdfjsLib)return Promise.resolve();return new Promise(function(ok,no){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=function(){try{pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'}catch(e){}ok()};s.onerror=no;document.head.appendChild(s)})}
+async function loadPdfjs(){await mitLoad('pdfjs');try{await mitLoad('pdfworker')}catch(e){}try{pdfjsLib.GlobalWorkerOptions.workerSrc=mitLibs.local('pdfworker')?'lib/pdf.worker.min.js':mitLibs.list.pdfworker.c}catch(e){}}
 $('rfile').onchange=async function(){var f=this.files&&this.files[0];this.value='';if(!f)return;RFILE=f.name;$('rst').textContent='PDF lezen…';$('rprev').innerHTML='';
  try{await loadPdfjs();var doc=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise,pg=await doc.getPage(1),tc=await pg.getTextContent(),vp=pg.getViewport({scale:1});
   RP=window.mitRooster.parse(tc.items,vp.height);$('rst').textContent='';if(RP.fouten&&RP.fouten.length&&!RP.weken){$('rprev').innerHTML='<div class="card er">'+ee(RP.fouten.join(' '))+' Is dit het storingsrooster als PDF (geen scan)?</div>';return}renderR()}
@@ -155,16 +167,75 @@ function renderR(){var r=RP,mon=r.monteurs.filter(function(m){return m.n>0}),too
   try{await db.collection('rooster').doc('actief').set(D);$('rps').innerHTML='<span class="ok">Gepubliceerd. Collega\'s krijgen het rooster de volgende keer dat ze de app openen.</span>';RP=null;loadR();setTimeout(function(){$('rprev').innerHTML=''},4000)}
   catch(e){b.disabled=false;$('rps').textContent='Publiceren mislukt: '+err(e)}}}
 async function loadBlock(){BLOCK={};try{var q=await db.collection('geblokkeerd').get();q.docs.forEach(function(d){BLOCK[d.id]=d.data()||{}})}catch(e){}
- var ks=Object.keys(BLOCK).sort();$('bll').innerHTML=ks.length?'Ingetrokken: '+ks.map(function(k){return '<span style="white-space:nowrap">'+ee(k)+' <a href="#" data-ub="'+ee(k)+'">terugzetten</a></span>'}).join(' · '):'Bij niemand ingetrokken.';
+ var ks=Object.keys(BLOCK).sort();$('bll').innerHTML=ks.length?'Ingetrokken: '+ks.map(function(k){return '<span style="white-space:nowrap">'+ee(k)+(BLOCK[k].volledig?' <b class="er">(hele app geblokkeerd)</b>':' (klantenbestand)')+' <a href="#" data-ub="'+ee(k)+'">'+(BLOCK[k].volledig?'deblokkeren':'terugzetten')+'</a></span>'}).join(' · '):'Bij niemand ingetrokken.';
  $('bll').querySelectorAll('[data-ub]').forEach(function(a){a.onclick=function(e){e.preventDefault();setBlock(a.dataset.ub,false)}})}
-async function setBlock(em,on){em=String(em||'').trim().toLowerCase();if(!em)return;
- try{if(on)await db.collection('geblokkeerd').doc(em).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()});else await db.collection('geblokkeerd').doc(em).delete();await loadBlock();render()}
+function isDom(em){return String(em||'').toLowerCase().slice(-DOM.length)===DOM}
+async function loadToe(){TOE={};try{var q=await db.collection('toegang').get();q.docs.forEach(function(d){TOE[d.id]=d.data()||{}})}catch(e){}
+ var ks=Object.keys(TOE).sort();$('tll').innerHTML=ks.length?'Toegelaten: '+ks.map(function(k){return '<span style="white-space:nowrap">'+ee(k)+' <a href="#" data-ut="'+ee(k)+'">intrekken</a></span>'}).join(' · '):'Nog niemand van buiten toegelaten.';
+ $('tll').querySelectorAll('[data-ut]').forEach(function(a){a.onclick=function(e){e.preventDefault();setToe(a.dataset.ut,false)}})}
+async function setToe(em,on){em=String(em||'').trim().toLowerCase();if(!em)return;
+ if(on&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){alert0('Dit e-mailadres klopt niet.');return}
+ if(on&&isDom(em)){alert0('Collega\'s met een '+DOM+'-adres hebben al toegang; toelaten is niet nodig.');return}
+ if(on&&em===ADMIN){alert0('De beheerder heeft al toegang.');return}
+ try{if(on)await db.collection('toegang').doc(em).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()});else await db.collection('toegang').doc(em).delete();await loadToe();render()}
+ catch(e){alert0(err(e)+' (zijn de nieuwe Firestore-regels gepubliceerd?)')}}
+$('tlb').onclick=async function(){var b=this;b.disabled=true;await setToe($('tlm').value,true);if(TOE[String($('tlm').value).trim().toLowerCase()])$('tlm').value='';b.disabled=false};
+async function setBlock(em,on,vol){em=String(em||'').trim().toLowerCase();if(!em)return;if(em===ADMIN){alert0('Je kunt jezelf niet blokkeren.');return}
+ try{if(on)await db.collection('geblokkeerd').doc(em).set(Object.assign({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()},vol?{volledig:true}:{}));else await db.collection('geblokkeerd').doc(em).delete();await loadBlock();render()}
  catch(e){alert0(err(e))}}
 function alert0(t){show('<b>Niet gelukt.</b><p class="mu">'+ee(t)+'</p>');setTimeout(function(){show('')},6000)}
+/* ---------- bewaartermijn ---------- */
+function kpName(d){var o=$('kpSel').querySelector('option[value="'+d+'"]');return o?o.textContent:d+' dagen'}
+async function loadKeep(){try{var d=await db.collection('instellingen').doc('app').get(),o=d.exists?(d.data()||{}):{},v=o.bewaar==null?0:+o.bewaar;
+ if(!$('kpSel').querySelector('option[value="'+v+'"]')){var op=document.createElement('option');op.value=v;op.textContent=v+' dagen';$('kpSel').appendChild(op)}
+ $('kpSel').value=String(v);$('kpRes').textContent=d.exists?'Nu: '+kpName(v)+(o.t?' (gewijzigd '+new Date(o.t).toLocaleString('nl-NL')+')':''):'Nog niet ingesteld: de telefoons bewaren alles (oneindig).'}
+ catch(e){$('kpRes').textContent='Kon de bewaartermijn niet lezen: '+err(e)+' (zijn de nieuwe Firestore-regels gepubliceerd?)'}}
+$('kpSave').onclick=async function(){var v=+$('kpSel').value,b=this;b.disabled=true;
+ try{await db.collection('instellingen').doc('app').set({bewaar:v,t:Date.now(),door:auth.currentUser.email},{merge:true});$('kpRes').textContent='Opgeslagen: '+kpName(v)+'. De telefoons nemen dit over zodra ze online zijn.'}
+ catch(e){$('kpRes').textContent='Opslaan mislukt: '+err(e)}b.disabled=false};
+/* ---------- beveiliging controleren ---------- */
+(function(){var P=String(C.projectId||''),U='https://console.firebase.google.com/project/'+P,K='bh:sec';
+ var L=[
+  ['2fa','Tweestapsverificatie op het beheerdersaccount','Google-account '+ADMIN+' > Beveiliging > Verificatie in twee stappen aanzetten. Wie dit account heeft, kan alle back-ups inzien.','https://myaccount.google.com/signinoptions/two-step-verification'],
+  ['dpa','Verwerkersovereenkomst (Data Processing Terms)','Firebase > Projectinstellingen > tabblad Algemeen of Privacy > "Data Processing and Security Terms" bekijken en accepteren. Vercel: vercel.com/legal/dpa.',U+'/settings/general'],
+  ['loc','Opslag staat in Europa','Firebase > Projectinstellingen > Algemeen > "Default GCP resource location" moet met europe- of eur beginnen.',U+'/settings/general'],
+  ['enum','E-mail-enumeratie-bescherming aan','Authentication > Settings > User actions > "Email enumeration protection" aanzetten. Dan kan niemand uitproberen welke adressen een account hebben.',U+'/authentication/settings'],
+  ['pw','Sterkere wachtwoorden','Authentication > Settings > Password policy (als je die ziet): minimaal 8 tekens, "Require enforcement" pas na een paar weken (anders moeten bestaande gebruikers hun wachtwoord wijzigen).',U+'/authentication/settings'],
+  ['dom','Alleen jullie eigen adres','Authentication > Settings > Authorized domains: laat loonlijst-werkbon.vercel.app en de firebaseapp.com/web.app-adressen staan; verwijder "localhost".',U+'/authentication/settings'],
+  ['met','Alleen e-mail/wachtwoord','Authentication > Sign-in method: alleen E-mail/wachtwoord aan, de rest uit.',U+'/authentication/providers'],
+  ['ac','App Check (afschermen tegen nep-apps en bots)','Stappen in INSTALLATIE.txt onder "APP CHECK". Status hier: <b id="acSt"></b>',U+'/appcheck'],
+  ['rules','Firestore-regels zijn de nieuwste','Firestore Database > Regels: de tekst uit INSTALLATIE.txt geplakt en gepubliceerd (na elke update waarin de regels veranderen).',U+'/firestore/rules']];
+ function O(){try{return JSON.parse(localStorage.getItem(K))||{}}catch(e){return {}}}
+ function draw(){var o=O(),n=0;$('sec').innerHTML=L.map(function(x){if(o[x[0]])n++;return '<label style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--bd);cursor:pointer"><input type="checkbox" data-sec="'+x[0]+'"'+(o[x[0]]?' checked':'')+' style="margin:4px 0 0;width:18px;height:18px;flex:0 0 18px"><span style="flex:1;text-align:left"><b>'+x[1]+'</b><br><span class="mu">'+x[2]+'</span> <a href="'+x[3]+'" target="_blank" rel="noopener">Openen</a></span></label>'}).join('')+'<div class="mu" style="padding-top:8px">'+n+' van '+L.length+' klaar.</div>';
+  var st=window.mitAppCheck==='aan'?'aan':window.mitAppCheck==='fout'?'fout bij laden (klopt de sleutel?)':'nog uit (appCheckKey leeg)';if($('acSt'))$('acSt').textContent=st;
+  $('sec').querySelectorAll('[data-sec]').forEach(function(c){c.onchange=function(){var o=O();if(c.checked)o[c.dataset.sec]=1;else delete o[c.dataset.sec];try{localStorage.setItem(K,JSON.stringify(o))}catch(e){}draw()}})}
+ draw();window.mitSecDraw=draw})();
+/* ---------- wijzigingslog klantenbestand ---------- */
+function klStr(o){return o?[o.naam,o.adres,o.plaats].filter(Boolean).join(', '):''}
+async function loadLog(){var el=$('klogl');el.innerHTML='<p class="mu">Laden…</p>';
+ try{var q=await db.collection('klantlog').orderBy('t','desc').limit(300).get(),a=q.docs.map(function(d){var o=d.data()||{};o.id=d.id;o.ref=d.ref;return o}),jaar=Date.now()-365*864e5;
+  a.filter(function(o){return (o.t||0)<jaar}).forEach(function(o){try{o.ref.delete()}catch(e){}});a=a.filter(function(o){return (o.t||0)>=jaar});
+  if(!a.length){el.innerHTML='<p class="mu">Nog geen wijzigingen vastgelegd.</p>';return}
+  el.innerHTML=a.map(function(o){return '<div style="padding:8px 0;border-top:1px solid var(--bd)"><div class="mu">'+fd(o.t)+' · '+ee(o.door||'?')+' · <b>'+ee(o.soort||'')+'</b></div>'+
+   (o.oud?'<div><s class="mu">'+ee(klStr(o.oud))+'</s></div>':'')+'<div>'+ee(klStr(o))+'</div>'+
+   (o.oud&&o.soort!=='teruggezet'?'<button class="btn sm" type="button" data-kterug="'+ee(o.id)+'" style="margin-top:4px">Oude gegevens terugzetten</button>':'')+'</div>'}).join('');
+  el.querySelectorAll('[data-kterug]').forEach(function(b){b.onclick=async function(){var o=a.filter(function(x){return x.id===b.dataset.kterug})[0];if(!o||!o.k)return;
+   if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;
+   var em=String(auth.currentUser.email||'').toLowerCase(),n={naam:o.oud.naam,adres:o.oud.adres,plaats:o.oud.plaats,zoek:normK(o.oud.naam+' '+o.oud.adres+' '+o.oud.plaats).slice(0,400),door:em,t:Date.now()};
+   try{await db.collection('klanten').doc(o.k).set(n);await db.collection('klantlog').doc(Date.now()+'_b').set({k:o.k,soort:'teruggezet',naam:n.naam,adres:n.adres,plaats:n.plaats,oud:{naam:o.naam||'',adres:o.adres||'',plaats:o.plaats||''},door:em,t:Date.now()});loadLog();if(KL.length)loadK()}
+   catch(e){b.disabled=false;b.textContent='Mislukt: '+err(e)}}})}
+ catch(e){el.innerHTML='<div class="er">'+ee(err(e))+' (zijn de nieuwe Firestore-regels gepubliceerd?)</div>'}}
+$('klog').onclick=loadLog;
+$('libChk').onclick=async function(){var el=$('libRes');el.textContent='Controleren…';var L=window.mitLibs.list,rows=[],bad=0;
+ var files=Object.keys(L).map(function(k){return [L[k].n,L[k].l]}).concat([['Firebase (inloggen en opslag)','lib/firebase/firebase-app.js'],['Firebase inloggen','lib/firebase/firebase-auth.js'],['Firebase database','lib/firebase/firebase-firestore.js'],['Tekstherkenning: worker','lib/tesseract/worker.min.js'],['Tekstherkenning: Nederlandse taal','lib/tessdata/nld.traineddata.gz']]);
+ for(var i=0;i<files.length;i++){var ok=false;try{var r=await fetch(files[i][1]+'?c='+Date.now(),{method:'HEAD',cache:'no-store'});ok=r.ok}catch(e){}if(!ok)bad++;rows.push((ok?'<span class="ok">✓</span> ':'<span class="er">✗</span> ')+ee(files[i][0])+(ok?'':' <span class="mu">(ontbreekt, extern)</span>'))}
+ var info='';try{var m=await (await fetch('lib/manifest.json',{cache:'no-store'})).json();info='<br>Gebouwd op '+fd(Date.parse(m.gebouwd))+(m.ontbreekt&&m.ontbreekt.length?' · niet opgehaald: '+ee(m.ontbreekt.join(', ')):'')}catch(e){info='<br>Geen bouwinformatie gevonden: is de app via Vercel gepubliceerd met build.mjs?'}
+ el.innerHTML=(bad?'<b class="er">'+bad+' onderdeel(en) komen nog van buiten.</b>':'<b class="ok">Alles komt van jullie eigen adres.</b>')+info+'<div style="margin-top:8px;line-height:1.7">'+rows.join('<br>')+'</div>'};
+$('blf').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker weten? Tik nogmaals';setTimeout(function(){b.dataset.sure='';b.textContent='Hele app blokkeren'},5000);return}b.dataset.sure='';b.textContent='Hele app blokkeren';setBlock(v,true,true);$('blm').value=''};
 $('blb').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}setBlock(v,true);$('blm').value=''};
 async function load(){show('');$('tabs').hidden=false;$('list').hidden=TAB!=='u';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';if(TAB==='r')loadR();$('users').innerHTML='<p class="mu">Laden…</p>';
  try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();
-  USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();render()}
+  USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();await loadToe();render();loadKeep();try{window.mitSecDraw()}catch(x){}}
  catch(e){$('users').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}
  if(TAB==='k')loadK()}
 /* ---------- klanten ---------- */
@@ -194,11 +265,18 @@ function render(){var f=$('q').value.trim().toLowerCase(),a=USERS.filter(functio
  if(!a.length){$('users').innerHTML='<p class="mu">'+(USERS.length?'Niemand gevonden.':'Nog geen gebruikers. Gebruikers verschijnen hier zodra ze de app (nieuwe versie) hebben geopend en zijn ingelogd.')+'</p>';return}
  $('users').innerHTML=a.map(function(u){var old=!u.lastBackup||Date.now()-u.lastBackup>7*864e5;
   return '<div class="u" data-u="'+ee(u.uid)+'"><div class="uh"><div><b>'+ee(u.email||'(onbekend e-mailadres)')+'</b>'+(old?'<span class="tag old">'+(u.lastBackup?'back-up ouder dan 7 dagen':'nog geen back-up')+'</span>':'')+
-  (acc(u)?(BLOCK[String(u.email||'').toLowerCase()]?'<span class="tag old">klantenbestand: ingetrokken</span>':'<span class="tag ok">klantenbestand: toegang</span>'):'')+'<div class="mu">Laatst actief: '+fd(u.last)+(u.last?' ('+ago(u.last)+')':'')+' · '+ee(u.dev||'')+'<br>Laatste back-up: '+fd(u.lastBackup)+(u.size?' · '+kb(u.size):'')+(u.since?' · account sinds '+fd(u.since).split(' ')[0]:'')+'</div></div>'+
-  '<div style="display:flex;gap:6px;flex-wrap:wrap">'+acc(u)+'<button class="btn" type="button" data-open>Back-ups</button></div></div><div class="bl" hidden></div></div>'}).join('');
- $('users').querySelectorAll('.u').forEach(function(el){el.querySelector('.uh').onclick=function(e){if(e.target.closest('[data-blk]'))return;toggle(el)}});
+  (BLOCK[String(u.email||'').toLowerCase()]&&BLOCK[String(u.email||'').toLowerCase()].volledig?'<span class="tag old" style="background:#b3402f;color:#fff;border-color:#b3402f">GEBLOKKEERD</span>':'')+(!isDom(u.email)&&TOE[String(u.email||'').toLowerCase()]?'<span class="tag ok">extern toegelaten</span>':'')+(acc(u)&&isDom(u.email)?(BLOCK[String(u.email||'').toLowerCase()]?'<span class="tag old">klantenbestand: ingetrokken</span>':'<span class="tag ok">klantenbestand: toegang</span>'):'')+'<div class="mu">Laatst actief: '+fd(u.last)+(u.last?' ('+ago(u.last)+')':'')+' · '+ee(u.dev||'')+'<br>Laatste back-up: '+fd(u.lastBackup)+(u.size?' · '+kb(u.size):'')+(u.since?' · account sinds '+fd(u.since).split(' ')[0]:'')+'</div></div>'+
+  '<div style="display:flex;gap:6px;flex-wrap:wrap">'+acc(u)+full(u)+'<button class="btn" type="button" data-open>Back-ups</button></div></div><div class="bl" hidden></div></div>'}).join('');
+ $('users').querySelectorAll('.u').forEach(function(el){el.querySelector('.uh').onclick=function(e){if(e.target.closest('[data-blk],[data-full],[data-toe]'))return;toggle(el)}});
+ $('users').querySelectorAll('[data-toe]').forEach(function(b){b.onclick=function(e){e.stopPropagation();setToe(b.dataset.toe,b.dataset.on==='1')}});
+ $('users').querySelectorAll('[data-full]').forEach(function(b){b.onclick=function(e){e.stopPropagation();var on=b.dataset.on==='1';
+  if(on&&b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker weten? Tik nogmaals';setTimeout(function(){if(b.isConnected){b.dataset.sure='';b.textContent='Blokkeren'}},5000);return}
+  setBlock(b.dataset.full,on,true)}});
  $('users').querySelectorAll('[data-blk]').forEach(function(b){b.onclick=function(e){e.stopPropagation();setBlock(b.dataset.blk,b.dataset.on==='1')}})}
-function acc(u){var em=String(u.email||'').toLowerCase();if(!em||em===ADMIN||em.slice(-DOM.length)!==DOM)return '';
+function full(u){var em=String(u.email||'').toLowerCase();if(!em||em===ADMIN)return '';var b=BLOCK[em];
+ return b&&b.volledig?'<button class="btn sm" type="button" data-full="'+ee(em)+'" data-on="0">Deblokkeren</button>':'<button class="btn sm dg" type="button" data-full="'+ee(em)+'" data-on="1">Blokkeren</button>'}
+function acc(u){var em=String(u.email||'').toLowerCase();if(!em||em===ADMIN)return '';if(BLOCK[em]&&BLOCK[em].volledig)return '';
+ if(!isDom(em))return TOE[em]?'<button class="btn sm dg" type="button" data-toe="'+ee(em)+'" data-on="0">Toelating intrekken</button>':'<button class="btn sm" type="button" data-toe="'+ee(em)+'" data-on="1">Toelaten (klanten + rooster)</button>';
  return BLOCK[em]?'<button class="btn sm" type="button" data-blk="'+ee(em)+'" data-on="0">Toegang klanten terugzetten</button>':'<button class="btn sm dg" type="button" data-blk="'+ee(em)+'" data-on="1">Toegang klanten intrekken</button>'}
 
 async function toggle(el){var bl=el.querySelector('.bl'),uid=el.dataset.u;if(!bl.hidden){bl.hidden=true;return}bl.hidden=false;bl.innerHTML='<p class="mu">Laden…</p>';

@@ -382,7 +382,7 @@ const summ=async()=>{const L=[],m=maandag(jaar,wk);let tot=0,over=0;
 $('mgbtn').onclick=async()=>{$('mgmail').value=store.get('wl:mgr')||'';$('mginfo').textContent=(sdM()?'Storingsdienst':'Weeklijst')+' week '+wk+' ('+jaar+'), alle werkbonnen los (met bijlagen) en de verzamel-PDF (zonder bijlagen) gaan in 1 e-mail.';$('mgsum').textContent='Controleren...';$('mgov').hidden=false;
  try{const L=await summ(),el=$('mgsum');el.innerHTML='';L.forEach(x=>{const d=document.createElement('div');d.textContent=x.t;if(x.w){d.style.color='#b3402f';d.style.fontWeight='600'}el.appendChild(d)})}catch(e){$('mgsum').textContent=''}};
 $('mgcan').onclick=()=>{$('mgov').hidden=true};
-const loadPL=()=>new Promise((res,rej)=>{if(window.PDFLib)return res();const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)});
+const loadPL=()=>window.mitLoad('pdflib');
 // weeklijst + alle werkbonnen van de week (met bijlagen en invulvelden) in 1 PDF
 const maakVerzamel=async()=>{const main=buildPdf();if(!main)return null;
   let bons=[];window.__wbNoAtt=true;try{bons=await window.collectWeek(jaar,wk,sdM(),{raw:true})}catch(e){}finally{window.__wbNoAtt=false}
@@ -404,7 +404,7 @@ if($('prnbtn'))$('prnbtn').onclick=async()=>{const b=$('prnbtn'),t0=b.textConten
 const okMail=()=>{const v=$('mgmail').value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){toast('Vul een geldig e-mailadres in.',4000);return null}store.set('wl:mgr',v);return v};
 const mailTxt=n=>({subj:(sdM()?'Storingsdienst':'Weeklijst')+' week '+wk+' '+jaar+' - '+$('naam').value,body:'Hierbij de '+(sdM()?'storingsdienst':'weeklijst')+' van week '+wk+' ('+jaar+') met '+n+' werkbon'+(n===1?'':'nen')+' (los, met bijlagen) en de verzamel-PDF (weeklijst + werkbonnen, zonder bijlagen).'});
 const openMt=(to,sub,body)=>{const u='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);try{window.top.location.href=u}catch(e){location.href=u}};
-const loadZip=()=>new Promise((res,rej)=>{if(window.JSZip)return res();const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';sc.onload=res;sc.onerror=rej;document.head.appendChild(sc)});
+const loadZip=()=>window.mitLoad('jszip');
 $('mgmt').onclick=()=>{const to=okMail();if(to){const t=mailTxt(0);openMt(to,t.subj,t.body.replace(/ met 0 werkbonnen\./,'.'))}};
 $('mgsend').onclick=async()=>{const to=okMail();if(!to)return;const b=$('mgsend');b.disabled=true;b.textContent='Bezig...';
  try{const main=buildPdf();if(!main){toast('De PDF kon niet gemaakt worden.',5000);return}
@@ -633,9 +633,8 @@ window.addEventListener('load',function(){
 </script>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="libs.js"></script>
+<script>mitLoad('pdfjs').then(function(){return mitLoad('pdfworker')}).catch(function(){});mitLoad('jspdf').catch(function(){});</script>
 <script>
 var PRE='mit-wr:',S,timer,NL=String.fromCharCode(10);
 var SOORT=['Regie','Aangenomen werk','Contract','Garantie'];
@@ -786,11 +785,10 @@ function parseSR(it){var g={},all=lineText(it).join(' '),m=all.match(/Werkbonnr\
  var s=lineText(it.filter(function(i){return i.y>420&&i.y<590})).filter(function(l){return !/^STORING\s*\/\s*SERVICE/i.test(l)});
  if(s.length)g.storing=s.join(NL);
  return g}
-var WK='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+var WK='lib/pdf.worker.min.js';
 function imp(t){var e=$('impst');if(e)e.textContent=t}
 function loadJs(u){return new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=function(){no(new Error('laden mislukt'))};document.head.appendChild(s)})}
-async function ensurePdf(){if(window.pdfjsLib)return true;
- try{await loadJs('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');await loadJs('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js')}catch(e){}
+async function ensurePdf(){try{await window.mitLoad('pdfjs');await window.mitLoad('pdfworker')}catch(e){}
  return !!window.pdfjsLib}
 async function askFields(extra,opts){var sample=await claude.use('sample');if(!sample)throw new Error('Foto’s lezen of een andere opmaak herkennen werkt alleen in de versie binnen Claude. Gebruik een PDF met echte tekst (geen foto).');
  var p='Je krijgt een Nederlandse werkbon of servicerapport van MIT Installatietechniek. Haal de velden eruit en antwoord ALLEEN met JSON met deze sleutels (laat een sleutel weg als je hem niet vindt): wb (werkbonnummer, alleen cijfers), wadres (werkadres: lijst van regels), opdr (opdrachtgever: lijst van regels), inst (installatie: lijst van regels), dm (datum melding, dd-mm-jjjj), da (datum afspraak, dd-mm-jjjj), tijd (uu:mm), storing (storingsmelding/omschrijving: lijst van regels). Neem teksten letterlijk over, verzin niets.'+extra;
@@ -1228,6 +1226,7 @@ async function render(){
  if(window.mitCloud)h+=window.mitCloud.html();
  if(window.mitKlant)h+=window.mitKlant.html();
  if(window.mitRoost)h+=window.mitRoost.html();
+ if(window.mitPriv)h+=window.mitPriv.html();
  h+='<h3>Mappen</h3>';
  if(fs){
   h+='<div class="row"><div><div class="lb">Opslagmap voor PDF\'s</div><div class="vl">'+(root?esc(root)+'\\WERKBONNEN\\jaar\\Week':'Nog niet gekozen. Wordt gevraagd bij de eerste PDF.')+'</div></div><button class="sb" id="stRoot" type="button">'+(root?'Wijzigen':'Kiezen')+'</button></div>';
@@ -1249,6 +1248,7 @@ async function render(){
  if(window.mitPlus)window.mitPlus.bind(render);
  if(window.mitKlant)window.mitKlant.bind(render);
  if(window.mitRoost)window.mitRoost.bind(render);
+ if(window.mitPriv)window.mitPriv.bind(render);
  var q=function(id){return document.getElementById(id)};
  q('stClose').onclick=close;
  if(q('stRoot'))q('stRoot').onclick=async function(){var ok=false;try{await window.fsPickRoot();ok=true;toast('Opslagmap gewijzigd.',3000)}catch(e){}if(ok&&window.bkAuto){try{await window.bkAuto.recheck()}catch(e){}}render()};
@@ -1413,7 +1413,7 @@ if(typeof module!=='undefined')module.exports={ocrToBon:ocrToBon,ocrFit:ocrFit};
 <script>
 /* Werkbon importeren: bestand of scan (camera + tekstherkenning op het toestel) */
 (function(){
-var TJS='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+/* tekstherkenning: geladen via libs.js (eigen adres, anders extern) */
 var sheet=document.getElementById('impSheet'),fIn=document.getElementById('impFileIn'),cIn=document.getElementById('impCamIn');
 function $$(id){return document.getElementById(id)}
 function openSheet(){sheet.hidden=false;try{window.dirRender&&window.dirRender()}catch(e){}}
@@ -1429,7 +1429,7 @@ cIn.onchange=function(){var f=cIn.files&&cIn.files[0];if(!f)return;closeSheet();
 function prog(t,pct,sub){$$('scanOv').hidden=false;$$('scT').textContent=t;$$('scBar').style.width=Math.round(pct||0)+'%';$$('scS').textContent=sub||'';$$('scX').hidden=true}
 function fail(t){$$('scanOv').hidden=false;$$('scT').textContent='Niet gelukt';$$('scBar').style.width='0';$$('scS').textContent=t;$$('scX').hidden=false}
 $$('scX').onclick=function(){$$('scanOv').hidden=true};
-function loadTess(){if(window.Tesseract)return Promise.resolve();return new Promise(function(ok,no){var s=document.createElement('script');s.src=TJS;s.onload=ok;s.onerror=function(){no(new Error('De tekstherkenning kon niet laden. De eerste keer is internet nodig.'))};document.head.appendChild(s)})}
+function loadTess(){return window.mitLoad('tesseract').catch(function(){throw new Error('De tekstherkenning kon niet laden. De eerste keer is internet nodig.')})}
 function loadImg(file){return new Promise(function(ok,no){var u=URL.createObjectURL(file),i=new Image();i.onload=function(){ok(i)};i.onerror=function(){no(new Error('Deze foto kan niet geopend worden. Gebruik JPG of PNG (op iPhone: Instellingen > Camera > Formaten > Meest compatibel).'))};i.src=u})}
 // grijs + contrast oprekken (1%-99%)
 function clean(cv){var c=cv.getContext('2d'),d=c.getImageData(0,0,cv.width,cv.height),p=d.data,n=p.length/4,h=new Uint32Array(256),i;
@@ -1445,7 +1445,10 @@ async function scan(file){
   prog('Bon wordt gelezen…',3,'Tekstherkenning laden (de eerste keer duurt dit even)');
   await loadTess();
   var img=await loadImg(file),W=img.naturalWidth,H=img.naturalHeight;
-  worker=await Tesseract.createWorker('nld',1,{logger:function(m){if(m.status==='recognizing text')prog('Bon wordt gelezen…',stage===1?10+m.progress*40:55+m.progress*40,stage===1?'Stap 1 van 2: bon zoeken':'Stap 2 van 2: gegevens lezen');else if(/load/.test(m.status||''))prog('Bon wordt gelezen…',5,'Tekstherkenning laden (de eerste keer duurt dit even)')}});
+  var tOpt={logger:function(m){if(m.status==='recognizing text')prog('Bon wordt gelezen…',stage===1?10+m.progress*40:55+m.progress*40,stage===1?'Stap 1 van 2: bon zoeken':'Stap 2 van 2: gegevens lezen');else if(/load/.test(m.status||''))prog('Bon wordt gelezen…',5,'Tekstherkenning laden (de eerste keer duurt dit even)')}};
+  // eigen adres: worker, kern en Nederlandse taaldata uit lib/; lukt dat niet, dan de standaard (extern)
+  if(window.mitLibs&&window.mitLibs.local('tesseract')){try{worker=await Tesseract.createWorker('nld',1,Object.assign({workerPath:mitLibs.abs('lib/tesseract/worker.min.js'),corePath:mitLibs.abs('lib/tesseract-core/'),langPath:mitLibs.abs('lib/tessdata')},tOpt))}catch(e){worker=null}}
+  if(!worker)worker=await Tesseract.createWorker('nld',1,tOpt);
   // stap 1: verkleinde foto, vaste woorden zoeken
   var s=Math.min(1,2000/Math.max(W,H)),c1=document.createElement('canvas');c1.width=Math.round(W*s);c1.height=Math.round(H*s);
   c1.getContext('2d').drawImage(img,0,0,c1.width,c1.height);clean(c1);
@@ -1548,7 +1551,7 @@ async function renderAtt(){var box=document.getElementById('attBox');if(!box)ret
 (function(){var yn=document.getElementById('yn');if(yn&&!document.getElementById('attBox')){var d=document.createElement('div');d.id='attBox';d.hidden=true;yn.parentNode.insertBefore(d,yn.nextSibling)}})();
 var _ryn=renderYN;renderYN=function(){var r=_ryn.apply(this,arguments);try{renderAtt()}catch(e){}return r};
 // PDF: bijlagen achter de bon zetten
-function loadPL(){if(window.PDFLib)return Promise.resolve();return new Promise(function(ok,no){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';s.onload=ok;s.onerror=function(){no(new Error('pdf-lib'))};document.head.appendChild(s)})}
+function loadPL(){return window.mitLoad('pdflib')}
 function asc(s){return String(s||'').replace(/[^\x20-\x7E -ÿ]/g,'?')}
 async function mergeAtt(mainBlob,bon,list){await loadPL();var P=window.PDFLib,out=await P.PDFDocument.create(),font=await out.embedFont(P.StandardFonts.Helvetica);
  var m=await P.PDFDocument.load(await mainBlob.arrayBuffer(),{ignoreEncryption:true});(await out.copyPages(m,m.getPageIndices())).forEach(function(p){out.addPage(p)});
@@ -1579,7 +1582,7 @@ try{renderAtt()}catch(e){}
 <script>
 /* Invulvelden voor kantoor: na het maken van de werkbon-PDF met PDF-lib echte formuliervelden toevoegen */
 (function(){
-function loadPL(){if(window.PDFLib)return Promise.resolve();return new Promise(function(ok,no){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';s.onload=ok;s.onerror=function(){no(new Error('pdf-lib'))};document.head.appendChild(s)})}
+function loadPL(){return window.mitLoad('pdflib')}
 async function addFields(blob,FF,flat){await loadPL();var P=window.PDFLib,d=await P.PDFDocument.load(await blob.arrayBuffer(),{ignoreEncryption:true}),pg=d.getPage(0),
   W=pg.getWidth(),H=pg.getHeight(),sx=W/924,sy=H/1307,font=await d.embedFont(P.StandardFonts.Helvetica),ink=P.rgb(10/255,15/255,70/255),grey=P.rgb(.24,.24,.24),used={};
  var clean=function(v){return String(v||'').replace(/[^\x20-\x7E -ÿ€]/g,'?')};
@@ -1744,8 +1747,8 @@ function html(){var p=prof(),c=rcfg();
   '<h3>Herinnering weeklijst</h3>'+
   '<div class="row"><div><div class="lb">Elke vrijdag een melding</div><div class="vl">Als de weeklijst van die week uren heeft maar nog niet naar je leidinggevende is verstuurd.</div></div>'+
   '<label style="display:flex;align-items:center;gap:8px;font-size:14px"><input id="wrOn" type="checkbox" style="width:auto;margin:0"'+(c.on?' checked':'')+'> om <input id="wrT" type="time" value="'+ee(c.tijd)+'" style="width:auto;margin:0;padding:6px"></label></div>'}
-function infoHtml(){return '<h3>Info</h3><div class="vl" style="padding:2px 0 8px">Handleiding: tik op een onderwerp. <a href="handleiding.pdf" target="_blank" rel="noopener" style="color:var(--ac);font-weight:600">Hele handleiding als PDF</a></div>'+'<details class="hl"><summary>Wat doet de app</summary><div class="hb"><p>Met de MIT Werkbon-app vul je werkbonnen en je weeklijst in op je telefoon, en verstuur je de bon als PDF naar de klant en naar kantoor. Je maakt één keer een account aan; daarna wordt alles vanzelf in je account bewaard, zodat je niets kwijtraakt als je telefoon stuk of weg is.</p><ul><li><b>Werkbonnen:</b> klantgegevens, werkzaamheden, uren, materialen, handtekeningen en foto\'s.</li><li><b>Weeklijsten:</b> je uren per dag, en de storingsdienst.</li><li><b>Back-up:</b> gaat automatisch naar je account. Je hoeft er niets voor te doen.</li></ul><p>Adres van de app: <b>https://loonlijst-werkbon.vercel.app</b></p></div></details><details class="hl"><summary>App installeren</summary><div class="hb"><p>Je installeert de app één keer; daarna staat hij als icoon <b>MIT Werkbon</b> op je startscherm.</p><p><b>Android (Chrome)</b></p><ol><li>Open https://loonlijst-werkbon.vercel.app in Chrome.</li><li>Tik rechtsboven op de drie puntjes.</li><li>Kies <b>App installeren</b> of <b>Toevoegen aan startscherm</b>.</li></ol><p><b>iPhone (Safari)</b></p><ol><li>Open https://loonlijst-werkbon.vercel.app in Safari.</li><li>Tik onderin op het deel-icoon (vierkant met pijl omhoog).</li><li>Kies <b>Zet op beginscherm</b> en tik op <b>Voeg toe</b>.</li></ol><p>De eerste keer heb je internet nodig. Daarna werkt de app ook zonder internet.</p></div></details><details class="hl"><summary>Account en inloggen</summary><div class="hb"><p>Je maakt <b>één keer</b> een account aan met je voor- en achternaam, je e-mailadres en een zelfgekozen wachtwoord (minimaal 6 tekens). Daarna loopt de app met je door: instellingen, handtekening en e-mailadres bevestigen. Daarna blijf je ingelogd.</p><p>Op het startscherm staat zolang nodig <b>Eerste keer</b> met wat nog niet klaar is. Tik op een regel om het af te maken.</p><p><b>Al een account?</b> (nieuwe telefoon, app opnieuw geïnstalleerd) Kies <b>Inloggen</b>, niet Account aanmaken.</p><p><b>Wachtwoord vergeten?</b> Tik op Inloggen, vul je e-mailadres in en tik op <b>Wachtwoord vergeten?</b> Je krijgt een mail (kijk ook bij ongewenste mail).</p></div></details><details class="hl"><summary>Mijn gegevens</summary><div class="hb"><p>Zet hier één keer je <b>naam</b> en <b>handtekening</b>. Ze komen vanzelf op elke nieuwe bon en op je weeklijst. Op een bon kun je ze nog wijzigen.</p></div></details><details class="hl"><summary>Werkbon invullen en afronden</summary><div class="hb"><ol><li>Startscherm: <b>Werkbonnen</b>.</li><li>Vul de tabbladen in: Opdracht, Werk, Uren, Materialen.</li><li>Bij <b>Uren</b>: per dag datum, reistijd, werktijd en pauze. De uren komen vanzelf in je weeklijst.</li><li>Bij <b>Afronden</b>: laat de klant tekenen, vul het e-mailadres van de klant in en tik op <b>Afronden: PDF maken en versturen</b>.</li></ol><p>De app laat eerst zien wat nog ontbreekt. <b>Rood</b> moet eerst ingevuld worden; <b>grijs</b> mag ontbreken (dan <b>Toch afronden</b>). Tik op een regel om ernaartoe te gaan.</p><p><b>Foto\'s of bestanden meesturen:</b> zet bij Werk <b>Aanvullend rapport</b> op Ja en kies Foto(\'s) maken of Bestand(en) toevoegen. Kantoor krijgt alles; de klant alleen wat je aanvinkt bij <i>Ook naar klant</i>.</p><p>Alles wordt meteen bewaard; je hoeft niet op opslaan te drukken.</p></div></details><details class="hl"><summary>Werkbon uit de mail of van papier</summary><div class="hb"><p>De app vult werkbonnr., klant, adres, postcode en plaats, telefoon en omschrijving vanzelf in. Controleer ze altijd even.</p><p><b>Android:</b> open de PDF in je mail, tik op <b>Delen</b> en kies <b>MIT Werkbon</b>.</p><p><b>iPhone:</b> PDF in de mail &gt; Delen &gt; <b>Bewaar in Bestanden</b>. Daarna in de app: <b>Werkbon importeren</b> &gt; <b>Bestand selecteren</b> en kies de PDF.</p><p><b>Papieren bon:</b> Werkbon importeren &gt; <b>Bon scannen</b>. Leg de bon plat, fotografeer recht van boven met de hele bon in beeld en genoeg licht.</p></div></details><details class="hl"><summary>Klantenbestand</summary><div class="hb"><p>Alle collega\'s met een e-mailadres op <b>@mit-installatietechniek.com</b> delen één klantenbestand (naam, adres, postcode en plaats).</p><p><b>Eén keer:</b> tandwieltje &gt; Klantenbestand &gt; <b>Bevestigingsmail sturen</b>. Tik op de link in de mail en daarna op <b>Ik heb bevestigd</b>.</p><p><b>Gebruiken:</b> typ bij <b>Naam</b> de eerste letters en kies de klant uit het lijstje. Adres en postcode en plaats worden ingevuld. Heeft een klant meerdere vestigingen, kies dan het juiste adres.</p><p>Nieuwe klanten komen er vanzelf in als je een bon verstuurt. Werkt ook zonder internet.</p></div></details><details class="hl"><summary>Mijn bonnen</summary><div class="hb"><p>Elke bon heeft een label: <b>Open</b> (nog niet afgerond), <b>Afgerond</b> (PDF gemaakt, nog niet verstuurd) of <b>Verstuurd</b>.</p><p>Tik op <b>Niet verstuurd</b> om alleen die bonnen te zien. Heb je een afgeronde bon op een andere manier verstuurd? Tik op <b>Is verstuurd</b>.</p><p>Op het startscherm staat hoeveel bonnen nog niet verstuurd zijn; tik erop om ze te openen.</p></div></details><details class="hl"><summary>Weeklijst versturen</summary><div class="hb"><p>De weeklijst loopt van <b>zaterdag t/m vrijdag</b>. Vul per dag aan wat nog ontbreekt.</p><p>Per dag zijn de eerste 8 uur gewone uren, de rest overuren. Pas je dat zelf aan, dan blijft jouw verdeling staan.</p><ol><li>Zet onderaan je <b>handtekening</b> (staat er al als je die bij Mijn gegevens hebt gezet).</li><li>Tik op <b>Verstuur naar leidinggevende</b>, vul het e-mailadres in en tik op <b>Verzenden</b>.</li><li>Kies je mail-app. De weeklijst, alle werkbonnen (met bijlagen) en de verzamel-PDF zitten er al in.</li></ol><p>iPhone: staat er <b>Tik nu om te versturen</b> op de knop, tik dan nog een keer.</p><p>Op vrijdag krijg je een herinnering als je weeklijst nog niet verstuurd is.</p></div></details><details class="hl"><summary>Storingsdienst</summary><div class="hb"><p>Zet in de werkbon de knop <b>STORINGSDIENST</b> op <b>JA</b> als je dienst hebt. De uren komen dan in de storingsdienstlijst (vrijdag t/m vrijdag). Die verstuur je apart: Weeklijsten &gt; <b>Storingsdienst</b> &gt; Verstuur naar leidinggevende.</p><p><b>Vergoeding:</b> vink in de storingsdienstlijst per dag <b>Storingsdienst</b> aan. Er komt een regel bij met € 20 (ma t/m vr), € 35 (za en zo) of € 50 (feestdag). Elke storingsbon geeft € 25 per dag dat je ervoor uitrijdt (twee keer op één dag naar dezelfde opdracht = één keer € 25). Heb je volgens het rooster dienst, dan staan de vinkjes vanzelf aan.</p><p><b>Rooster:</b> op het startscherm staat wie nu en volgende week dienst heeft. Tik erop voor je eigen diensten, het hele rooster en de calamiteitennummers, met een <b>Bel</b>-knop.</p><p>De eerste keer vraagt de app of je naam in het rooster klopt. Fout gekoppeld? Tandwieltje &gt; Storingsdienst &gt; <b>Wijzigen</b>.</p><p><b>Herinneringen:</b> een week vooraf, de dag ervoor, en na afloop om de storingsdienstlijst te versturen. Aan- of uitzetten onder het tandwieltje &gt; Storingsdienst.</p></div></details><details class="hl"><summary>Back-up</summary><div class="hb"><p>Als je bent ingelogd, gaat alles vanzelf naar je account: na wijzigingen, bij het sluiten van de app en elke dag. De laatste 30 dagen blijven bewaard.</p><p><b>Nieuwe telefoon:</b> installeer de app, kies <b>Inloggen</b> en tik op <b>Terugzetten</b> als de app daarom vraagt.</p><p><b>Oudere back-up terugzetten:</b> tandwieltje &gt; Account en online back-up &gt; <b>Terugzetten</b> naast de gewenste datum.</p></div></details><details class="hl"><summary>Problemen oplossen</summary><div class="hb"><ul><li><b>"Er bestaat al een account"</b>: kies Inloggen.</li><li><b>"Wachtwoord klopt niet"</b>: gebruik Wachtwoord vergeten?</li><li><b>"Duurt te lang" / geen internet</b>: controleer je internet, sluit de app helemaal af en open hem opnieuw.</li><li><b>Oude versie</b>: sluit de app helemaal af en open hem twee keer.</li><li><b>Iets anders</b>: maak een schermafbeelding en stuur die naar kantoor.</li></ul></div></details><details class="hl"><summary>Veiligheid</summary><div class="hb"><ul><li>Zet een schermvergrendeling (pincode of vingerafdruk) op je telefoon: de app blijft ingelogd.</li><li>Deel je wachtwoord met niemand.</li><li>Stuur PDF\'s alleen naar de klant en naar kantoor.</li></ul></div></details>'+'<div class="vl" style="padding:12px 0 4px">MIT Werkbonnen · versie '+APPV+' · gemaakt op '+APPT+'</div>'}
-var APPV='111',APPT='31-10-2026 15:05';
+function infoHtml(){return '<h3>Info</h3><div class="vl" style="padding:2px 0 8px">Handleiding: tik op een onderwerp. <a href="handleiding.pdf" target="_blank" rel="noopener" style="color:var(--ac);font-weight:600">Hele handleiding als PDF</a></div>'+'<details class="hl"><summary>Wat doet de app</summary><div class="hb"><p>Met de MIT Werkbon-app vul je werkbonnen en je weeklijst in op je telefoon, en verstuur je de bon als PDF naar de klant en naar kantoor. Je maakt één keer een account aan; daarna wordt alles vanzelf in je account bewaard, zodat je niets kwijtraakt als je telefoon stuk of weg is.</p><ul><li><b>Werkbonnen:</b> klantgegevens, werkzaamheden, uren, materialen, handtekeningen en foto\'s.</li><li><b>Weeklijsten:</b> je uren per dag, en de storingsdienst.</li><li><b>Back-up:</b> gaat automatisch naar je account. Je hoeft er niets voor te doen.</li></ul><p>Adres van de app: <b>https://loonlijst-werkbon.vercel.app</b></p></div></details><details class="hl"><summary>App installeren</summary><div class="hb"><p>Je installeert de app één keer; daarna staat hij als icoon <b>MIT Werkbon</b> op je startscherm.</p><p><b>Android (Chrome)</b></p><ol><li>Open https://loonlijst-werkbon.vercel.app in Chrome.</li><li>Tik rechtsboven op de drie puntjes.</li><li>Kies <b>App installeren</b> of <b>Toevoegen aan startscherm</b>.</li></ol><p><b>iPhone (Safari)</b></p><ol><li>Open https://loonlijst-werkbon.vercel.app in Safari.</li><li>Tik onderin op het deel-icoon (vierkant met pijl omhoog).</li><li>Kies <b>Zet op beginscherm</b> en tik op <b>Voeg toe</b>.</li></ol><p>De eerste keer heb je internet nodig. Daarna werkt de app ook zonder internet.</p></div></details><details class="hl"><summary>Account en inloggen</summary><div class="hb"><p>Je maakt <b>één keer</b> een account aan met je voor- en achternaam, je e-mailadres en een zelfgekozen wachtwoord (minimaal 6 tekens). Daarna loopt de app met je door: instellingen, handtekening en e-mailadres bevestigen. Daarna blijf je ingelogd.</p><p>Op het startscherm staat zolang nodig <b>Eerste keer</b> met wat nog niet klaar is. Tik op een regel om het af te maken.</p><p><b>Al een account?</b> (nieuwe telefoon, app opnieuw geïnstalleerd) Kies <b>Inloggen</b>, niet Account aanmaken.</p><p><b>Wachtwoord vergeten?</b> Tik op Inloggen, vul je e-mailadres in en tik op <b>Wachtwoord vergeten?</b> Je krijgt een mail (kijk ook bij ongewenste mail).</p></div></details><details class="hl"><summary>Mijn gegevens</summary><div class="hb"><p>Zet hier één keer je <b>naam</b> en <b>handtekening</b>. Ze komen vanzelf op elke nieuwe bon en op je weeklijst. Op een bon kun je ze nog wijzigen.</p></div></details><details class="hl"><summary>Werkbon invullen en afronden</summary><div class="hb"><ol><li>Startscherm: <b>Werkbonnen</b>.</li><li>Vul de tabbladen in: Opdracht, Werk, Uren, Materialen.</li><li>Bij <b>Uren</b>: per dag datum, reistijd, werktijd en pauze. De uren komen vanzelf in je weeklijst.</li><li>Bij <b>Afronden</b>: laat de klant tekenen, vul het e-mailadres van de klant in en tik op <b>Afronden: PDF maken en versturen</b>.</li></ol><p>De app laat eerst zien wat nog ontbreekt. <b>Rood</b> moet eerst ingevuld worden; <b>grijs</b> mag ontbreken (dan <b>Toch afronden</b>). Tik op een regel om ernaartoe te gaan.</p><p><b>Foto\'s of bestanden meesturen:</b> zet bij Werk <b>Aanvullend rapport</b> op Ja en kies Foto(\'s) maken of Bestand(en) toevoegen. Kantoor krijgt alles; de klant alleen wat je aanvinkt bij <i>Ook naar klant</i>.</p><p>Alles wordt meteen bewaard; je hoeft niet op opslaan te drukken.</p></div></details><details class="hl"><summary>Werkbon uit de mail of van papier</summary><div class="hb"><p>De app vult werkbonnr., klant, adres, postcode en plaats, telefoon en omschrijving vanzelf in. Controleer ze altijd even.</p><p><b>Android:</b> open de PDF in je mail, tik op <b>Delen</b> en kies <b>MIT Werkbon</b>.</p><p><b>iPhone:</b> PDF in de mail &gt; Delen &gt; <b>Bewaar in Bestanden</b>. Daarna in de app: <b>Werkbon importeren</b> &gt; <b>Bestand selecteren</b> en kies de PDF.</p><p><b>Papieren bon:</b> Werkbon importeren &gt; <b>Bon scannen</b>. Leg de bon plat, fotografeer recht van boven met de hele bon in beeld en genoeg licht.</p></div></details><details class="hl"><summary>Klantenbestand</summary><div class="hb"><p>Alle collega\'s met een e-mailadres op <b>@mit-installatietechniek.com</b> delen één klantenbestand (naam, adres, postcode en plaats). Heb je een ander e-mailadres, dan kan de beheerder je toelaten.</p><p><b>Eén keer:</b> tandwieltje &gt; Klantenbestand &gt; <b>Bevestigingsmail sturen</b>. Tik op de link in de mail en daarna op <b>Ik heb bevestigd</b>.</p><p><b>Gebruiken:</b> typ bij <b>Naam</b> de eerste letters en kies de klant uit het lijstje. Adres en postcode en plaats worden ingevuld. Heeft een klant meerdere vestigingen, kies dan het juiste adres.</p><p>Nieuwe klanten komen er vanzelf in als je een bon verstuurt. Werkt ook zonder internet.</p></div></details><details class="hl"><summary>Mijn bonnen</summary><div class="hb"><p>Elke bon heeft een label: <b>Open</b> (nog niet afgerond), <b>Afgerond</b> (PDF gemaakt, nog niet verstuurd) of <b>Verstuurd</b>.</p><p>Tik op <b>Niet verstuurd</b> om alleen die bonnen te zien. Heb je een afgeronde bon op een andere manier verstuurd? Tik op <b>Is verstuurd</b>.</p><p>Op het startscherm staat hoeveel bonnen nog niet verstuurd zijn; tik erop om ze te openen.</p></div></details><details class="hl"><summary>Weeklijst versturen</summary><div class="hb"><p>De weeklijst loopt van <b>zaterdag t/m vrijdag</b>. Vul per dag aan wat nog ontbreekt.</p><p>Per dag zijn de eerste 8 uur gewone uren, de rest overuren. Pas je dat zelf aan, dan blijft jouw verdeling staan.</p><ol><li>Zet onderaan je <b>handtekening</b> (staat er al als je die bij Mijn gegevens hebt gezet).</li><li>Tik op <b>Verstuur naar leidinggevende</b>, vul het e-mailadres in en tik op <b>Verzenden</b>.</li><li>Kies je mail-app. De weeklijst, alle werkbonnen (met bijlagen) en de verzamel-PDF zitten er al in.</li></ol><p>iPhone: staat er <b>Tik nu om te versturen</b> op de knop, tik dan nog een keer.</p><p>Op vrijdag krijg je een herinnering als je weeklijst nog niet verstuurd is.</p></div></details><details class="hl"><summary>Storingsdienst</summary><div class="hb"><p>Zet in de werkbon de knop <b>STORINGSDIENST</b> op <b>JA</b> als je dienst hebt. De uren komen dan in de storingsdienstlijst (vrijdag t/m vrijdag). Die verstuur je apart: Weeklijsten &gt; <b>Storingsdienst</b> &gt; Verstuur naar leidinggevende.</p><p><b>Vergoeding:</b> vink in de storingsdienstlijst per dag <b>Storingsdienst</b> aan. Er komt een regel bij met € 20 (ma t/m vr), € 35 (za en zo) of € 50 (feestdag). Elke storingsbon geeft € 25 per dag dat je ervoor uitrijdt (twee keer op één dag naar dezelfde opdracht = één keer € 25). Heb je volgens het rooster dienst, dan staan de vinkjes vanzelf aan.</p><p><b>Rooster:</b> op het startscherm staat wie nu en volgende week dienst heeft. Tik erop voor je eigen diensten, het hele rooster en de calamiteitennummers, met een <b>Bel</b>-knop.</p><p>De eerste keer vraagt de app of je naam in het rooster klopt. Fout gekoppeld? Tandwieltje &gt; Storingsdienst &gt; <b>Wijzigen</b>.</p><p><b>Herinneringen:</b> een week vooraf, de dag ervoor, en na afloop om de storingsdienstlijst te versturen. Aan- of uitzetten onder het tandwieltje &gt; Storingsdienst.</p></div></details><details class="hl"><summary>Back-up</summary><div class="hb"><p>Als je bent ingelogd, gaat alles vanzelf naar je account: na wijzigingen, bij het sluiten van de app en elke dag. De laatste 30 dagen blijven bewaard.</p><p><b>Nieuwe telefoon:</b> installeer de app, kies <b>Inloggen</b> en tik op <b>Terugzetten</b> als de app daarom vraagt.</p><p><b>Oudere back-up terugzetten:</b> tandwieltje &gt; Account en online back-up &gt; <b>Terugzetten</b> naast de gewenste datum.</p></div></details><details class="hl"><summary>Problemen oplossen</summary><div class="hb"><ul><li><b>"Er bestaat al een account"</b>: kies Inloggen.</li><li><b>"Wachtwoord klopt niet"</b>: gebruik Wachtwoord vergeten?</li><li><b>"Duurt te lang" / geen internet</b>: controleer je internet, sluit de app helemaal af en open hem opnieuw.</li><li><b>Oude versie</b>: sluit de app helemaal af en open hem twee keer.</li><li><b>Iets anders</b>: maak een schermafbeelding en stuur die naar kantoor.</li></ul></div></details><details class="hl"><summary>Privacy</summary><div class="hb"><p><b>Wat de app bewaart</b></p><ul><li><b>Op je telefoon:</b> je werkbonnen (met klantgegevens, handtekeningen, foto\'s en bijlagen), je weeklijsten, je naam en handtekening en je instellingen.</li><li><b>In je account (online back-up):</b> een kopie daarvan, opgeslagen bij Google (Firebase). Alleen jij en de beheerder van de app kunnen die inzien; de beheerder alleen om te helpen bij problemen of als je gegevens kwijt bent.</li><li><b>Klantenbestand:</b> naam, adres, postcode en plaats van klanten, gedeeld met collega\'s van MIT. Bij elke klant staat wie hem heeft toegevoegd.</li><li><b>Je account:</b> je e-mailadres, wanneer je de app voor het laatst gebruikte en op wat voor toestel, zodat de beheerder kan zien of de back-ups werken.</li></ul><p><b>Wat de app niet doet</b></p><ul><li>Geen reclame, geen tracking en geen locatie.</li><li>Een gescande bon wordt op je telefoon gelezen; de foto gaat nergens heen.</li><li>PDF\'s verstuur je zelf, met je eigen mail-app.</li>'+((window.MIT_FIREBASE||{}).appCheckKey?'<li>Ter beveiliging controleert Google reCAPTCHA of verzoeken echt uit deze app komen; daarbij gaan technische gegevens, zoals je IP-adres, naar Google.</li>':'')+'</ul><p><b>Hoe lang</b></p><ul><li>Online back-ups: de laatste 30 dagen.</li><li>Op je telefoon: verstuurde bonnen tot de bewaartermijn die de beheerder instelt (zie tandwieltje &gt; Privacy). Bonnen die nog niet verstuurd zijn blijven staan.</li><li>Je account: tot je het zelf verwijdert, of tot de beheerder het verwijdert als je uit dienst gaat.</li></ul><p><b>Jouw rechten</b></p><ul><li><b>Inzien:</b> alles staat in de app. Een back-up als bestand: tandwieltje &gt; Back-up &gt; Nu maken.</li><li><b>Verwijderen:</b> tandwieltje &gt; Account en online back-up &gt; <b>Account verwijderen</b>. Alles van je telefoon wissen: tandwieltje &gt; Privacy &gt; <b>Wissen</b>.</li><li><b>Vragen:</b> mail naar kantoor, storingen@mit-installatietechniek.com.</li></ul></div></details><details class="hl"><summary>Veiligheid</summary><div class="hb"><ul><li>Zet een schermvergrendeling (pincode of vingerafdruk) op je telefoon: de app blijft ingelogd.</li><li>Deel je wachtwoord met niemand.</li><li>Stuur PDF\'s alleen naar de klant en naar kantoor.</li></ul></div></details>'+'<div class="vl" style="padding:12px 0 4px">MIT Werkbonnen · versie '+APPV+' · gemaakt op '+APPT+'</div>'}
+var APPV='115',APPT='01-11-2026 17:27';
 function bind(rerender){
  var n=$('pfNaam');if(n)n.onchange=function(){var p=prof();p.naam=n.value.trim();setProf(p);fillCurrent();tst('Naam bewaard.',2000)};
  if($('pfSig'))$('pfSig').onclick=function(){padOpen(function(sg){var p=prof();p.sig=sg;setProf(p);fillCurrent();tst('Handtekening bewaard.',2500);rerender&&rerender()})};
@@ -1782,6 +1785,7 @@ window.addEventListener('load',function(){setTimeout(function(){fillCurrent();wi
 <div id="authOv" hidden><div class="ac" role="dialog" aria-label="Inloggen">
  <h1>MIT Werkbonnen</h1>
  <p id="auIntro">Maak eenmalig een account aan met je e-mailadres en een zelfgekozen wachtwoord. Je back-ups worden dan automatisch in je account bewaard.</p>
+ <details id="auPriv" style="font-size:13px;color:var(--mu);margin:-6px 0 12px"><summary style="cursor:pointer;color:var(--ac)">Wat gebeurt er met mijn gegevens?</summary><p style="font-size:13px;margin:6px 0 0">Je bonnen en weeklijsten staan op je telefoon. Met een account komt er een kopie in je eigen online back-up (Google Firebase), die alleen jij en de beheerder kunnen inzien; de laatste 30 dagen blijven bewaard. Klantnaam en -adres worden gedeeld met collega's van MIT. Geen reclame, geen tracking. Je kunt je account altijd zelf verwijderen. Meer: tandwieltje &gt; Info &gt; Privacy.</p></details>
  <div class="tb"><button type="button" id="auTabR" class="on">Account aanmaken</button><button type="button" id="auTabL">Inloggen</button></div>
  <form id="auForm" autocomplete="on" novalidate>
   <div id="auNaamBox"><label for="auNaam">Voor- en achternaam</label><input id="auNaam" type="text" autocomplete="name" autocapitalize="words"></div>
@@ -1803,7 +1807,7 @@ window.addEventListener('load',function(){setTimeout(function(){fillCurrent();wi
 (function(){
 var C=window.MIT_FIREBASE,BASE='https://www.gstatic.com/firebasejs/10.12.2/';
 var ON=!!(C&&C.apiKey&&String(C.apiKey).indexOf('VUL')!==0)&&!window.claude;
-var auth=null,db=null,user=null,mode='reg',busy=false,CH=300000,KEEP=30,sdkP=null,sdkOk=null;
+var dying=false,auth=null,db=null,user=null,mode='reg',busy=false,CH=300000,KEEP=30,sdkP=null,sdkOk=null;
 var K={uid:'cl:uid',mail:'cl:mail',last:'cl:last',hash:'cl:hash',skip:'cl:skip'};
 function $(i){return document.getElementById(i)}
 function g(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -1816,7 +1820,7 @@ function wait(p,ms){return Promise.race([p,new Promise(function(ok,no){setTimeou
 function hash(t){var h=2166136261;for(var i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+':'+t.length}
 function col(){return db.collection('users').doc(user.uid).collection('backups')}
 function dev(){return (navigator.userAgentData&&navigator.userAgentData.platform)||(/iPhone|iPad/.test(navigator.userAgent)?'iPhone/iPad':/Android/.test(navigator.userAgent)?'Android':'Computer')}
-function profile(x){if(!user||!db)return;var o={email:user.email||'',last:Date.now(),dev:dev()};for(var k in x)o[k]=x[k];try{db.collection('users').doc(user.uid).set(o,{merge:true}).catch(function(){})}catch(e){}}
+function profile(x){if(!user||!db||dying)return;var o={email:user.email||'',last:Date.now(),dev:dev()};for(var k in x)o[k]=x[k];try{db.collection('users').doc(user.uid).set(o,{merge:true}).catch(function(){})}catch(e){}}
 function msg(e){var c=(e&&e.code)||'';return ({
  'auth/invalid-email':'Dit e-mailadres klopt niet.',
  'auth/missing-email':'Vul je e-mailadres in.',
@@ -1848,11 +1852,18 @@ function msg(e){var c=(e&&e.code)||'';return ({
 function setMode(m){mode=m;var r=m==='reg';$('auTabR').className=r?'on':'';$('auTabL').className=r?'':'on';
  $('auPw2Box').hidden=!r;$('auPwHint').hidden=!r;$('auNaamBox').hidden=!r;$('auForgot').hidden=r;$('auGo').textContent=r?'Account aanmaken':'Inloggen';
  $('auPw').autocomplete=r?'new-password':'current-password';$('auErr').textContent='';$('auErr').className='er'}
-function showLogin(off){var o=$('authOv');o.hidden=false;
- $('auSkip').hidden=!off;
+function showLogin(off){var o=$('authOv');o.hidden=false;var bl=g('cl:blocked');
+ $('auSkip').hidden=!off||!!bl;
+ if(g(K.mail)){$('auMail').value=g(K.mail);setMode('login')}
  if(off){$('auErr').className='er';$('auErr').textContent='Geen internet. Voor het aanmaken van een account of inloggen is internet nodig.'}
- if(g(K.mail)){$('auMail').value=g(K.mail);setMode('login')}}
+ if(bl){$('auErr').className='er';$('auErr').textContent='De toegang van '+bl+' tot de app is ingetrokken door de beheerder. Neem contact op met kantoor. Je kunt alleen inloggen met een ander account.'}}
 function hideLogin(){$('authOv').hidden=true}
+async function checkBlock(){if(!user||!db)return;var em=String(user.email||'').toLowerCase();if(!em)return;
+ try{var d=await db.collection('geblokkeerd').doc(em).get();
+  if(d.exists&&(d.data()||{}).volledig){s('cl:blocked',em);try{sessionStorage.removeItem(K.skip)}catch(e){}
+   try{s('kl:cache',null);s('ro:cache',null);s('ro:me',null)}catch(e){}
+   try{await auth.signOut()}catch(e){}showLogin(false)}
+  else if(g('cl:blocked'))s('cl:blocked',null)}catch(e){}}
 function initForm(){
  $('auTabR').onclick=function(){setMode('reg')};$('auTabL').onclick=function(){setMode('login')};
  $('auShow').onchange=function(){var t=this.checked?'text':'password';$('auPw').type=t;$('auPw2').type=t};
@@ -1887,7 +1898,7 @@ function ask(html,yes,no){return new Promise(function(ok){$('clAskT').innerHTML=
 async function payload(){var d=new Date();return JSON.stringify({v:1,t:d.toISOString(),cloud:true,data:window.bkKeys(),att:(window.bkAttDump?await window.bkAttDump():{})})}
 var upBusy=false;
 async function backup(why){ // why: 'hand' | 'auto' | 'wijz'
- if(!user||!db)return 'off';if(!navigator.onLine)return 'offline';if(upBusy)return 'busy';upBusy=true;
+ if(!user||!db||dying)return 'off';if(!navigator.onLine)return 'offline';if(upBusy)return 'busy';upBusy=true;
  try{var txt=await payload(),h=hash(txt);
   if(why!=='hand'&&h===g(K.hash)&&Date.now()-(+g(K.last)||0)<864e5){upBusy=false;return 'ok'} // niets veranderd
   var d=new Date(),id=d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()),ref=col().doc(id),n=Math.max(1,Math.ceil(txt.length/CH)),old=0;
@@ -1921,12 +1932,30 @@ function html(){if(!ON)return '';var l=+g(K.last)||0,h='<h3>Account en online ba
  h+='<div class="row"><div class="vl">Laatste online back-up: '+(l?fd(l):'nog geen')+'</div><button class="sb" id="clNow" type="button">Nu opslaan</button></div>';
  h+='<div class="row" style="display:block"><div class="lb" style="margin-bottom:6px">Online back-ups</div><div id="clList" class="vl">Laden…</div></div>';
  h+='<div class="row"><div class="vl">Wachtwoord wijzigen: je krijgt een e-mail met een link.</div><button class="sb" id="clPw" type="button">E-mail sturen</button></div>';
+ h+='<div class="row"><div><div class="lb">Account verwijderen</div><div class="vl">Je account en al je online back-ups worden definitief verwijderd.</div></div><button class="sb" id="clDel" type="button" style="color:#c62828">Verwijderen</button></div>';
  return h}
+async function delAccount(pw){if(!user||!db||!auth)return 'Geen verbinding met je account.';if(!navigator.onLine)return 'Geen internet. Probeer het opnieuw als je online bent.';
+ try{await wait(auth.reauth(pw),30000)}catch(e){return msg(e)}
+ dying=true;
+ try{var q=await wait(col().get(),30000);
+  for(var i=0;i<q.docs.length;i++){var ps=await q.docs[i].ref.collection('parts').get();for(var k=0;k<ps.docs.length;k++)await ps.docs[k].ref.delete();await q.docs[i].ref.delete()}
+  await wait(db.collection('users').doc(user.uid).delete(),30000);
+  await wait(auth.deleteMe(),30000)}
+ catch(e){dying=false;return 'Verwijderen mislukt: '+msg(e)}
+ s(K.uid,null);s(K.last,null);s(K.hash,null);s(K.mail,null);return 'ok'}
 function bind(rerender){var q=$;
  if(q('clIn'))q('clIn').onclick=function(){document.getElementById('ovSet').hidden=true;showLogin(!auth)};
  if(q('clOut'))q('clOut').onclick=async function(){var ok=await ask('<b>Uitloggen?</b><p class="hd" style="font-size:14px">Er wordt eerst nog een online back-up gemaakt. Je bonnen en weeklijsten blijven op dit apparaat staan.</p>','Uitloggen','Annuleren');if(!ok)return;
   await backup('auto');try{await auth.signOut()}catch(e){}document.getElementById('ovSet').hidden=true};
  if(q('clNow'))q('clNow').onclick=async function(){this.disabled=true;this.textContent='Bezig…';var r=await backup('hand');if(r==='ok')tst('Online back-up opgeslagen.',3000);else if(r==='offline')tst('Geen internet. De back-up wordt gemaakt zodra je weer online bent.',5000);rerender&&rerender()};
+ if(q('clDel'))q('clDel').onclick=async function(){var bt=this;
+  var ok=await ask('<b>Account definitief verwijderen?</b><p class="hd" style="font-size:14px">Je account en al je online back-ups worden verwijderd. Dit kan niet ongedaan worden gemaakt. Verstuurde PDF\'s en klanten in het gedeelde klantenbestand blijven bestaan.</p><label for="clDelPw" style="font-size:14px">Je wachtwoord ter bevestiging</label><input id="clDelPw" type="password" autocomplete="current-password" style="width:100%;margin:4px 0 10px"><label style="display:flex;gap:8px;align-items:center;font-size:14px"><input id="clDelWipe" type="checkbox" checked style="width:auto;margin:0"> Ook alle bonnen en weeklijsten op dit apparaat wissen</label>','Definitief verwijderen','Annuleren');
+  var pw=$('clDelPw')?$('clDelPw').value:'',wipe=$('clDelWipe')&&$('clDelWipe').checked;try{$('clDelPw').value=''}catch(e){}
+  if(!ok)return;if(!pw){tst('Vul je wachtwoord in om je account te verwijderen.',5000);return}
+  bt.disabled=true;bt.textContent='Bezig…';var r=await delAccount(pw);
+  if(r!=='ok'){tst(r,7000);bt.disabled=false;bt.textContent='Verwijderen';return}
+  if(wipe&&window.mitWipe){window.mitWipe();return}
+  document.getElementById('ovSet').hidden=true;setTimeout(function(){showLogin(false);$('auErr').className='er ok';$('auErr').textContent='Je account en online back-ups zijn verwijderd. Je bonnen en weeklijsten staan nog op dit apparaat.'},300)};
  if(q('clPw'))q('clPw').onclick=async function(){try{await auth.sendPasswordResetEmail(user.email);tst('E-mail verstuurd naar '+user.email,5000)}catch(e){tst(msg(e),5000)}};
  if(q('clList'))list(10).then(function(a){var el=q('clList');if(!el)return;if(!a.length){el.textContent='Nog geen online back-ups.';return}
   el.innerHTML=a.map(function(b){return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed var(--bd)"><span>'+fd(b.t)+' · '+ee(b.dev||'')+' · '+Math.max(1,Math.round((b.size||0)/1024))+' kB</span><button class="sb" type="button" data-rs="'+ee(b.id)+'">Terugzetten</button></div>'}).join('');
@@ -1953,15 +1982,60 @@ async function start(){
  catch(e){sdkOk();try{console.warn('MIT account laden:',e)}catch(x){}if(!known&&!skip)showLogin(true);return}
  sdkOk();
  var started=false;auth.onAuthStateChanged(function(u){user=u||null;
-  if(u){s(K.uid,u.uid);s(K.mail,u.email);hideLogin();chip();if(!started){started=true;afterLogin()}}
+  if(u){s(K.uid,u.uid);s(K.mail,u.email);hideLogin();chip();checkBlock();if(!started){started=true;afterLogin()}}
   else{started=false;s(K.uid,null);s(K.last,null);s(K.hash,null);chip();var sk=false;try{sk=sessionStorage.getItem(K.skip)==='1'}catch(e){}if(!sk)showLogin(false)}});
  // na wijzigingen: hooguit elke 15 minuten een online back-up, en bij het wegklikken van de app
  setInterval(function(){if(user&&document.visibilityState==='visible'&&Date.now()-(+g(K.last)||0)>15*60e3)backup('wijz')},5*60e3);
+ setInterval(function(){if(user&&document.visibilityState==='visible')checkBlock()},5*60e3);
+ document.addEventListener('visibilitychange',function(){if(user&&document.visibilityState==='visible')checkBlock()});
  document.addEventListener('visibilitychange',function(){if(user&&document.visibilityState==='hidden')backup('wijz')});
  window.addEventListener('online',function(){if(user)setTimeout(function(){backup('wijz')},3000)})}
 
-window.mitCloud={on:function(){return ON},ready:function(){return !!(user&&db)},fb:function(){return {auth:auth,db:db,user:user}},backup:backup,html:html,bind:bind,chip:chip};
+window.mitCloud={on:function(){return ON},ready:function(){return !!(user&&db)},fb:function(){return {auth:auth,db:db,user:user}},backup:backup,html:html,bind:bind,chip:chip,ask:ask,logout:function(){dying=true;return auth?auth.signOut():Promise.resolve()}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
+<script>
+/* Privacy: bewaartermijn van verstuurde bonnen op dit apparaat, en alles van dit apparaat wissen */
+(function(){
+var KK='mit-keep',KL='mit-keep-last',PRE='mit-wr:',OPT=[[90,'3 maanden'],[182,'6 maanden'],[365,'1 jaar'],[730,'2 jaar'],[1825,'5 jaar'],[2555,'7 jaar']];
+function g(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function s(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,String(v))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function tst(t,ms){try{toast(t,ms)}catch(e){}}
+function days(){var v=g(KK);return v==null||v===''?0:(+v||0)} // 0 = altijd bewaren (zolang de beheerder niets instelt)
+// termijn komt van de beheerder (Firestore instellingen/app), wordt hier onthouden zodat het ook zonder internet werkt
+async function fetchKeep(){var F=window.mitCloud&&window.mitCloud.ready()&&window.mitCloud.fb();if(!F||!F.db)return false;
+ try{var d=await F.db.collection('instellingen').doc('app').get();var v=d.exists&&(d.data()||{}).bewaar!=null?+(d.data().bewaar)||0:0;s(KK,v);return true}catch(e){return false}}
+function name(d){if(!d)return 'altijd bewaren';for(var i=0;i<OPT.length;i++)if(OPT[i][0]===d)return OPT[i][1];return d+' dagen'}
+function delAtt(ids){return new Promise(function(ok){try{var r=indexedDB.open('mit-att',1);r.onupgradeneeded=function(){r.result.createObjectStore('f')};
+ r.onsuccess=function(){var d=r.result;try{var t=d.transaction('f','readwrite'),st=t.objectStore('f'),q=st.getAllKeys();
+  q.onsuccess=function(){(q.result||[]).forEach(function(k){var b=String(k).split('|')[0];if(ids.indexOf(b)>=0)st.delete(k)})};
+  t.oncomplete=function(){d.close();ok()};t.onerror=function(){d.close();ok()}}catch(e){ok()}};r.onerror=function(){ok()}}catch(e){ok()}})}
+// verstuurde bonnen ouder dan de bewaartermijn van dit apparaat verwijderen (nooit open of niet-verstuurde bonnen)
+async function prune(){var d=days();s(KL,Date.now());if(!d)return 0;var lim=Date.now()-d*864e5,cur=g('mit-wr-cur'),ids=[];
+ try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k.indexOf(PRE)!==0)continue;
+  try{var o=JSON.parse(localStorage.getItem(k));if(o&&o.id&&o.sentAt&&o.id!==cur&&Math.max(+o.sentAt||0,+o.upd||0)<lim)ids.push(o.id)}catch(e){}}}catch(e){}
+ ids.forEach(function(id){s(PRE+id,null)});if(ids.length)await delAtt(ids);return ids.length}
+async function auto(){if(Date.now()-(+g(KL)||0)<864e5)return;var ok=await fetchKeep();if(!ok&&g(KK)==null)return;prune().then(function(n){if(n)tst(n+(n===1?' oude verstuurde bon':' oude verstuurde bonnen')+' van dit apparaat verwijderd (bewaartermijn '+name(days())+').',6000)})}
+setTimeout(auto,8000);setTimeout(auto,40000);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')setTimeout(auto,2000)});
+// alles van dit apparaat wissen
+window.mitWipe=async function(){try{if(window.mitCloud&&window.mitCloud.logout)await window.mitCloud.logout()}catch(e){}
+ try{localStorage.clear()}catch(e){}try{sessionStorage.clear()}catch(e){}
+ await Promise.all(['mit-att','mit-fs'].map(function(n){return new Promise(function(ok){try{var r=indexedDB.deleteDatabase(n);r.onsuccess=r.onerror=r.onblocked=function(){ok()}}catch(e){ok()}setTimeout(ok,2000)})}));
+ location.reload()};
+function ask(h,y,n){if(window.mitCloud&&window.mitCloud.ask)return window.mitCloud.ask(h,y,n);return Promise.resolve(confirm(h.replace(/<[^>]+>/g,' ')))}
+function html(){var d=days();
+ return '<h3>Privacy</h3>'+
+  '<div class="row" style="flex-wrap:wrap"><div style="flex:1 1 200px"><div class="lb">Bewaartermijn op dit apparaat</div><div class="vl">Verstuurde werkbonnen (met foto\'s en bijlagen) die ouder zijn, worden van dit apparaat verwijderd. Bonnen die nog niet verstuurd zijn blijven altijd staan.</div></div>'+
+  '<div class="lb" style="white-space:nowrap">'+name(d).replace(/^a/,'A')+'</div></div>'+
+  '<div class="vl" style="padding:0 0 6px">De bewaartermijn wordt ingesteld door de beheerder.</div>'+
+  '<div class="row"><div><div class="lb">Alles van dit apparaat wissen</div><div class="vl">Bijvoorbeeld als je je telefoon inlevert. Je wordt afgemeld; je online back-ups blijven bewaard.</div></div><button class="sb" id="pvWipe" type="button" style="color:#c62828">Wissen</button></div>'+
+  '<div class="vl" style="padding:4px 0 8px">Wat er met je gegevens gebeurt: Info &gt; Privacy (onderaan).</div>'}
+function bind(rerender){
+ fetchKeep().then(function(ok){if(ok&&rerender&&$('pvWipe')&&String(days())!==String(bind._d)){bind._d=days();rerender()}});bind._d=days();
+ if($('pvWipe'))$('pvWipe').onclick=async function(){var ok=await ask('<b>Alles van dit apparaat wissen?</b><p class="hd" style="font-size:14px">Alle werkbonnen, weeklijsten, foto\'s, je handtekening en instellingen worden van dit apparaat verwijderd en je wordt afgemeld. Je online back-ups blijven in je account; inloggen en Terugzetten haalt alles terug.</p>','Alles wissen','Annuleren');if(ok)window.mitWipe()}}
+window.mitPriv={html:html,bind:bind,prune:prune,days:days};
 })();
 </script>
 <script>
@@ -1986,7 +2060,7 @@ function fb(){try{return window.mitCloud&&window.mitCloud.ready()&&window.mitClo
 /* ---------- ophalen ---------- */
 async function refresh(){var F=fb();if(!F){state='uit';return}if(busy)return;busy=true;
  try{var u=F.auth.currentUser||F.user,em=String(u.email||'').toLowerCase(),adm=!!AD&&em===AD;
-  if(!adm&&em.slice(-DOM.length)!==DOM){state='domein';clear();return}
+  if(!adm&&em.slice(-DOM.length)!==DOM){var toe=false;try{toe=(await F.db.collection('toegang').doc(em).get()).exists}catch(e){}if(!toe){state='domein';clear();return}}
   if(!u.emailVerified){try{await u.reload()}catch(e){}u=F.auth.currentUser||u;if(!u.emailVerified){state='bevestig';return}try{await u.getIdToken(true)}catch(e){}}
   try{var q=await F.db.collection('klanten').get();LIST=q.docs.map(function(d){var o=d.data()||{};o.id=d.id;return o});s(CK,JSON.stringify(LIST));s('kl:t',Date.now());state='ok';await flush();sug()}
   catch(e){if(e&&e.code==='permission-denied'){var bl=false;try{bl=(await F.db.collection('geblokkeerd').doc(em).get()).exists}catch(x){}state=bl?'geblokkeerd':'regels';if(bl)clear()}else state='fout'}}
@@ -1995,12 +2069,16 @@ function clear(){LIST=[];s(CK,null);s(PK,null);sug()}
 
 /* ---------- opslaan (bij versturen/afronden) ---------- */
 function doc(k,em){return {naam:k.naam,adres:k.adres,plaats:k.plaats,zoek:norm(k.naam+' '+k.adres+' '+k.plaats).slice(0,400),door:em,t:Date.now()}}
-async function flush(){var F=fb();if(!F||state!=='ok')return;var P=J(PK,{}),ids=Object.keys(P);for(var i=0;i<ids.length;i++){try{await F.db.collection('klanten').doc(ids[i]).set(P[ids[i]]);delete P[ids[i]];s(PK,JSON.stringify(P))}catch(e){return}}}
+var LQ='kl:logq';
+async function flush(){var F=fb();if(!F||state!=='ok')return;var P=J(PK,{}),ids=Object.keys(P);for(var i=0;i<ids.length;i++){try{await F.db.collection('klanten').doc(ids[i]).set(P[ids[i]]);delete P[ids[i]];s(PK,JSON.stringify(P))}catch(e){return}}
+ // wijzigingslog voor de beheerder (wie voegde wat toe of wijzigde wat)
+ var Q=J(LQ,[]);while(Q.length){try{var L=Q[0];await F.db.collection('klantlog').doc(L.t+'_'+Math.random().toString(36).slice(2,8)).set(L);Q.shift();s(LQ,JSON.stringify(Q))}catch(e){if(e&&e.code==='permission-denied'){Q.shift();s(LQ,JSON.stringify(Q));continue}return}}}
 function remember(b){try{var f=(b&&b.f)||{},k={naam:tr(f.naam),adres:tr(f.adres),plaats:tr(f.plaats).replace(/^(\d{4})\s?([a-z]{2})\b/i,function(m,x,y){return x+' '+y.toUpperCase()})};if(!k.naam||!(k.adres||k.plaats))return;
  if(state!=='ok'&&!(state==='fout'&&LIST.length))return;
  var id=kid(k);if(!id)return;var ex=null;LIST.forEach(function(x){if(x.id===id)ex=x});
  if(ex&&ex.naam===k.naam&&ex.adres===k.adres&&ex.plaats===k.plaats)return;
  var F=fb(),em=F?String((F.auth.currentUser||F.user).email||'').toLowerCase():'',d=doc(k,em),P=J(PK,{});P[id]=d;s(PK,JSON.stringify(P));
+ try{var Q=J(LQ,[]);Q.push({k:id,soort:ex?'gewijzigd':'nieuw',naam:k.naam,adres:k.adres,plaats:k.plaats,oud:ex?{naam:ex.naam||'',adres:ex.adres||'',plaats:ex.plaats||''}:null,door:em,t:Date.now()});s(LQ,JSON.stringify(Q.slice(-200)))}catch(e){}
  d.id=id;LIST=LIST.filter(function(x){return x.id!==id}).concat([d]);s(CK,JSON.stringify(LIST));sug();flush()}catch(e){}}
 if(typeof sendMail==='function'){var _sm=sendMail;sendMail=function(){try{remember(window.S)}catch(e){}return _sm.apply(this,arguments)}}
 
@@ -2024,7 +2102,7 @@ function fdT(t){if(!t)return '';var d=new Date(+t);return d.getDate()+'-'+(d.get
 function html(){var h='<h3>Klantenbestand</h3>',t='',b='';
  if(state==='ok'){t='Actief: '+LIST.length+' klant'+(LIST.length===1?'':'en')+(g('kl:t')?' · bijgewerkt '+fdT(g('kl:t')):'')+'.<br>Typ bij Naam de eerste letters van een klant en kies hem uit het lijstje; adres en plaats worden ingevuld. Nieuwe klanten komen er vanzelf in als je een bon verstuurt.';b='<button class="sb" id="klRf" type="button">Vernieuwen</button>'}
  else if(state==='bevestig'){t='Bevestig eerst je e-mailadres. Tik op de knop, open de mail en tik op de link. Kom daarna terug en tik op "Ik heb bevestigd".';b='<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="sb" id="klVf" type="button">Bevestigingsmail sturen</button><button class="sb" id="klVd" type="button">Ik heb bevestigd</button></div>'}
- else if(state==='domein')t='Alleen voor collega\'s met een e-mailadres dat eindigt op '+DOM+'.';
+ else if(state==='domein')t='Alleen voor collega\'s met een e-mailadres dat eindigt op '+DOM+', of voor wie de beheerder heeft toegelaten. Vraag de beheerder om je toe te laten.';
  else if(state==='geblokkeerd')t='Je toegang tot het klantenbestand is ingetrokken door de beheerder.';
  else if(state==='regels')t='Geen toegang. Vraag de beheerder de Firestore-regels uit INSTALLATIE.txt te publiceren.';
  else if(state==='fout'){t='Kon het klantenbestand nu niet ophalen (geen internet?).'+(LIST.length?' Je gebruikt de laatst opgehaalde lijst ('+LIST.length+' klanten).':'');b='<button class="sb" id="klRf" type="button">Opnieuw</button>'}

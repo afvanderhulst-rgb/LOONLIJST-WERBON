@@ -42,8 +42,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v115,
-  verhoog naar v116 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v120,
+  verhoog naar v121 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,6 +242,37 @@ BLOKKEREN (HELE APP)
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels hierboven zijn hiervoor uitgebreid (functie geblokkeerd). Opnieuw plakken en Publiceren.
 
+FOUTENLOGBOEK
+- beheer.html > Gebruikers > "Foutenlogboek": fouten uit de app van monteurs (alleen als ze een account hebben):
+  vastlopers (programmafouten), mislukte online back-ups en mislukte imports. Gelijke fouten worden samengevoegd,
+  met aantal, wie, wanneer, app-versie en soort toestel. Tik op een melding voor de details.
+- Bij een gebruiker in de lijst staat een rood label "N fouten (7 dagen)" als er die week iets misging.
+- Er staat geen inhoud van bonnen in, alleen de foutmelding. Hooguit 30 meldingen per toestel per dag.
+  Zonder internet worden ze bewaard en later verstuurd. Ouder dan 90 dagen wordt opgeruimd.
+- Wissen: per melding ("Deze melding wissen") of alles ("Alles wissen", twee keer tikken).
+- Nieuwe Firestore-regel: "match /foutlog/{id}". Opnieuw plakken en Publiceren.
+
+BONNEN KLAARZETTEN (KANTOOR -> MONTEUR)
+- Kantoor-collega's toevoegen: beheer.html > Gebruikers > "Kantoor-collega's (bonnen klaarzetten)" > e-mailadres > Toevoegen.
+  De collega maakt (als hij dat nog niet heeft) een account aan in de app met precies dat adres en bevestigt het adres.
+  Daarna logt hij in op https://loonlijst-werkbon.vercel.app/beheer.html en ziet hij alleen "Bonnen klaarzetten".
+  Hij ziet GEEN gebruikers, back-ups, klanten of rooster. Verwijderen = direct geen toegang meer.
+- Klaarzetten: tabblad "Bonnen klaarzetten" > PDF('s) erin slepen of kiezen > per bon monteur kiezen,
+  eventueel opmerking > Klaarzetten. (Klassieke Outlook: bijlage eerst opslaan en dan het bestand slepen.)
+- De monteur ziet de bon op zijn startscherm (bij openen van de app en daarna elke 3 minuten), met
+  "Overnemen" (maakt de bon aan met de gegevens uit de PDF) en "PDF bekijken". De opmerking staat bovenaan de bon.
+  Er is geen melding op een vergrendeld scherm: hij ziet het als hij de app opent.
+- In "Klaargezet" zie je per bon: klaargezet / opgehaald (met tijd). Nog niet opgehaald: verplaatsen naar een
+  andere monteur of intrekken. Opgehaalde bonnen worden na 30 dagen opgeruimd.
+- Kantoor ziet alleen een korte monteurslijst (naam + e-mailadres, collectie "monteurs"), niet de gebruikerslijst met
+  back-upgegevens. Die lijst wordt bijgewerkt als een monteur de app opent en elke keer dat jij beheer.html opent.
+  Volledig geblokkeerde gebruikers staan er niet in.
+- Opgehaalde bonnen worden na 30 dagen opgeruimd, niet-opgehaalde na 60 dagen.
+- Logboek (alleen beheerder): tabblad "Bonnen klaarzetten" > "Logboek tonen": wie zette wat klaar, verplaatste of trok in.
+- PDF's worden geopend met pdf.js met een extra veiligheidsinstelling (isEvalSupported uit, tegen CVE-2024-4367),
+  zodat een kwaadaardige PDF geen code kan uitvoeren in de app of op de beheerpagina.
+- Nieuwe Firestore-regels (isKantoor, users, kantoor, inbox). Opnieuw plakken en Publiceren.
+
 BEVEILIGING CONTROLEREN (EEN KEER)
 - beheer.html > Gebruikers > "Beveiliging controleren" geeft dezelfde lijst met knoppen die meteen de juiste
   pagina openen, en je kunt afvinken wat klaar is:
@@ -380,6 +411,12 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
          let pad = /databases/$(database)/documents/geblokkeerd/$(request.auth.token.email);
          return exists(pad) && get(pad).data.get('volledig', false) == true;
        }
+       function isKantoor() {
+         return request.auth != null
+           && request.auth.token.email_verified == true
+           && exists(/databases/$(database)/documents/kantoor/$(request.auth.token.email))
+           && !geblokkeerd();
+       }
        function klantOk() {
          let d = request.resource.data;
          return d.keys().hasOnly(['naam','adres','plaats','zoek','door','t'])
@@ -391,6 +428,49 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
        match /users/{uid}/{document=**} {
          allow read, write: if request.auth != null && request.auth.uid == uid && !geblokkeerd();
          allow read: if isBeheerder();
+       }
+       match /monteurs/{uid} {
+         allow read: if isKantoor() || isBeheerder();
+         allow create, update: if isBeheerder()
+           || (request.auth != null && request.auth.uid == uid && !geblokkeerd()
+               && request.resource.data.keys().hasOnly(['email','naam'])
+               && request.resource.data.email == request.auth.token.email
+               && (!('naam' in request.resource.data)
+                   || (request.resource.data.naam is string && request.resource.data.naam.size() <= 80)));
+         allow delete: if isBeheerder() || (request.auth != null && request.auth.uid == uid);
+       }
+       match /foutlog/{id} {
+         allow create: if request.auth != null && !geblokkeerd()
+           && request.resource.data.uid == request.auth.uid
+           && request.resource.data.keys().hasOnly(['t','uid','email','v','dev','soort','msg','src','n'])
+           && request.resource.data.msg is string && request.resource.data.msg.size() <= 500
+           && request.resource.data.src is string && request.resource.data.src.size() <= 300;
+         allow read, delete: if isBeheerder();
+       }
+       match /inboxlog/{id} {
+         allow create: if (isKantoor() || isBeheerder())
+           && request.resource.data.door == request.auth.token.email
+           && request.resource.data.keys().hasOnly(['t','door','actie','wb','klant','voor','naar']);
+         allow read, delete: if isBeheerder();
+       }
+       match /kantoor/{email} {
+         allow get: if request.auth != null && request.auth.token.email == email;
+         allow read, write: if isBeheerder();
+       }
+       match /inbox/{id} {
+         allow read: if isBeheerder() || isKantoor()
+           || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd());
+         allow create, delete: if isBeheerder() || isKantoor();
+         allow update: if isBeheerder() || isKantoor()
+           || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
+               && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald'])
+               && request.resource.data.status == 'opgehaald');
+         match /parts/{p} {
+           allow read: if isBeheerder() || isKantoor()
+             || (request.auth != null && !geblokkeerd()
+                 && get(/databases/$(database)/documents/inbox/$(id)).data.voor == request.auth.uid);
+           allow write: if isBeheerder() || isKantoor();
+         }
        }
        match /klanten/{id} {
          allow read: if isMit() || isBeheerder();

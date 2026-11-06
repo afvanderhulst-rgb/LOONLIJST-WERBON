@@ -3,11 +3,12 @@ MIT Werkbonnen - installeerbare app (PWA)
 INHOUD
 index.html (de app met keuze Werkbonnen / Weeklijsten), manifest.webmanifest,
 sw.js (voor offline gebruik), firebase-config.js (gegevens voor account en online back-up),
-fb.js (laadt Firebase), libs.js (laadt de onderdelen), package.json + build.mjs (voor Vercel), rooster.js (leest het storingsrooster), beheer.html (beheerpagina), handleiding.pdf (handleiding
+fb.js (laadt Firebase), libs.js (laadt de onderdelen), package.json + build.mjs (voor Vercel), rooster.js (leest het storingsrooster), beheer.html (beheerpagina), firestore-regels.txt (de regels voor Firebase: kopiëren en plakken), handleiding.pdf (handleiding
 voor monteurs, link onder tandwieltje > Info), iconen.
 
 HUIDIG ADRES VAN DE APP:  https://loonlijst-werkbon.vercel.app
 Beheerpagina:             https://loonlijst-werkbon.vercel.app/beheer.html
+Firestore-regels:         firestore-regels.txt (hele bestand plakken in Firestore Database > Regels > Publiceren)
 
 STAP 1 - Zet de map online (HTTPS is verplicht voor installeren)
 Kies een van deze mogelijkheden:
@@ -42,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v120,
-  verhoog naar v121 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v121,
+  verhoog naar v122 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -175,7 +176,7 @@ KLANTENBESTAND (GEDEELD MET COLLEGA'S)
   verwijder de andere. Alleen de beheerder kan verwijderen.
 - Toegang intrekken (beheer.html > Gebruikers): knop "Toegang klanten intrekken" bij de collega, of
   onderaan een e-mailadres invullen. Terugzetten kan op dezelfde plek. Zijn eigen back-ups blijven werken.
-- Let op: de Firestore-regels hierboven zijn hiervoor uitgebreid. Plak ze opnieuw en kies Publiceren.
+- Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid. Plak ze opnieuw en kies Publiceren.
 
 STORINGSROOSTER
 - Beheerder: beheer.html > Rooster > PDF kiezen (de PDF van het storingsrooster, zoals 000_Storingsrooster_2026).
@@ -194,7 +195,7 @@ STORINGSROOSTER
   donderdag 12:00) en na afloop "verstuur de storingsdienstlijst" (blijft terugkomen tot hij verstuurd is;
   Nu versturen opent de juiste week). Meldingen verschijnen als de app open is.
 - Alleen zichtbaar voor collega's met toegang tot het klantenbestand (zelfde regels). De Firestore-regels
-  hierboven zijn hiervoor uitgebreid met "match /rooster": opnieuw plakken en Publiceren.
+  (firestore-regels.txt) zijn hiervoor uitgebreid met "match /rooster": plak firestore-regels.txt opnieuw en kies Publiceren.
 - Ruilen twee monteurs een dienst? Pas het rooster aan en publiceer het opnieuw.
 
 VERGOEDING STORINGSDIENST (STORINGSDIENSTLIJST)
@@ -240,7 +241,16 @@ BLOKKEREN (HELE APP)
 - Lukt het toch niet (bijv. hij gebruikt een ander e-mailadres): Firebase console > Authentication > Users >
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
-- Let op: de Firestore-regels hierboven zijn hiervoor uitgebreid (functie geblokkeerd). Opnieuw plakken en Publiceren.
+- Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+VERSTUREN OP DE IPHONE (OUTLOOK)
+- Op een iPhone maakt de app eerst alle PDF's klaar en toont dan "De mail is klaar" met een grote knop
+  "Mail openen met de PDF's". Die tik is nodig: een iPhone staat delen alleen direct na een tik toe.
+- Er wordt dan alleen het bestand gedeeld, zonder tekst (met tekst erbij laat Outlook de bijlagen soms weg).
+  Het adres van de leidinggevende/klant wordt gekopieerd: in Outlook bij Aan plakken. Onderwerp kan ook gekopieerd worden.
+- Op de iPhone wordt niets meer automatisch gedownload (dat brak het deelmenu af).
+- Boven 20 MB verschijnt "Alleen weeklijst + verzamel-PDF (kleiner)" voor als Outlook het te groot vindt.
+- Mislukt delen staat in het foutenlogboek (soort "versturen") met aantal en grootte van de bestanden.
 
 FOUTENLOGBOEK
 - beheer.html > Gebruikers > "Foutenlogboek": fouten uit de app van monteurs (alleen als ze een account hebben):
@@ -250,7 +260,7 @@ FOUTENLOGBOEK
 - Er staat geen inhoud van bonnen in, alleen de foutmelding. Hooguit 30 meldingen per toestel per dag.
   Zonder internet worden ze bewaard en later verstuurd. Ouder dan 90 dagen wordt opgeruimd.
 - Wissen: per melding ("Deze melding wissen") of alles ("Alles wissen", twee keer tikken).
-- Nieuwe Firestore-regel: "match /foutlog/{id}". Opnieuw plakken en Publiceren.
+- Nieuwe Firestore-regel: "match /foutlog/{id}". Plak firestore-regels.txt opnieuw en kies Publiceren.
 
 BONNEN KLAARZETTEN (KANTOOR -> MONTEUR)
 - Kantoor-collega's toevoegen: beheer.html > Gebruikers > "Kantoor-collega's (bonnen klaarzetten)" > e-mailadres > Toevoegen.
@@ -271,7 +281,7 @@ BONNEN KLAARZETTEN (KANTOOR -> MONTEUR)
 - Logboek (alleen beheerder): tabblad "Bonnen klaarzetten" > "Logboek tonen": wie zette wat klaar, verplaatste of trok in.
 - PDF's worden geopend met pdf.js met een extra veiligheidsinstelling (isEvalSupported uit, tegen CVE-2024-4367),
   zodat een kwaadaardige PDF geen code kan uitvoeren in de app of op de beheerpagina.
-- Nieuwe Firestore-regels (isKantoor, users, kantoor, inbox). Opnieuw plakken en Publiceren.
+- Nieuwe Firestore-regels (isKantoor, users, kantoor, inbox). Plak firestore-regels.txt opnieuw en kies Publiceren.
 
 BEVEILIGING CONTROLEREN (EEN KEER)
 - beheer.html > Gebruikers > "Beveiliging controleren" geeft dezelfde lijst met knoppen die meteen de juiste
@@ -308,7 +318,7 @@ WIJZIGINGSLOG KLANTENBESTAND
 - Wijzigingen ouder dan een jaar worden opgeruimd als je de lijst opent.
 - Het log komt uit de app. Iemand die buiten de app om (met eigen scripts) klanten wijzigt, wordt niet gelogd;
   met App Check aan en afgedwongen kan dat niet meer. In de klant zelf staat altijd wie hem het laatst wijzigde.
-- Nieuwe Firestore-regel: "match /klantlog/{id}". Opnieuw plakken en Publiceren.
+- Nieuwe Firestore-regel: "match /klantlog/{id}". Plak firestore-regels.txt opnieuw en kies Publiceren.
 
 EXTERNE GEBRUIKERS TOELATEN
 - beheer.html > Gebruikers > "Externe gebruikers toelaten": vul het e-mailadres in (bijv. van een zzp'er) > Toelaten.
@@ -316,7 +326,7 @@ EXTERNE GEBRUIKERS TOELATEN
 - De persoon maakt zelf een account aan met precies dat adres en bevestigt het (tandwieltje > Klantenbestand >
   Bevestigingsmail sturen). Daarna krijgt hij klantenbestand en storingsrooster, net als een collega.
 - Blokkeren werkt voor hem hetzelfde als voor collega's.
-- Hiervoor zijn de Firestore-regels uitgebreid (isMit en match /toegang). Opnieuw plakken en Publiceren.
+- Hiervoor zijn de Firestore-regels uitgebreid (isMit en match /toegang). Plak firestore-regels.txt opnieuw en kies Publiceren.
 
 PRIVACY (AVG)
 - In de app: tandwieltje > Info > Privacy legt uit wat er bewaard wordt, waar, hoe lang en welke rechten de monteur heeft.
@@ -332,7 +342,7 @@ PRIVACY (AVG)
 - Iemand uit dienst die dit niet zelf doet: Firebase console > Authentication > Users > drie puntjes > Delete account,
   en Firestore Database > users > zijn document > Delete (met subcollecties).
 - Klanten in het gedeelde klantenbestand blijven bestaan na het verwijderen van een account (met het e-mailadres bij "door").
-- Nieuwe Firestore-regel: "match /instellingen/{doc}" (staat in de regels hierboven). Opnieuw plakken en Publiceren.
+- Nieuwe Firestore-regel: "match /instellingen/{doc}" (staat in firestore-regels.txt). Plak firestore-regels.txt opnieuw en kies Publiceren.
 
 WEEKLIJST VERSTUREN NAAR LEIDINGGEVENDE
 - Weeklijsten > kies de week > Versturen naar leidinggevende > e-mailadres > Verzenden.
@@ -391,119 +401,11 @@ opgeslagen. Zolang firebase-config.js niet is ingevuld, werkt de app zoals eerst
    Tabblad Regels (Rules): vervang alles door onderstaande tekst en kies Publiceren.
    Hiermee kan iedere gebruiker alleen zijn EIGEN back-ups lezen en schrijven. Alleen de beheerder
    (het e-mailadres hieronder, na bevestiging van dat adres) mag de back-ups van iedereen LEZEN:
+   Tabblad Regels (Rules): vervang alles door de inhoud van het bestand firestore-regels.txt
+   (staat naast dit bestand) en kies Publiceren. Zie de uitleg bovenin dat bestand.
 
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       function isBeheerder() {
-         return request.auth != null
-           && request.auth.token.email == 'a.f.vanderhulst@gmail.com'
-           && request.auth.token.email_verified == true;
-       }
-       function isMit() {
-         return request.auth != null
-           && request.auth.token.email_verified == true
-           && (request.auth.token.email.matches('.*@mit-installatietechniek[.]com$')
-               || exists(/databases/$(database)/documents/toegang/$(request.auth.token.email)))
-           && !exists(/databases/$(database)/documents/geblokkeerd/$(request.auth.token.email));
-       }
-       function geblokkeerd() {
-         let pad = /databases/$(database)/documents/geblokkeerd/$(request.auth.token.email);
-         return exists(pad) && get(pad).data.get('volledig', false) == true;
-       }
-       function isKantoor() {
-         return request.auth != null
-           && request.auth.token.email_verified == true
-           && exists(/databases/$(database)/documents/kantoor/$(request.auth.token.email))
-           && !geblokkeerd();
-       }
-       function klantOk() {
-         let d = request.resource.data;
-         return d.keys().hasOnly(['naam','adres','plaats','zoek','door','t'])
-           && d.naam is string && d.naam.size() > 0 && d.naam.size() <= 200
-           && d.adres is string && d.adres.size() <= 200
-           && d.plaats is string && d.plaats.size() <= 200
-           && d.door == request.auth.token.email;
-       }
-       match /users/{uid}/{document=**} {
-         allow read, write: if request.auth != null && request.auth.uid == uid && !geblokkeerd();
-         allow read: if isBeheerder();
-       }
-       match /monteurs/{uid} {
-         allow read: if isKantoor() || isBeheerder();
-         allow create, update: if isBeheerder()
-           || (request.auth != null && request.auth.uid == uid && !geblokkeerd()
-               && request.resource.data.keys().hasOnly(['email','naam'])
-               && request.resource.data.email == request.auth.token.email
-               && (!('naam' in request.resource.data)
-                   || (request.resource.data.naam is string && request.resource.data.naam.size() <= 80)));
-         allow delete: if isBeheerder() || (request.auth != null && request.auth.uid == uid);
-       }
-       match /foutlog/{id} {
-         allow create: if request.auth != null && !geblokkeerd()
-           && request.resource.data.uid == request.auth.uid
-           && request.resource.data.keys().hasOnly(['t','uid','email','v','dev','soort','msg','src','n'])
-           && request.resource.data.msg is string && request.resource.data.msg.size() <= 500
-           && request.resource.data.src is string && request.resource.data.src.size() <= 300;
-         allow read, delete: if isBeheerder();
-       }
-       match /inboxlog/{id} {
-         allow create: if (isKantoor() || isBeheerder())
-           && request.resource.data.door == request.auth.token.email
-           && request.resource.data.keys().hasOnly(['t','door','actie','wb','klant','voor','naar']);
-         allow read, delete: if isBeheerder();
-       }
-       match /kantoor/{email} {
-         allow get: if request.auth != null && request.auth.token.email == email;
-         allow read, write: if isBeheerder();
-       }
-       match /inbox/{id} {
-         allow read: if isBeheerder() || isKantoor()
-           || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd());
-         allow create, delete: if isBeheerder() || isKantoor();
-         allow update: if isBeheerder() || isKantoor()
-           || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
-               && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald'])
-               && request.resource.data.status == 'opgehaald');
-         match /parts/{p} {
-           allow read: if isBeheerder() || isKantoor()
-             || (request.auth != null && !geblokkeerd()
-                 && get(/databases/$(database)/documents/inbox/$(id)).data.voor == request.auth.uid);
-           allow write: if isBeheerder() || isKantoor();
-         }
-       }
-       match /klanten/{id} {
-         allow read: if isMit() || isBeheerder();
-         allow create, update: if (isMit() || isBeheerder()) && klantOk();
-         allow delete: if isBeheerder();
-       }
-       match /rooster/{doc} {
-         allow read: if isMit() || isBeheerder();
-         allow write: if isBeheerder();
-       }
-       match /klantlog/{id} {
-         allow create: if (isMit() || isBeheerder())
-           && request.resource.data.door == request.auth.token.email
-           && request.resource.data.keys().hasOnly(['k','soort','naam','adres','plaats','oud','door','t']);
-         allow read, delete: if isBeheerder();
-       }
-       match /toegang/{email} {
-         allow get: if request.auth != null && request.auth.token.email == email;
-         allow read, write: if isBeheerder();
-       }
-       match /instellingen/{doc} {
-         allow read: if request.auth != null;
-         allow write: if isBeheerder();
-       }
-       match /geblokkeerd/{email} {
-         allow get: if request.auth != null && request.auth.token.email == email;
-         allow read, write: if isBeheerder();
-       }
-     }
-   }
-
-   Ander beheerdersadres? Pas het dan aan in deze regels EN in firebase-config.js (adminEmail).
-   Wijzig je later iets aan de app met een nieuwe versie van deze regels: altijd opnieuw Publiceren.
+   Ander beheerdersadres? Pas het dan aan in firestore-regels.txt (bij isBeheerder) EN in firebase-config.js (adminEmail).
+   Wijzig je later iets aan de app met een nieuwe versie van firestore-regels.txt: altijd opnieuw plakken en Publiceren.
 
 4. Web-app koppelen: tandwieltje naast "Projectoverzicht" > Projectinstellingen > onderaan
    "Jouw apps" > het icoon </> (Web) > bijnaam MIT Werkbon > App registreren (Hosting NIET aanvinken).

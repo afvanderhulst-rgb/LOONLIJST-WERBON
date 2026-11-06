@@ -1,0 +1,119 @@
+// =====================================================================
+// MIT Werkbon - Firestore-regels
+// Plakken in: Firebase console > Build > Firestore Database > tabblad Regels (Rules)
+// 1. Selecteer ALLES wat daar staat en verwijder het.
+// 2. Plak de VOLLEDIGE inhoud van dit bestand (deze uitleg mag mee, het zijn opmerkingen).
+// 3. Klik op Publiceren (Publish). Een rode foutmelding? Dan is er iets niet helemaal meegekopieerd.
+// Doe dit na elke update waarin staat dat de regels veranderd zijn.
+// Het beheerdersadres staat bij isBeheerder(); pas het daar aan als de beheerder verandert.
+// =====================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isBeheerder() {
+      return request.auth != null
+        && request.auth.token.email == 'a.f.vanderhulst@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+    function isMit() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && (request.auth.token.email.matches('.*@mit-installatietechniek[.]com$')
+            || exists(/databases/$(database)/documents/toegang/$(request.auth.token.email)))
+        && !exists(/databases/$(database)/documents/geblokkeerd/$(request.auth.token.email));
+    }
+    function geblokkeerd() {
+      let pad = /databases/$(database)/documents/geblokkeerd/$(request.auth.token.email);
+      return exists(pad) && get(pad).data.get('volledig', false) == true;
+    }
+    function isKantoor() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/kantoor/$(request.auth.token.email))
+        && !geblokkeerd();
+    }
+    function klantOk() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['naam','adres','plaats','zoek','door','t'])
+        && d.naam is string && d.naam.size() > 0 && d.naam.size() <= 200
+        && d.adres is string && d.adres.size() <= 200
+        && d.plaats is string && d.plaats.size() <= 200
+        && d.door == request.auth.token.email;
+    }
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid && !geblokkeerd();
+      allow read: if isBeheerder();
+    }
+    match /monteurs/{uid} {
+      allow read: if isKantoor() || isBeheerder();
+      allow create, update: if isBeheerder()
+        || (request.auth != null && request.auth.uid == uid && !geblokkeerd()
+            && request.resource.data.keys().hasOnly(['email','naam'])
+            && request.resource.data.email == request.auth.token.email
+            && (!('naam' in request.resource.data)
+                || (request.resource.data.naam is string && request.resource.data.naam.size() <= 80)));
+      allow delete: if isBeheerder() || (request.auth != null && request.auth.uid == uid);
+    }
+    match /foutlog/{id} {
+      allow create: if request.auth != null && !geblokkeerd()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['t','uid','email','v','dev','soort','msg','src','n'])
+        && request.resource.data.msg is string && request.resource.data.msg.size() <= 500
+        && request.resource.data.src is string && request.resource.data.src.size() <= 300;
+      allow read, delete: if isBeheerder();
+    }
+    match /inboxlog/{id} {
+      allow create: if (isKantoor() || isBeheerder())
+        && request.resource.data.door == request.auth.token.email
+        && request.resource.data.keys().hasOnly(['t','door','actie','wb','klant','voor','naar']);
+      allow read, delete: if isBeheerder();
+    }
+    match /kantoor/{email} {
+      allow get: if request.auth != null && request.auth.token.email == email;
+      allow read, write: if isBeheerder();
+    }
+    match /inbox/{id} {
+      allow read: if isBeheerder() || isKantoor()
+        || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd());
+      allow create, delete: if isBeheerder() || isKantoor();
+      allow update: if isBeheerder() || isKantoor()
+        || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald'])
+            && request.resource.data.status == 'opgehaald');
+      match /parts/{p} {
+        allow read: if isBeheerder() || isKantoor()
+          || (request.auth != null && !geblokkeerd()
+              && get(/databases/$(database)/documents/inbox/$(id)).data.voor == request.auth.uid);
+        allow write: if isBeheerder() || isKantoor();
+      }
+    }
+    match /klanten/{id} {
+      allow read: if isMit() || isBeheerder();
+      allow create, update: if (isMit() || isBeheerder()) && klantOk();
+      allow delete: if isBeheerder();
+    }
+    match /rooster/{doc} {
+      allow read: if isMit() || isBeheerder();
+      allow write: if isBeheerder();
+    }
+    match /klantlog/{id} {
+      allow create: if (isMit() || isBeheerder())
+        && request.resource.data.door == request.auth.token.email
+        && request.resource.data.keys().hasOnly(['k','soort','naam','adres','plaats','oud','door','t']);
+      allow read, delete: if isBeheerder();
+    }
+    match /toegang/{email} {
+      allow get: if request.auth != null && request.auth.token.email == email;
+      allow read, write: if isBeheerder();
+    }
+    match /instellingen/{doc} {
+      allow read: if request.auth != null;
+      allow write: if isBeheerder();
+    }
+    match /geblokkeerd/{email} {
+      allow get: if request.auth != null && request.auth.token.email == email;
+      allow read, write: if isBeheerder();
+    }
+  }
+}

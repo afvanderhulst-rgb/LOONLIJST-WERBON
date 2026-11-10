@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v121,
-  verhoog naar v122 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v123,
+  verhoog naar v124 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,6 +242,25 @@ BLOKKEREN (HELE APP)
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+WEEKLIJST: GEEN DUBBELE REGELS MEER (v123)
+- Elke regel in de weeklijst/storingsdienstlijst is gekoppeld aan zijn werkbon. Wijzigt de monteur op de bon de datum,
+  tijden, klantnaam of het werkordernummer, dan wordt DIE regel bijgewerkt in plaats van een nieuwe erbij gezet.
+  Staat een dag niet meer op de bon, dan verdwijnt de regel ook uit de lijst.
+- Oude dubbele regels (van voor v123) van dezelfde bon op dezelfde dag worden opgeruimd zodra de bon weer wordt
+  bijgewerkt. Een oude regel op een andere dag (bijv. na een datumwijziging vóór v123) moet de monteur zelf weghalen.
+- Handmatig aangepaste regels blijven altijd staan.
+
+NAVIGATIE EN VOORBEELD BIJ AFRONDEN (v123)
+- Onderbalk: Start | Nieuwe werkbon | Actieve bon | Lijst | Weeklijst. "Nieuwe werkbon" bewaart de huidige bon en
+  begint een lege (is de huidige al leeg, dan blijft die open).
+- Bij Afronden toont de app eerst de volledig ingevulde werkbon zoals de PDF wordt. "Versturen" verstuurt hem,
+  "Aanpassen" gaat terug naar de bon.
+
+WEEKLIJST VERSTUURD = BONNEN VERSTUURD
+- Zodra de weeklijst (of storingsdienstlijst) naar de leidinggevende is verstuurd, krijgen alle werkbonnen van die week
+  die nog niet verstuurd waren de status "Verstuurd" (ze zaten bij die mail). De teller "nog niet verstuurd" op het
+  startscherm telt ze dan niet meer mee.
 
 VERSTUREN OP DE IPHONE (OUTLOOK)
 - Op een iPhone maakt de app eerst alle PDF's klaar en toont dan "De mail is klaar" met een grote knop

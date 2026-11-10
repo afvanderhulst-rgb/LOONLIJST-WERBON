@@ -107,7 +107,7 @@ input:focus,textarea:focus{outline:2px solid var(--ac);border-color:transparent}
 #nav{position:fixed;left:0;right:0;bottom:0;z-index:7;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
 #nav[hidden]{display:none}
 #ov2{bottom:calc(60px + env(safe-area-inset-bottom,0px))}
-#nav button{flex:1;background:none;border:0;color:var(--mu);padding:8px 0 6px;font:inherit;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
+#nav button{flex:1;background:none;border:0;color:var(--mu);padding:8px 2px 6px;font:inherit;font-size:11px;line-height:1.15;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
 #nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #nav button.on{color:var(--ac);font-weight:700}
 
@@ -202,7 +202,7 @@ input:focus,textarea:focus{outline:2px solid var(--ac);border-color:transparent}
 <label>Tekst</label><textarea id="md_bo" readonly style="min-height:110px"></textarea><button class="btn del" style="margin-top:6px" onclick="mdCopy('md_bo')">Kopieer tekst</button>
 </div></div>
 <div id="toast" hidden></div>
-<nav id="nav" hidden><button data-n="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>Start</button><button data-n="wb"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6zM14 2v6h6"/></svg>Bon</button><button data-n="list"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Lijst</button><button data-n="wl"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Weeklijst</button></nav>
+<nav id="nav" hidden><button data-n="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>Start</button><button data-n="new"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Nieuwe werkbon</button><button data-n="wb"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6zM14 2v6h6"/></svg>Actieve bon</button><button data-n="list"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Lijst</button><button data-n="wl"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Weeklijst</button></nav>
 <template id="wlT"><style>:host{display:block;--bg:#e1e3ef;--card:#f3f4fa;--ink:#14172e;--mute:#4c5170;--line:#bcc0d8;--acc:#1a147f;--acc2:#16693e;--tot:#d5d7f0;color-scheme:light}
 :host([data-t="dark"]){--bg:#0b0b17;--card:#14142a;--ink:#e8e9f7;--mute:#9a9cc0;--line:#2a2a4e;--acc:#8d88ff;--acc2:#4cc58a;--tot:#1f1f45;color-scheme:dark}
 *{box-sizing:border-box}
@@ -402,7 +402,13 @@ $('sigok').onclick=()=>{if(drew){sigData=cv.toDataURL('image/png');store.set('wl
 $('sigclr').onclick=()=>{sigData='';store.set('wl:sig','');showSig()};
 showSig();
 window.WL_prof=(naam,sig)=>{if(naam!=null){$('naam').value=naam;store.set('wl:naam',naam)}if(sig!=null){sigData=sig;store.set('wl:sig',sig);showSig()}};
-const markSent=()=>{try{store.set((sdM()?'sd':'wl')+':sent:'+jaar+'-'+wk,String(Date.now()));window.wlRemTick&&window.wlRemTick()}catch(e){}};
+const markSent=()=>{try{store.set((sdM()?'sd':'wl')+':sent:'+jaar+'-'+wk,String(Date.now()));window.wlRemTick&&window.wlRemTick()}catch(e){}
+ // de werkbonnen die met de weeklijst zijn meegestuurd, gelden nu als verstuurd
+ (async()=>{try{const bs=await window.weekBons(jaar,wk,sdM()),now=Date.now();let n=0;
+  for(const b of bs){if(!b||!b.id||b.sentAt)continue;n++;
+   if(window.S&&S.id===b.id){S.sentAt=now;S.pdfAt=S.pdfAt||now;S.sentVia='weeklijst';try{save()}catch(e){}continue}
+   try{const k='mit-wr:'+b.id,o=JSON.parse(localStorage.getItem(k)||'null');if(o){o.sentAt=now;o.pdfAt=o.pdfAt||now;o.sentVia='weeklijst';localStorage.setItem(k,JSON.stringify(o))}}catch(e){}}
+  if(n){try{window.openCount&&window.openCount()}catch(e){}setTimeout(()=>toast(n+(n===1?' werkbon staat':' werkbonnen staan')+' nu op Verstuurd (meegestuurd met de weeklijst).',5000),8500)}}catch(e){}})()};
 const NL=String.fromCharCode(10);const sdM=()=>mode==='storing';
 const summ=async()=>{const L=[],m=maandag(jaar,wk);let tot=0,over=0;
  data.d.forEach((rows,i)=>{let t=0,pr=[];rows.forEach(r=>{const h=n(r.gu)+n(r.ou);t+=h;over+=n(r.ou);if(h>0||r.og)pr.push((r.og||'?')+(r.pn?' ('+r.pn+')':''))});tot+=t;
@@ -571,9 +577,17 @@ window.weekBons=async function(y,w,sd){var bons=[];try{if(typeof save==='functio
  return bons.filter(function(b){return !!b.sd===sd&&(b.days||[]).some(function(d){var k=window.weekOf(d.datum,sd);return k&&k.y===y&&k.w===w})}).sort(function(a,b){var x=(a.days&&a.days[0]&&a.days[0].datum)||'',y2=(b.days&&b.days[0]&&b.days[0].datum)||'';return x<y2?-1:x>y2?1:0})};
 window.collectWeek=async function(y,w,sd){var out=[],bons=await window.weekBons(y,w,sd);
  var keep=S;try{for(var i=0;i<bons.length;i++){S=cp(bons[i]);var r=await makePdf();if(r)out.push(r)}}finally{S=keep}return out};
+function spread(rows){var fx=function(x){return x?(Math.round(x*100)/100).toString().replace('.',','):''};
+ var isT=function(r){return r.t!=null&&r.wu!=null},isE=function(r){return !(r.og||r.pn||r.gu||r.ru||r.ou||r.du||r.on)};
+ var tl=rows.filter(isT).sort(function(x,y){return x.t-y.t}),pr=rows.filter(function(r){return !isT(r)&&!isE(r)}),cum=0;
+ pr.forEach(function(r){cum+=parseFloat(String(r.gu).replace(',','.'))||0});
+ var ex=0,lastAuto=null;tl.forEach(function(r,i){if(r.man){cum+=parseFloat(String(r.gu||'').replace(',','.'))||0;return}
+  var full=(r.wu||0)+(i+pr.length>0?(r.rt||0):0),g=Math.min(full,Math.max(0,8-cum));cum+=g;ex+=full-g;r.gu=fx(g);r.ou='';lastAuto=r});
+ if(ex>0.001&&lastAuto)lastAuto.ou=fx(ex);
+ var all=pr.concat(tl);if(!all.length)all=[rows[0]||{og:'',pn:'',gu:'',ru:'',ou:'',du:'',on:''}];rows.splice(0,rows.length);all.forEach(function(r){rows.push(r)})}
 window.toWeeklijst=function(silent){
  try{if(typeof save==='function')save()}catch(e){}
- var f=S.f||{},pn=String(f.pr||f.wo||'').trim(),og=String(f.naam||'').trim(),weeks={},cnt=0,first=null,SD=!!S.sd,ovMsg=[],manMsg=[];
+ var f=S.f||{},pn=String(f.pr||f.wo||'').trim(),og=String(f.naam||'').trim(),weeks={},cnt=0,first=null,SD=!!S.sd,ovMsg=[],manMsg=[],touched=[],dupN=0,staleN=0;
  var fx=function(x){return x?(Math.round(x*100)/100).toString().replace('.',','):''};
  var grp=[],gi={};(S.days||[]).forEach(function(d){var c0=dayCalc(d);if(!(c0.wu>0))return;var ov0=overlapFor(d),t0=mins(d.rs);if(t0==null)t0=mins(d.ws);var g=gi[d.datum];if(!g){g=gi[d.datum]={datum:d.datum,wu:0,ru:0,t:null,n:0,ov:{m:0,w:[]}};grp.push(g)}g.n++;g.wu+=Math.max(0,c0.wu-ov0.m/60);g.ru+=c0.ru;if(t0!=null&&(g.t==null||t0<g.t))g.t=t0;g.ov.m+=ov0.m;g.ov.w=g.ov.w.concat(ov0.w)});
  grp.forEach(function(d){var p=String(d.datum||'').split('-');if(p.length!==3||p[2].length!==4)return;
@@ -586,20 +600,27 @@ window.toWeeklijst=function(silent){
   if(!W){var raw=null;try{raw=JSON.parse(localStorage.getItem(key))}catch(e){}
    if(!raw||!raw.d||raw.d.length!==7)raw={d:[0,1,2,3,4,5,6].map(function(){return[{og:'',pn:'',gu:'',ru:'',ou:'',du:'',on:''}]})};if(!SD)raw.v=2;W=weeks[key]={k:key,y:y,w:wn,data:raw}}
   var rows=W.data.d[idx],row=null;
-  rows.forEach(function(r){if(!row&&pn&&r.pn===pn&&r.og===og)row=r});
+  // eerst de regel van DEZE bon (src), dan een oude regel zonder koppeling met hetzelfde project en dezelfde klant
+  rows.forEach(function(r){if(!row&&r.src===S.id)row=r});
+  if(!row)rows.forEach(function(r){if(!row&&!r.src&&pn&&r.pn===pn&&r.og===og)row=r});
   if(!row)rows.forEach(function(r){if(!row&&!r.og&&!r.pn&&!r.gu&&!r.ru&&!r.ou&&!r.du&&!r.on)row=r});
   if(!row){row={og:'',pn:'',gu:'',ru:'',ou:'',du:'',on:''};rows.push(row)}
+  row.src=S.id;touched.push(row);
+  // dubbele regels van deze bon op dezelfde dag (ook oude, van voor deze versie) weghalen
+  for(var di=rows.length-1;di>=0;di--){var rr=rows[di];if(rr===row||rr.man)continue;if(rr.src===S.id||(!rr.src&&pn&&rr.pn===pn&&rr.og===og&&rr.t!=null)){rows.splice(di,1);dupN++}}
   var tm=d.t,ov=d.ov;if(ov.m>0)ovMsg.push(dagNaam(d.datum)+' '+d.datum+': overlap '+(Math.round(ov.m/6)/10).toString().replace('.',',')+' u met '+ov.w.join(', '));row.og=og;row.pn=pn;row.wu=c.wu;row.rt=c.ru;row.t=tm;
   if(SD&&(row.ona||!String(row.on||'').trim())){row.on='25,00';row.ona=1} // EUR 25 per dag per storingsbon (ook bij meerdere bezoeken die dag)
-  var isT=function(r){return r.t!=null&&r.wu!=null},isE=function(r){return !(r.og||r.pn||r.gu||r.ru||r.ou||r.du||r.on)};
-  var tl=rows.filter(isT).sort(function(x,y){return x.t-y.t}),pr=rows.filter(function(r){return !isT(r)&&!isE(r)}),cum=0;
-  pr.forEach(function(r){cum+=parseFloat(String(r.gu).replace(',','.'))||0});
   // handmatig aangepaste regels (gewone/over/reisuren) blijven altijd zoals de monteur ze zette
   if(row.man&&(row.manWu!==row.wu||row.manRt!==row.rt)){manMsg.push(dagNaam(d.datum)+' '+d.datum);row.manWu=row.wu;row.manRt=row.rt}
-  var ex=0,lastAuto=null;tl.forEach(function(r,i){if(r.man){cum+=parseFloat(String(r.gu||'').replace(',','.'))||0;return}
-   var full=(r.wu||0)+(i+pr.length>0?(r.rt||0):0),g=Math.min(full,Math.max(0,8-cum));cum+=g;ex+=full-g;r.gu=fx(g);r.ou='';lastAuto=r});
-  if(ex>0.001&&lastAuto)lastAuto.ou=fx(ex);
-  var all=pr.concat(tl);if(!all.length)all=[rows[0]];rows.splice(0,rows.length);all.forEach(function(r){rows.push(r)});cnt++;if(!first)first=W});
+  spread(rows);cnt++;if(!first)first=W});
+ // regels van deze bon op dagen die niet meer op de bon staan (datum gewijzigd of dag verwijderd) weghalen
+ var prevK=(S.wlKeys||[]).filter(function(k){return k.indexOf(SD?'sd:':'wl:')===0});
+ prevK.concat(Object.keys(weeks)).forEach(function(key){var W=weeks[key];
+  if(!W){var raw=null;try{raw=JSON.parse(localStorage.getItem(key))}catch(e){}if(!raw||!raw.d||raw.d.length!==7)return;var pp=key.slice(3).split('-');W=weeks[key]={k:key,y:+pp[0],w:+pp[1],data:raw}}
+  W.data.d.forEach(function(rows){var n0=rows.length;for(var i=rows.length-1;i>=0;i--){if(rows[i].src===S.id&&touched.indexOf(rows[i])<0){rows.splice(i,1);staleN++}}
+   if(rows.length!==n0){if(!rows.length)rows.push({og:'',pn:'',gu:'',ru:'',ou:'',du:'',on:''});spread(rows)}})});
+ try{S.wlKeys=Object.keys(weeks).filter(function(k){return weeks[k].data.d.some(function(rows){return rows.some(function(r){return r.src===S.id})})}).concat((S.wlKeys||[]).filter(function(k){return k.indexOf(SD?'sd:':'wl:')!==0}));save()}catch(e){}
+ if(dupN||staleN)setTimeout(function(){toast((dupN+staleN)+(dupN+staleN===1?' oude regel':' oude regels')+' van deze bon uit de '+(SD?'storingsdienstlijst':'weeklijst')+' gehaald, zodat de uren niet dubbel tellen.',7000)},silent?300:5000);
  if(!cnt){if(!silent)toast('Geen dagen met datum en uren gevonden.',5000);return}
  for(var k in weeks){try{localStorage.setItem(k,JSON.stringify(weeks[k].data))}catch(e){}}
  if(wlOn&&window.WL_reload)window.WL_reload();if(manMsg.length)setTimeout(function(){toast('De tijden op deze bon zijn gewijzigd ('+manMsg.join(', ')+'). Je eigen verdeling van gewone uren en overuren in de '+(SD?'storingsdienstlijst':'weeklijst')+' is bewaard; controleer of die nog klopt.',10000)},silent?0:4500);if(ovMsg.length)toast('LET OP, overlap met eerdere bon: '+ovMsg.join('; ')+'. De overlap is niet dubbel in de '+(SD?'storingsdienst':'weeklijst')+' geteld.',12000);else toast('Ook ingevuld in de '+(SD?'storingsdienst':'weeklijst')+' (week '+first.w+')',4000)};
@@ -675,7 +696,7 @@ window.addEventListener('load',function(){
  if(typeof later==='function'){var _l=later;later=function(){var r=_l.apply(this,arguments);try{status()}catch(e){}return r}}
  if(typeof init==='function'){var _i=init;init=function(){var r=_i.apply(this,arguments);try{if(window.S&&S.id!==lastId){lastId=S.id;if(window.__tabInit)show(0)}window.__tabInit=1;status()}catch(e){}return r}}
  var n=$('nav');if(n){n.onclick=function(e){var b=e.target.closest('button');if(!b)return;var w=b.dataset.n;if(typeof listClose==='function')listClose();
-  if(w==='home')showHome();else if(w==='wb'){openApp('wb')}else if(w==='list'){openApp('wb');if(typeof showList==='function')showList()}else if(w==='wl')openApp('wl')}}
+  if(w==='home')showHome();else if(w==='new'){openApp('wb');var leeg=false;try{leeg=bonEmpty(S)}catch(e){}if(!leeg){newBon();try{toast('Nieuwe werkbon gemaakt. De vorige staat in Lijst.',3500)}catch(e){}}navSet('wb');window.scrollTo(0,0)}else if(w==='wb'){openApp('wb')}else if(w==='list'){openApp('wb');if(typeof showList==='function')showList()}else if(w==='wl')openApp('wl')}}
  var _o=window.openApp,_h=window.showHome;
  window.openApp=function(w){_o(w);navSet(w);if(w==='wb'){build();status()}};
  window.showHome=function(){_h();navSet('home')};
@@ -1043,7 +1064,7 @@ async function sendMail(kind){
  var to=kind==='klant'?String(S.f.email||'').trim():'';
  if(kind==='klant'&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)){toast('Vul eerst een geldig e-mailadres van de klant in.');return}
  var cc='';if(false){var o=String(($('office')&&$('office').value)||'').trim();if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(o)&&o.toLowerCase()!==to.toLowerCase())cc=o}
- var r=await makePdf();if(!r)return;var rs=r; // rs = volledige kantoorversie (bewerkbaar, alle bijlagen)
+ var r=(kind==='afronden'&&PV&&PV.id===S.id&&PV.upd===S.upd)?PV.r:await makePdf();PV=null;if(!r)return;var rs=r; // rs = volledige kantoorversie (bewerkbaar, alle bijlagen)
  if(kind==='klant'){window.__wbKlant=true;var rk=null;try{rk=await makePdf()}finally{window.__wbKlant=false}if(!rk)return;r=rk} // klantversie: vast, alleen gekozen bijlagen
  var m=mailInfo(),subj=m.title+(m.naam?' '+m.naam:'')+(m.nr?' '+m.nr:''),
   body='Beste,'+NL+NL+'Hierbij het '+m.title.toLowerCase()+(m.nr?' (nummer '+m.nr+')':'')+(m.naam?' voor '+m.naam:'')+'.';
@@ -1077,7 +1098,23 @@ async function finish(){
  var w=[];if(!(S.sig.mon&&S.sig.mon.d))w.push('jouw handtekening');if(!(S.sig.klant&&S.sig.klant.d))w.push('de handtekening van de klant');
  if(w.length&&Date.now()-finW>60000){finW=Date.now();toast('Nog niet gezet: '+w.join(' en ')+'. Tik nogmaals op Afronden om toch door te gaan.',9000);return}
  finW=0;save();
- await sendMail('afronden')}
+ await wbPreview()}
+// voorbeeld van de volledig ingevulde werkbon voordat hij verstuurd wordt
+var PV=null;
+function pvClose(){$('pvOv').hidden=true;$('pvPages').innerHTML='';PV=null}
+async function wbPreview(){var ov=$('pvOv'),box=$('pvPages');box.innerHTML='<p style="padding:20px;text-align:center">Werkbon maken…</p>';ov.hidden=false;
+ var r=null;try{r=await makePdf()}catch(e){}if(!r){ov.hidden=true;return}
+ PV={r:r,id:S.id,upd:S.upd};
+ $('pvGo').onclick=function(){$('pvOv').hidden=true;sendMail('afronden')};
+ var ok=false;try{ok=await ensurePdf()}catch(e){}
+ if(!ok){box.innerHTML='<p style="padding:20px">Het voorbeeld kan nu niet getoond worden (geen internet?). Je kunt wel versturen.</p>';return}
+ try{var buf=await r.blob.arrayBuffer(),doc=await pdfjsLib.getDocument({isEvalSupported:false,data:new Uint8Array(buf)}).promise;box.innerHTML='';
+  var w=Math.max(280,box.clientWidth-16),dpr=Math.min(2,window.devicePixelRatio||1);
+  for(var i=1;i<=doc.numPages;i++){var pg=await doc.getPage(i),v0=pg.getViewport({scale:1}),sc=w/v0.width,vp=pg.getViewport({scale:sc*dpr}),cv=document.createElement('canvas');
+   cv.width=vp.width;cv.height=vp.height;cv.style.cssText='width:'+w+'px;display:block;margin:0 auto 8px;background:#fff;box-shadow:0 1px 4px #0003';box.appendChild(cv);
+   await pg.render({canvasContext:cv.getContext('2d'),viewport:vp,annotationMode:(pdfjsLib.AnnotationMode&&pdfjsLib.AnnotationMode.ENABLE)||1}).promise;if($('pvOv').hidden)return}
+  var n=document.createElement('div');n.style.cssText='text-align:center;font-size:12px;color:#555;padding:4px';n.textContent=doc.numPages+(doc.numPages===1?' pagina':" pagina's");box.appendChild(n)}
+ catch(e){box.innerHTML='<p style="padding:20px">Het voorbeeld kon niet getoond worden. Je kunt wel versturen.</p>'}}
 function legacyCopy(t){var a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();return ok}
 function copyTxt(t){try{if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(t).then(function(){return true},function(){return legacyCopy(t)})}catch(e){}return Promise.resolve(legacyCopy(t))}
 function mdCopy(id){var el=$(id);el.focus();el.select&&el.select();copyTxt(el.value).then(function(ok){toast(ok?'Gekopieerd':'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.',2500)})}
@@ -1810,7 +1847,7 @@ function check(){var f=S.f||{},m=[],w=[],t=function(v){return String(v||'').trim
  return {m:m,w:w}}
 var _send=null;
 window.finish=finish=async function(){var c=check();
- if(!c.m.length&&!c.w.length){save();return sendMail('afronden')}
+ if(!c.m.length&&!c.w.length){save();return wbPreview()}
  $('chkT').textContent=c.m.length?'Nog niet compleet':'Bijna klaar';
  $('chkS').textContent=c.m.length?'Dit moet eerst ingevuld worden. Tik op een regel om ernaartoe te gaan.':'Dit is nog niet ingevuld. Tik op een regel om het aan te vullen, of rond toch af.';
  $('chkL').innerHTML=c.m.map(function(x){return '<button type="button" class="it m" data-tab="'+x[1]+'"><span>'+ee(x[0])+'</span><small>'+TAB[x[1]]+' ›</small></button>'}).join('')+
@@ -1818,7 +1855,7 @@ window.finish=finish=async function(){var c=check();
  $('chkGo').hidden=!!c.m.length;$('chkOv').hidden=false;
  $('chkL').querySelectorAll('[data-tab]').forEach(function(b){b.onclick=function(){$('chkOv').hidden=true;goTab(+b.dataset.tab)}})};
 $('chkBack').onclick=function(){$('chkOv').hidden=true};
-$('chkGo').onclick=function(){$('chkOv').hidden=true;try{save()}catch(e){}sendMail('afronden')};
+$('chkGo').onclick=function(){$('chkOv').hidden=true;try{save()}catch(e){}wbPreview()};
 $('chkOv').addEventListener('click',function(e){if(e.target===$('chkOv'))$('chkOv').hidden=true});
 
 /* ---------- 3. teller op het startscherm ---------- */
@@ -1862,7 +1899,7 @@ function html(){var p=prof(),c=rcfg();
   '<div class="row"><div><div class="lb">Elke vrijdag een melding</div><div class="vl">Als de weeklijst van die week uren heeft maar nog niet naar je leidinggevende is verstuurd.</div></div>'+
   '<label style="display:flex;align-items:center;gap:8px;font-size:14px"><input id="wrOn" type="checkbox" style="width:auto;margin:0"'+(c.on?' checked':'')+'> om <input id="wrT" type="time" value="'+ee(c.tijd)+'" style="width:auto;margin:0;padding:6px"></label></div>'}
 function infoHtml(){return '<h3>Info</h3><div class="vl" style="padding:2px 0 8px">Handleiding: tik op een onderwerp. <a href="handleiding.pdf" target="_blank" rel="noopener" style="color:var(--ac);font-weight:600">Hele handleiding als PDF</a></div>'+'<details class="hl"><summary>Wat doet de app</summary><div class="hb"><p>Met de MIT Werkbon-app vul je werkbonnen en je weeklijst in op je telefoon, en verstuur je de bon als PDF naar de klant en naar kantoor. Je maakt één keer een account aan; daarna wordt alles vanzelf in je account bewaard, zodat je niets kwijtraakt als je telefoon stuk of weg is.</p><ul><li><b>Werkbonnen:</b> klantgegevens, werkzaamheden, uren, materialen, handtekeningen en foto\'s.</li><li><b>Weeklijsten:</b> je uren per dag, en de storingsdienst.</li><li><b>Back-up:</b> gaat automatisch naar je account. Je hoeft er niets voor te doen.</li></ul><p>Adres van de app: <b>https://loonlijst-werkbon.vercel.app</b></p></div></details><details class="hl"><summary>App installeren</summary><div class="hb"><p>Je installeert de app één keer; daarna staat hij als icoon <b>MIT Werkbon</b> op je startscherm.</p><p><b>Android (Chrome)</b></p><ol><li>Open https://loonlijst-werkbon.vercel.app in Chrome.</li><li>Tik rechtsboven op de drie puntjes.</li><li>Kies <b>App installeren</b> of <b>Toevoegen aan startscherm</b>.</li></ol><p><b>iPhone (Safari)</b></p><ol><li>Open https://loonlijst-werkbon.vercel.app in Safari.</li><li>Tik onderin op het deel-icoon (vierkant met pijl omhoog).</li><li>Kies <b>Zet op beginscherm</b> en tik op <b>Voeg toe</b>.</li></ol><p>De eerste keer heb je internet nodig. Daarna werkt de app ook zonder internet.</p></div></details><details class="hl"><summary>Account en inloggen</summary><div class="hb"><p>Je maakt <b>één keer</b> een account aan met je voor- en achternaam, je e-mailadres en een zelfgekozen wachtwoord (minimaal 6 tekens). Daarna loopt de app met je door: instellingen, handtekening en e-mailadres bevestigen. Daarna blijf je ingelogd.</p><p>Op het startscherm staat zolang nodig <b>Eerste keer</b> met wat nog niet klaar is. Tik op een regel om het af te maken.</p><p><b>Al een account?</b> (nieuwe telefoon, app opnieuw geïnstalleerd) Kies <b>Inloggen</b>, niet Account aanmaken.</p><p><b>Wachtwoord vergeten?</b> Tik op Inloggen, vul je e-mailadres in en tik op <b>Wachtwoord vergeten?</b> Je krijgt een mail (kijk ook bij ongewenste mail).</p></div></details><details class="hl"><summary>Mijn gegevens</summary><div class="hb"><p>Zet hier één keer je <b>naam</b> en <b>handtekening</b>. Ze komen vanzelf op elke nieuwe bon en op je weeklijst. Op een bon kun je ze nog wijzigen.</p></div></details><details class="hl"><summary>Werkbon invullen en afronden</summary><div class="hb"><ol><li>Startscherm: <b>Werkbonnen</b>.</li><li>Vul de tabbladen in: Opdracht, Werk, Uren, Materialen.</li><li>Bij <b>Uren</b>: per dag datum, reistijd, werktijd en pauze. De uren komen vanzelf in je weeklijst.</li><li>Bij <b>Afronden</b>: laat de klant tekenen, vul het e-mailadres van de klant in en tik op <b>Afronden: PDF maken en versturen</b>.</li></ol><p>De app laat eerst zien wat nog ontbreekt. <b>Rood</b> moet eerst ingevuld worden; <b>grijs</b> mag ontbreken (dan <b>Toch afronden</b>). Tik op een regel om ernaartoe te gaan.</p><p><b>Foto\'s of bestanden meesturen:</b> zet bij Werk <b>Aanvullend rapport</b> op Ja en kies Foto(\'s) maken of Bestand(en) toevoegen. Kantoor krijgt alles; de klant alleen wat je aanvinkt bij <i>Ook naar klant</i>.</p><p>Alles wordt meteen bewaard; je hoeft niet op opslaan te drukken.</p></div></details><details class="hl"><summary>Werkbon uit de mail of van papier</summary><div class="hb"><p>De app vult werkbonnr., klant, adres, postcode en plaats, telefoon en omschrijving vanzelf in. Controleer ze altijd even.</p><p><b>Android:</b> open de PDF in je mail, tik op <b>Delen</b> en kies <b>MIT Werkbon</b>.</p><p><b>iPhone:</b> PDF in de mail &gt; Delen &gt; <b>Bewaar in Bestanden</b>. Daarna in de app: <b>Werkbon importeren</b> &gt; <b>Bestand selecteren</b> en kies de PDF.</p><p><b>Papieren bon:</b> Werkbon importeren &gt; <b>Bon scannen</b>. Leg de bon plat, fotografeer recht van boven met de hele bon in beeld en genoeg licht.</p></div></details><details class="hl"><summary>Klantenbestand</summary><div class="hb"><p>Alle collega\'s met een e-mailadres op <b>@mit-installatietechniek.com</b> delen één klantenbestand (naam, adres, postcode en plaats). Heb je een ander e-mailadres, dan kan de beheerder je toelaten.</p><p><b>Eén keer:</b> tandwieltje &gt; Klantenbestand &gt; <b>Bevestigingsmail sturen</b>. Tik op de link in de mail en daarna op <b>Ik heb bevestigd</b>.</p><p><b>Gebruiken:</b> typ bij <b>Naam</b> de eerste letters en kies de klant uit het lijstje. Adres en postcode en plaats worden ingevuld. Heeft een klant meerdere vestigingen, kies dan het juiste adres.</p><p>Nieuwe klanten komen er vanzelf in als je een bon verstuurt. Werkt ook zonder internet.</p></div></details><details class="hl"><summary>Mijn bonnen</summary><div class="hb"><p>Elke bon heeft een label: <b>Open</b> (nog niet afgerond), <b>Afgerond</b> (PDF gemaakt, nog niet verstuurd) of <b>Verstuurd</b>.</p><p>Tik op <b>Niet verstuurd</b> om alleen die bonnen te zien. Heb je een afgeronde bon op een andere manier verstuurd? Tik op <b>Is verstuurd</b>.</p><p>Op het startscherm staat hoeveel bonnen nog niet verstuurd zijn; tik erop om ze te openen.</p></div></details><details class="hl"><summary>Weeklijst versturen</summary><div class="hb"><p>De weeklijst loopt van <b>zaterdag t/m vrijdag</b>. Vul per dag aan wat nog ontbreekt.</p><p>Per dag zijn de eerste 8 uur gewone uren, de rest overuren. Pas je dat zelf aan, dan blijft jouw verdeling staan.</p><ol><li>Zet onderaan je <b>handtekening</b> (staat er al als je die bij Mijn gegevens hebt gezet).</li><li>Tik op <b>Verstuur naar leidinggevende</b>, vul het e-mailadres in en tik op <b>Verzenden</b>.</li><li>Kies je mail-app. De weeklijst, alle werkbonnen (met bijlagen) en de verzamel-PDF zitten er al in.</li></ol><p>iPhone: staat er <b>Tik nu om te versturen</b> op de knop, tik dan nog een keer.</p><p>Op vrijdag krijg je een herinnering als je weeklijst nog niet verstuurd is.</p></div></details><details class="hl"><summary>Storingsdienst</summary><div class="hb"><p>Zet in de werkbon de knop <b>STORINGSDIENST</b> op <b>JA</b> als je dienst hebt. De uren komen dan in de storingsdienstlijst (vrijdag t/m vrijdag). Die verstuur je apart: Weeklijsten &gt; <b>Storingsdienst</b> &gt; Verstuur naar leidinggevende.</p><p><b>Vergoeding:</b> vink in de storingsdienstlijst per dag <b>Storingsdienst</b> aan. Er komt een regel bij met € 20 (ma t/m vr), € 35 (za en zo) of € 50 (feestdag). Elke storingsbon geeft € 25 per dag dat je ervoor uitrijdt (twee keer op één dag naar dezelfde opdracht = één keer € 25). Heb je volgens het rooster dienst, dan staan de vinkjes vanzelf aan.</p><p><b>Rooster:</b> op het startscherm staat wie nu en volgende week dienst heeft. Tik erop voor je eigen diensten, het hele rooster en de calamiteitennummers, met een <b>Bel</b>-knop.</p><p>De eerste keer vraagt de app of je naam in het rooster klopt. Fout gekoppeld? Tandwieltje &gt; Storingsdienst &gt; <b>Wijzigen</b>.</p><p><b>Herinneringen:</b> een week vooraf, de dag ervoor, en na afloop om de storingsdienstlijst te versturen. Aan- of uitzetten onder het tandwieltje &gt; Storingsdienst.</p></div></details><details class="hl"><summary>Back-up</summary><div class="hb"><p>Als je bent ingelogd, gaat alles vanzelf naar je account: na wijzigingen, bij het sluiten van de app en elke dag. De laatste 30 dagen blijven bewaard.</p><p><b>Nieuwe telefoon:</b> installeer de app, kies <b>Inloggen</b> en tik op <b>Terugzetten</b> als de app daarom vraagt.</p><p><b>Oudere back-up terugzetten:</b> tandwieltje &gt; Account en online back-up &gt; <b>Terugzetten</b> naast de gewenste datum.</p></div></details><details class="hl"><summary>Problemen oplossen</summary><div class="hb"><ul><li><b>"Er bestaat al een account"</b>: kies Inloggen.</li><li><b>"Wachtwoord klopt niet"</b>: gebruik Wachtwoord vergeten?</li><li><b>"Duurt te lang" / geen internet</b>: controleer je internet, sluit de app helemaal af en open hem opnieuw.</li><li><b>Oude versie</b>: sluit de app helemaal af en open hem twee keer.</li><li><b>Iets anders</b>: maak een schermafbeelding en stuur die naar kantoor.</li></ul></div></details><details class="hl"><summary>Privacy</summary><div class="hb"><p><b>Wat de app bewaart</b></p><ul><li><b>Op je telefoon:</b> je werkbonnen (met klantgegevens, handtekeningen, foto\'s en bijlagen), je weeklijsten, je naam en handtekening en je instellingen.</li><li><b>In je account (online back-up):</b> een kopie daarvan, opgeslagen bij Google (Firebase). Alleen jij en de beheerder van de app kunnen die inzien; de beheerder alleen om te helpen bij problemen of als je gegevens kwijt bent.</li><li><b>Klantenbestand:</b> naam, adres, postcode en plaats van klanten, gedeeld met collega\'s van MIT. Bij elke klant staat wie hem heeft toegevoegd.</li><li><b>Je account:</b> je e-mailadres, wanneer je de app voor het laatst gebruikte en op wat voor toestel, zodat de beheerder kan zien of de back-ups werken.</li><li><b>Foutmeldingen:</b> gaat er iets mis in de app (bijv. een back-up mislukt), dan krijgt de beheerder de foutmelding met je e-mailadres, de app-versie en het soort toestel. Zonder inhoud van je bonnen; na 90 dagen verwijderd.</li></ul><p><b>Wat de app niet doet</b></p><ul><li>Geen reclame, geen tracking en geen locatie.</li><li>Een gescande bon wordt op je telefoon gelezen; de foto gaat nergens heen.</li><li>PDF\'s verstuur je zelf, met je eigen mail-app.</li>'+((window.MIT_FIREBASE||{}).appCheckKey?'<li>Ter beveiliging controleert Google reCAPTCHA of verzoeken echt uit deze app komen; daarbij gaan technische gegevens, zoals je IP-adres, naar Google.</li>':'')+'</ul><p><b>Hoe lang</b></p><ul><li>Online back-ups: de laatste 30 dagen.</li><li>Op je telefoon: verstuurde bonnen tot de bewaartermijn die de beheerder instelt (zie tandwieltje &gt; Privacy). Bonnen die nog niet verstuurd zijn blijven staan.</li><li>Je account: tot je het zelf verwijdert, of tot de beheerder het verwijdert als je uit dienst gaat.</li></ul><p><b>Jouw rechten</b></p><ul><li><b>Inzien:</b> alles staat in de app. Een back-up als bestand: tandwieltje &gt; Back-up &gt; Nu maken.</li><li><b>Verwijderen:</b> tandwieltje &gt; Account en online back-up &gt; <b>Account verwijderen</b>. Alles van je telefoon wissen: tandwieltje &gt; Privacy &gt; <b>Wissen</b>.</li><li><b>Vragen:</b> mail naar kantoor, storingen@mit-installatietechniek.com.</li></ul></div></details><details class="hl"><summary>Veiligheid</summary><div class="hb"><ul><li>Zet een schermvergrendeling (pincode of vingerafdruk) op je telefoon: de app blijft ingelogd.</li><li>Deel je wachtwoord met niemand.</li><li>Stuur PDF\'s alleen naar de klant en naar kantoor.</li></ul></div></details>'+'<div class="vl" style="padding:12px 0 4px">MIT Werkbonnen · versie '+APPV+' · gemaakt op '+APPT+'</div>'}
-var APPV='121',APPT='06-11-2026 11:24';window.mitAppV=APPV;
+var APPV='123',APPT='10-11-2026 05:22';window.mitAppV=APPV;
 function bind(rerender){
  var n=$('pfNaam');if(n)n.onchange=function(){var p=prof();p.naam=n.value.trim();setProf(p);fillCurrent();tst('Naam bewaard.',2000)};
  if($('pfSig'))$('pfSig').onclick=function(){padOpen(function(sg){var p=prof();p.sig=sg;setProf(p);fillCurrent();tst('Handtekening bewaard.',2500);rerender&&rerender()})};
@@ -2518,5 +2555,11 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 if(window.showHome){var _sh=window.showHome;window.showHome=function(){var r=_sh.apply(this,arguments);card();return r}}
 })();
 </script>
+<style>#pvOv{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:8px}#pvOv[hidden]{display:none}#pvOv .pvc{background:var(--card);color:var(--tx);border-radius:14px;width:100%;max-width:640px;max-height:96vh;display:flex;flex-direction:column;padding:14px}</style>
+<div id="pvOv" hidden><div class="pvc">
+<div class="rh" style="margin-bottom:8px"><b>Controleer de werkbon</b><button class="btn del" type="button" onclick="pvClose()">Sluiten</button></div>
+<div style="font-size:13px;color:var(--mu);margin-bottom:8px">Zo komt de werkbon eruit te zien. Klopt alles? Tik dan op Versturen.</div>
+<div id="pvPages" style="flex:1;overflow:auto;background:#d9dbe3;border-radius:10px;padding:8px;min-height:200px"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button class="btn" type="button" style="flex:1" onclick="pvClose()">Aanpassen</button><button class="btn" type="button" id="pvGo" style="flex:1.4;background:var(--ac);color:#fff;border-color:var(--ac)">Versturen</button></div></div></div>
 </body>
 </html>

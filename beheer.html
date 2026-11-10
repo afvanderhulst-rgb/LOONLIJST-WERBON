@@ -85,6 +85,9 @@ table.rt tr.leeg td{color:var(--mu)}
   <div class="card"><b>Bewaartermijn op de telefoons</b><p class="mu">Hoe lang verstuurde werkbonnen (met foto's en bijlagen) op de telefoons van de monteurs blijven staan. Daarna verwijdert de app ze vanzelf van het toestel. Bonnen die nog niet verstuurd zijn blijven altijd staan. Geldt voor iedereen; monteurs kunnen het niet zelf wijzigen.</p>
    <div class="tools" style="margin:0"><select id="kpSel" style="padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit"><option value="0">Altijd bewaren (oneindig)</option><option value="90">3 maanden</option><option value="182">6 maanden</option><option value="365">1 jaar</option><option value="730">2 jaar</option><option value="1825">5 jaar</option><option value="2555">7 jaar</option></select><button class="btn pr" id="kpSave" type="button">Opslaan</button></div>
    <div id="kpRes" class="mu" style="margin-top:8px"></div></div>
+  <div class="card"><b>Materialen op de PDF voor de klant</b><p class="mu">Standaard ziet de klant geen materialen op de werkbon: de klant tekent alleen voor de uren. Kantoor krijgt altijd de volledige bon met materialen. Zet dit aan als klanten de materialen wél mogen zien. Geldt voor iedere monteur.</p>
+   <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="kmChk" style="width:20px;height:20px"> Klant mag materialen zien op de PDF</label>
+   <div id="kmRes" class="mu" style="margin-top:8px"></div></div>
   <div class="card"><b>Beveiliging controleren</b><p class="mu">Instellingen die je één keer in Google en Firebase zet. Vink af wat klaar is (wordt alleen op dit apparaat onthouden).</p><div id="sec"></div></div>
   <div class="card"><b>Onderdelen van de app</b><p class="mu">Controleer na het publiceren of alle onderdelen van jullie eigen adres komen (beter voor privacy en veiligheid). Ontbreekt er een, dan gebruikt de app daarvoor automatisch de externe plek; de app blijft dan gewoon werken.</p>
    <button class="btn" id="libChk" type="button">Controleren</button><div id="libRes" class="mu" style="margin-top:10px"></div></div>
@@ -321,11 +324,15 @@ $('brf').onclick=loadSent;
 function kpName(d){var o=$('kpSel').querySelector('option[value="'+d+'"]');return o?o.textContent:d+' dagen'}
 async function loadKeep(){try{var d=await db.collection('instellingen').doc('app').get(),o=d.exists?(d.data()||{}):{},v=o.bewaar==null?0:+o.bewaar;
  if(!$('kpSel').querySelector('option[value="'+v+'"]')){var op=document.createElement('option');op.value=v;op.textContent=v+' dagen';$('kpSel').appendChild(op)}
+ $('kmChk').checked=!!o.klantMat;$('kmRes').textContent=o.klantMat?'Nu: klant ziet de materialen.':'Nu: klant ziet géén materialen (standaard).';
  $('kpSel').value=String(v);$('kpRes').textContent=d.exists?'Nu: '+kpName(v)+(o.t?' (gewijzigd '+new Date(o.t).toLocaleString('nl-NL')+')':''):'Nog niet ingesteld: de telefoons bewaren alles (oneindig).'}
  catch(e){$('kpRes').textContent='Kon de bewaartermijn niet lezen: '+err(e)+' (zijn de nieuwe Firestore-regels gepubliceerd?)'}}
 $('kpSave').onclick=async function(){var v=+$('kpSel').value,b=this;b.disabled=true;
  try{await db.collection('instellingen').doc('app').set({bewaar:v,t:Date.now(),door:auth.currentUser.email},{merge:true});$('kpRes').textContent='Opgeslagen: '+kpName(v)+'. De telefoons nemen dit over zodra ze online zijn.'}
  catch(e){$('kpRes').textContent='Opslaan mislukt: '+err(e)}b.disabled=false};
+$('kmChk').onchange=async function(){var c=this,v=!!c.checked;c.disabled=true;
+ try{await db.collection('instellingen').doc('app').set({klantMat:v,t:Date.now(),door:auth.currentUser.email},{merge:true});$('kmRes').textContent=(v?'Opgeslagen: klant ziet de materialen.':'Opgeslagen: klant ziet géén materialen.')+' De telefoons nemen dit over zodra ze online zijn.'}
+ catch(e){c.checked=!v;$('kmRes').textContent='Opslaan mislukt: '+err(e)}c.disabled=false};
 /* ---------- beveiliging controleren ---------- */
 (function(){var P=String(C.projectId||''),U='https://console.firebase.google.com/project/'+P,K='bh:sec';
  var L=[

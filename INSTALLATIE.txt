@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v125,
-  verhoog naar v126 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v133,
+  verhoog naar v134 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,6 +242,47 @@ BLOKKEREN (HELE APP)
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+IPHONE IN SAFARI: WAARSCHUWING (v133)
+- Opent een monteur de app op een iPhone/iPad in Safari (niet als app op het beginscherm), dan staat op het
+  startscherm een rode melding: iOS wist de gegevens van websites die 7 dagen niet geopend zijn.
+  De melding legt uit hoe je de app op het beginscherm zet, en hoe je bonnen terugzet via de online back-up.
+- Als app op het beginscherm, en op Android, verschijnt de melding niet.
+
+NIEUW LOGO (v129)
+- Werkbon-PDF en weeklijst-/storingsdienst-PDF hebben het nieuwe logo
+  "MIT Installatietechniek - onderdeel van De Groot Installatiegroep" (staat in index.html als window.MITLOGO).
+- v130: op de werkbon loopt de blauwe lijn onder het logo door tot de rechterkant.
+  Het logo staat ook in de app: startscherm, inlogscherm en de kopbalk van Werkbonnen en Weeklijsten.
+- v131: de blauwe lijn onder het logo is in de PDF's nu één rechte lijn (getekend, niet meer uit het plaatje),
+  zodat hij op elk scherm en bij afdrukken recht en even dik loopt.
+- v132: rechtsboven op de werkbon staat nu ook info@mit-installatietechniek.com (tussen adres en website).
+
+MATERIALEN BEWERKBAAR IN DE PDF VOOR KANTOOR (v128)
+- In de werkbon-PDF voor kantoor zijn alle materiaalregels invulvelden: omschrijving, code, aantal, à en bedrag
+  (ook op het vervolgblad en de lege regels). Te bewerken in Adobe Acrobat Reader, Edge, Chrome of Voorvertoning.
+- Bedrag en totaal rekenen niet vanzelf opnieuw uit; pas die zelf aan als je aantal of prijs wijzigt.
+- De PDF voor de klant blijft vast (niet te bewerken).
+
+STORINGSDIENST: EUR 25 ALLEEN MET REISTIJD (v127)
+- Op de storingsdienstlijst komt de EUR 25,00 per storingsbon per dag alleen als er op die storingsbon
+  reistijd is ingevuld (begin- of eindreistijd). Zonder reistijd blijft het bedrag leeg.
+- Wordt de reistijd later weggehaald, dan verdwijnt het automatisch gezette bedrag weer.
+  Een bedrag dat de monteur zelf heeft ingevuld blijft staan.
+
+PAUZE, REISUREN EN KLANTVERSIE (v126)
+- Pauze is verplicht: het veld staat in het rood. Afronden kan pas als bij elke dag met werktijden een pauze staat
+  (vul 0 in als je geen pauze had).
+- Reisuren op de weeklijst (niet voor de storingsdienst): heenreis van de eerste bon van de dag + terugreis van de
+  laatste bon van de dag. Het eerste uur daarvan is eigen tijd; wat erboven zit komt als reisuren (kolom reisuren)
+  bij de laatste bon van die dag. Voorbeeld: 45 min heen + 45 min terug = 30 min (0,5) reisuren.
+  Reistijd tussen twee klussen op dezelfde dag telt als gewone werktijd.
+- De klant ziet geen materialen op de PDF: de klant tekent alleen voor de uren ("Handtekening klant (voor akkoord uren)").
+  Kantoor krijgt altijd de volledige bon met materialen.
+  Beheerpagina > kaart "Materialen op de PDF voor de klant": vinkje aan = klant ziet de materialen wel.
+  (Geen nieuwe Firestore-regels nodig: dit staat bij instellingen/app, dat de beheerder al mag wijzigen.)
+- iPhone: bij versturen wordt nu ook het onderwerp meegegeven. Of Outlook/Mail het overneemt bepaalt de app zelf;
+  komt het er toch niet in, gebruik dan de knop om het onderwerp te kopiëren.
 
 BON SCANNEN VAN EEN FOTO (v125)
 - Overgenomen: werkbonnummer (rechtsboven), de gegevens onder Werkadres (naam, adres, postcode + plaats, telefoon)

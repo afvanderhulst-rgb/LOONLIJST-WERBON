@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v124,
-  verhoog naar v125 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v125,
+  verhoog naar v126 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,6 +242,15 @@ BLOKKEREN (HELE APP)
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+BON SCANNEN VAN EEN FOTO (v125)
+- Overgenomen: werkbonnummer (rechtsboven), de gegevens onder Werkadres (naam, adres, postcode + plaats, telefoon)
+  en de tekst onder STORING / SERVICE (tot VERRICHTE WERKZAAMHEDEN).
+- Schuin gefotografeerde bonnen worden in perspectief rechtgezet; schaduw en flitsvlekken worden per stukje foto gecorrigeerd;
+  woorden waar de tekstherkenning sterk aan twijfelt (vlekken) worden weggelaten.
+- Opgelost: de eerste regel van de storing (bijv. "storing PV panelen") viel weg, woorden van een regel raakten door elkaar,
+  en het kopje VERRICHTE WERKZAAMHEDEN kwam in de storing terecht.
+- Tips voor de monteur blijven: bon plat, hele bon in beeld, genoeg licht, scherp. Altijd even controleren.
 
 ONLINE BACK-UP: FOTO'S EN BIJLAGEN MAAR ÉÉN KEER (v124)
 - Per monteur blijven de laatste 30 back-ups bewaard (één per dag; later die dag overschrijft de back-up van die dag).

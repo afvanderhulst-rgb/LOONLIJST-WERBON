@@ -417,14 +417,18 @@ function acc(u){var em=String(u.email||'').toLowerCase();if(!em||em===ADMIN)retu
 async function toggle(el){var bl=el.querySelector('.bl'),uid=el.dataset.u;if(!bl.hidden){bl.hidden=true;return}bl.hidden=false;bl.innerHTML='<p class="mu">Laden…</p>';
  try{var q=await db.collection('users').doc(uid).collection('backups').orderBy('t','desc').get();
   if(!q.docs.length){bl.innerHTML='<p class="mu">Geen back-ups.</p>';return}
-  bl.innerHTML=q.docs.map(function(d){var o=d.data();return '<div class="br"><span>'+fd(o.t)+' · '+ee(o.dev||'')+' · '+kb(o.size)+(o.auto?'':' · handmatig')+'</span><button class="btn" type="button" data-dl="'+ee(d.id)+'">Downloaden</button></div>'}).join('');
+  bl.innerHTML=q.docs.map(function(d){var o=d.data();return '<div class="br"><span>'+fd(o.t)+' · '+ee(o.dev||'')+' · '+kb(o.all||o.size)+(o.auto?'':' · handmatig')+'</span><button class="btn" type="button" data-dl="'+ee(d.id)+'">Downloaden</button></div>'}).join('');
   bl.querySelectorAll('[data-dl]').forEach(function(b){b.onclick=function(){dl(uid,b.dataset.dl,b,el)}})}
  catch(e){bl.innerHTML='<p class="er">'+ee(err(e))+'</p>'}}
 
 async function dl(uid,id,b,el){var t=b.textContent;b.disabled=true;b.textContent='Ophalen…';
  try{var ref=db.collection('users').doc(uid).collection('backups').doc(id),m=await ref.get(),n=+(m.data()||{}).parts||1,a=[];
   for(var i=0;i<n;i++){var p=await ref.collection('parts').doc(String(i)).get();if(!p.exists)throw {code:'deel '+(i+1)+' van '+n+' ontbreekt'};a.push(p.data().d)}
-  var txt=a.join('');JSON.parse(txt);
+  var txt=a.join(''),j=JSON.parse(txt);
+  // nieuwe back-ups (v2) verwijzen naar losse bijlagen: die erbij halen, zodat het bestand compleet is
+  if(j&&j.attRef){var ac=db.collection('users').doc(uid).collection('att'),att={},ks=Object.keys(j.attRef),miss=0;b.textContent='Bijlagen ophalen…';
+   for(var x=0;x<ks.length;x++){var r=j.attRef[ks[x]];try{var am=await ac.doc(r.ref).get(),an=+(am.data()||{}).parts||1,aa=[];for(var y=0;y<an;y++){var ap=await ac.doc(r.ref).collection('parts').doc(String(y)).get();aa.push(ap.exists?ap.data().d:'')}att[ks[x]]={name:r.name,type:r.type,w:r.w,h:r.h,data:aa.join('')}}catch(e){miss++}}
+   j.att=att;delete j.attRef;txt=JSON.stringify(j);if(miss)alertBox(el,miss+' bijlage(n) ontbraken in het account.')}
   var u=USERS.filter(function(x){return x.uid===uid})[0]||{},who=String(u.email||uid).split('@')[0].replace(/[^\w.-]+/g,'_');
   var url=URL.createObjectURL(new Blob([txt],{type:'application/json'})),x=document.createElement('a');x.href=url;x.download='werkbonnen-backup-'+id+'-'+who+'.json';document.body.appendChild(x);x.click();
   setTimeout(function(){x.remove();URL.revokeObjectURL(url)},4000);b.textContent='Gedownload'}

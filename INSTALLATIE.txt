@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v133,
-  verhoog naar v134 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v134,
+  verhoog naar v135 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,6 +242,11 @@ BLOKKEREN (HELE APP)
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+DATUM EN TIJDEN SNELLER INVULLEN (v134)
+- Werkbon > Uren: tik op Datum en er opent een agenda (iPhone: draaiwieltje, Android: kalender). Dag kiezen, klaar.
+- Tijden mogen zonder voorloopnul en met punt of komma: 7, 7.00, 7,30, 730 of 0730.
+  Bij het verlaten van het veld maakt de app er 07:00 / 07:30 van.
 
 IPHONE IN SAFARI: WAARSCHUWING (v133)
 - Opent een monteur de app op een iPhone/iPad in Safari (niet als app op het beginscherm), dan staat op het

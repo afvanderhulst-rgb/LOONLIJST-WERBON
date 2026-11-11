@@ -5,15 +5,15 @@
 // 2. Plak de VOLLEDIGE inhoud van dit bestand (deze uitleg mag mee, het zijn opmerkingen).
 // 3. Klik op Publiceren (Publish). Een rode foutmelding? Dan is er iets niet helemaal meegekopieerd.
 // Doe dit na elke update waarin staat dat de regels veranderd zijn.
-// Het beheerdersadres staat bij isBeheerder(); pas het daar aan als de beheerder verandert.
+// De beheerdersadressen staan bij isBeheerder(); pas ze daar aan als er een beheerder bijkomt of weggaat.
 // =====================================================================
 
 rules_version = '2';
-service cloud.firestore {
+ cloud.firestore {
   match /databases/{database}/documents {
     function isBeheerder() {
       return request.auth != null
-        && request.auth.token.email == 'a.f.vanderhulst@gmail.com'
+        && request.auth.token.email.lower() in ['a.f.vanderhulst@gmail.com', 'arjan@mit-installatietechniek.com']
         && request.auth.token.email_verified == true;
     }
     function isMit() {

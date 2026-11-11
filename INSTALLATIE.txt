@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v136,
-  verhoog naar v137 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v137,
+  verhoog naar v138 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,6 +242,20 @@ BLOKKEREN (HELE APP)
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+TWEEDE BEHEERDER + WISSELEN VAN ACCOUNT (v137) - FIRESTORE-REGELS OPNIEUW PUBLICEREN!
+- arjan@mit-installatietechniek.com is nu ook beheerder (naast a.f.vanderhulst@gmail.com).
+  Staat in firebase-config.js (adminEmail, gescheiden door komma's) en in firestore-regels.txt (isBeheerder).
+  1. firestore-regels.txt helemaal opnieuw plakken in Firebase > Firestore > Regels en Publiceren.
+  2. arjan@mit-installatietechniek.com moet een eigen account in de app hebben met bevestigd e-mailadres.
+     Daarna kun je met dat account ook inloggen op /beheer.html.
+- Wisselen van account op één telefoon:
+  * De app onthoudt van welk account de bonnen op de telefoon zijn.
+  * Logt iemand anders in, dan gaat er niets naar diens back-up. Hij krijgt de vraag om de bonnen van het
+    vorige account te wissen en zijn eigen back-up terug te zetten - alleen als die bonnen veilig in de
+    back-up van het vorige account staan. Anders wordt hij weer uitgelogd en verandert er niets.
+  * Uitloggen heeft nu de keuze "Ook alles van deze telefoon wissen". Er wordt alleen gewist als de
+    laatste back-up gelukt is.
 
 HANDMATIGE REGELS ONDERAAN DE DAG (v136)
 - Een regel die je zelf op de weeklijst typt (bijv. "Zaak") blijft onderaan die dag staan; de werkbonnen staan

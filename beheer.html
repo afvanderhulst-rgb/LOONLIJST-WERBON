@@ -128,7 +128,7 @@ function fd(t){if(!t)return '–';var d=new Date(t);return d.getDate()+'-'+(d.ge
 function ago(t){if(!t)return '';var m=(Date.now()-t)/6e4;if(m<60)return 'net';var h=m/60;if(h<24)return Math.round(h)+' uur geleden';var d=Math.round(h/24);return d+(d===1?' dag':' dagen')+' geleden'}
 function kb(n){n=(n||0)/1024;return n<1024?Math.max(1,Math.round(n))+' kB':(n/1024).toFixed(1)+' MB'}
 function show(h){var m=$('msg');m.innerHTML=h;m.hidden=!h}
-var ERR=[],ERRN={},ROLE='',C=window.MIT_FIREBASE||{},ADMIN=String(C.adminEmail||'').toLowerCase(),auth,db,USERS=[],BLOCK={},TOE={},KL=[],DOM='@mit-installatietechniek.com';
+var ERR=[],ERRN={},ROLE='',C=window.MIT_FIREBASE||{},ADMINS=String(C.adminEmail||'').toLowerCase().split(/[,;\s]+/).filter(Boolean),ADMIN=ADMINS[0]||'',isAdm=function(e){return ADMINS.indexOf(String(e||'').toLowerCase())>=0},auth,db,USERS=[],BLOCK={},TOE={},KL=[],DOM='@mit-installatietechniek.com';
 if(!C.apiKey||String(C.apiKey).indexOf('VUL')===0){show('<b>Nog niet ingesteld.</b><p class="mu">Vul eerst firebase-config.js in (zie INSTALLATIE.txt).</p>');return}
 show('<p class="mu">Firebase laden…</p>');
 try{var F=await window.mitFB();auth=F.auth;db=F.db;show('')}catch(e){show('<b>Firebase kon niet geladen worden.</b><p class="mu">Controleer je internet en laad de pagina opnieuw.</p>');return}
@@ -145,7 +145,7 @@ auth.onAuthStateChanged(async function(u){
  if(!u){$('who').textContent='Gebruikers en back-ups';if(ADMIN)$('lm').value=ADMIN;return}
  $('who').textContent='Ingelogd als '+u.email;
  ROLE='admin';
- if(ADMIN&&String(u.email).toLowerCase()!==ADMIN){var isK=false;try{isK=(await db.collection('kantoor').doc(String(u.email).toLowerCase()).get()).exists}catch(x){}
+ if(ADMIN&&!isAdm(u.email)){var isK=false;try{isK=(await db.collection('kantoor').doc(String(u.email).toLowerCase()).get()).exists}catch(x){}
   if(!isK){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina. Kantoor-collega\'s worden toegevoegd door de beheerder ('+ee(ADMIN)+').</p>');return}
   ROLE='kantoor';TAB='b';$('who').textContent='Kantoor · '+u.email}
  try{await u.reload()}catch(x){}
@@ -197,11 +197,11 @@ async function loadToe(){TOE={};try{var q=await db.collection('toegang').get();q
 async function setToe(em,on){em=String(em||'').trim().toLowerCase();if(!em)return;
  if(on&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){alert0('Dit e-mailadres klopt niet.');return}
  if(on&&isDom(em)){alert0('Collega\'s met een '+DOM+'-adres hebben al toegang; toelaten is niet nodig.');return}
- if(on&&em===ADMIN){alert0('De beheerder heeft al toegang.');return}
+ if(on&&isAdm(em)){alert0('De beheerder heeft al toegang.');return}
  try{if(on)await db.collection('toegang').doc(em).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()});else await db.collection('toegang').doc(em).delete();await loadToe();render()}
  catch(e){alert0(err(e)+' (zijn de nieuwe Firestore-regels gepubliceerd?)')}}
 $('tlb').onclick=async function(){var b=this;b.disabled=true;await setToe($('tlm').value,true);if(TOE[String($('tlm').value).trim().toLowerCase()])$('tlm').value='';b.disabled=false};
-async function setBlock(em,on,vol){em=String(em||'').trim().toLowerCase();if(!em)return;if(em===ADMIN){alert0('Je kunt jezelf niet blokkeren.');return}
+async function setBlock(em,on,vol){em=String(em||'').trim().toLowerCase();if(!em)return;if(isAdm(em)){alert0('Een beheerder kun je niet blokkeren.');return}
  try{if(on)await db.collection('geblokkeerd').doc(em).set(Object.assign({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()},vol?{volledig:true}:{}));else await db.collection('geblokkeerd').doc(em).delete();await loadBlock();render()}
  catch(e){alert0(err(e))}}
 function alert0(t){show('<b>Niet gelukt.</b><p class="mu">'+ee(t)+'</p>');setTimeout(function(){show('')},6000)}
@@ -336,7 +336,7 @@ $('kmChk').onchange=async function(){var c=this,v=!!c.checked;c.disabled=true;
 /* ---------- beveiliging controleren ---------- */
 (function(){var P=String(C.projectId||''),U='https://console.firebase.google.com/project/'+P,K='bh:sec';
  var L=[
-  ['2fa','Tweestapsverificatie op het beheerdersaccount','Google-account '+ADMIN+' > Beveiliging > Verificatie in twee stappen aanzetten. Wie dit account heeft, kan alle back-ups inzien.','https://myaccount.google.com/signinoptions/two-step-verification'],
+  ['2fa','Tweestapsverificatie op de beheerdersaccounts','Account(s) '+ADMINS.join(' en ')+' > Beveiliging > Verificatie in twee stappen aanzetten. Wie dit account heeft, kan alle back-ups inzien.','https://myaccount.google.com/signinoptions/two-step-verification'],
   ['dpa','Verwerkersovereenkomst (Data Processing Terms)','Firebase > Projectinstellingen > tabblad Algemeen of Privacy > "Data Processing and Security Terms" bekijken en accepteren. Vercel: vercel.com/legal/dpa.',U+'/settings/general'],
   ['loc','Opslag staat in Europa','Firebase > Projectinstellingen > Algemeen > "Default GCP resource location" moet met europe- of eur beginnen.',U+'/settings/general'],
   ['enum','E-mail-enumeratie-bescherming aan','Authentication > Settings > User actions > "Email enumeration protection" aanzetten. Dan kan niemand uitproberen welke adressen een account hebben.',U+'/authentication/settings'],
@@ -415,9 +415,9 @@ function render(){var f=$('q').value.trim().toLowerCase(),a=USERS.filter(functio
   if(on&&b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker weten? Tik nogmaals';setTimeout(function(){if(b.isConnected){b.dataset.sure='';b.textContent='Blokkeren'}},5000);return}
   setBlock(b.dataset.full,on,true)}});
  $('users').querySelectorAll('[data-blk]').forEach(function(b){b.onclick=function(e){e.stopPropagation();setBlock(b.dataset.blk,b.dataset.on==='1')}})}
-function full(u){var em=String(u.email||'').toLowerCase();if(!em||em===ADMIN)return '';var b=BLOCK[em];
+function full(u){var em=String(u.email||'').toLowerCase();if(!em||isAdm(em))return '';var b=BLOCK[em];
  return b&&b.volledig?'<button class="btn sm" type="button" data-full="'+ee(em)+'" data-on="0">Deblokkeren</button>':'<button class="btn sm dg" type="button" data-full="'+ee(em)+'" data-on="1">Blokkeren</button>'}
-function acc(u){var em=String(u.email||'').toLowerCase();if(!em||em===ADMIN)return '';if(BLOCK[em]&&BLOCK[em].volledig)return '';
+function acc(u){var em=String(u.email||'').toLowerCase();if(!em||isAdm(em))return '';if(BLOCK[em]&&BLOCK[em].volledig)return '';
  if(!isDom(em))return TOE[em]?'<button class="btn sm dg" type="button" data-toe="'+ee(em)+'" data-on="0">Toelating intrekken</button>':'<button class="btn sm" type="button" data-toe="'+ee(em)+'" data-on="1">Toelaten (klanten + rooster)</button>';
  return BLOCK[em]?'<button class="btn sm" type="button" data-blk="'+ee(em)+'" data-on="0">Toegang klanten terugzetten</button>':'<button class="btn sm dg" type="button" data-blk="'+ee(em)+'" data-on="1">Toegang klanten intrekken</button>'}
 

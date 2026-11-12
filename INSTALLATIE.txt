@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v137,
-  verhoog naar v138 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v138,
+  verhoog naar v139 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,6 +242,12 @@ BLOKKEREN (HELE APP)
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+DATUM, BEGIN- EN EINDTIJD VERPLICHT + MELDING BIJ OVERLAP (v138)
+- Een werkbon kan pas worden afgerond of naar de klant verstuurd als bij elke ingevulde dag de datum,
+  begintijd en eindtijd zijn ingevuld (en de eindtijd na de begintijd ligt). Een helemaal lege extra dag telt niet mee.
+- Overlappen de werktijden met een andere dag op dezelfde bon of met een andere bon, dan staat er een rode
+  melding bij die dag en een grijze regel bij Afronden. Afronden mag dan nog wel (bijv. als het klopt).
 
 TWEEDE BEHEERDER + WISSELEN VAN ACCOUNT (v137) - FIRESTORE-REGELS OPNIEUW PUBLICEREN!
 - arjan@mit-installatietechniek.com is nu ook beheerder (naast a.f.vanderhulst@gmail.com).

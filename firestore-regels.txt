@@ -9,7 +9,7 @@
 // =====================================================================
 
 rules_version = '2';
- cloud.firestore {
+service cloud.firestore {
   match /databases/{database}/documents {
     function isBeheerder() {
       return request.auth != null

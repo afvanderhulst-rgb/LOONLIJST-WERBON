@@ -1,4 +1,4 @@
-var V='mit-werkbon-v137';
+var V='mit-werkbon-v138';
 var FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','firebase-config.js','fb.js','rooster.js','libs.js','handleiding.pdf'];
 var CDN=['lib/jspdf.umd.min.js','lib/pdf.min.js','lib/pdf.worker.min.js','lib/pdf-lib.min.js','lib/jszip.min.js','lib/firebase/firebase-app.js','lib/firebase/firebase-auth.js','lib/firebase/firebase-firestore.js']; // eigen adres; ontbrekende worden overgeslagen
 self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){

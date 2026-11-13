@@ -37,14 +37,13 @@ Ga naar pwabuilder.com, vul het https-adres in en kies "Package for stores" >
 Android. Je krijgt een APK/AAB dat je kunt installeren of in de Play Store zetten.
 
 LET OP
-- Bonnen worden bewaard op het apparaat zelf (niet in een Claude-account).
+- Bonnen worden bewaard op het apparaat zelf (en met een account ook online in Firebase).
 - "Als PDF" downloadt in deze versie direct een PDF met de naam naam-werkbonnr.
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
-- Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
-  Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v149,
-  verhoog naar v150 enz.), zodat telefoons de nieuwe versie ophalen.
+- Aangeleverde werkbonnen importeren: zie hieronder.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v151,
+  verhoog naar v152 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -106,7 +105,7 @@ iPhone:
 - Bijlage > Bewaar in Bestanden, daarna in de app: Werkbon importeren > Bestand selecteren.
   (Een iPhone kan een PDF niet rechtstreeks naar een web-app delen.)
 
-AANGELEVERDE WERKBONNEN IMPORTEREN (zonder Claude)
+AANGELEVERDE WERKBONNEN IMPORTEREN
 - In het Werkrapport: Mijn bonnen > "Aangeleverde werkbon importeren (PDF)" en kies de PDF.
 - Op de computer: sleep de PDF-bijlage uit je mail (Outlook, Gmail, enz.) naar het
   venster van de app. De app opent een nieuwe bon en vult de gegevens meteen in.
@@ -115,7 +114,7 @@ AANGELEVERDE WERKBONNEN IMPORTEREN (zonder Claude)
 - Of deel de PDF vanuit je mail of WhatsApp: Delen > "MIT Werkbon". De app opent en
   vult de gegevens meteen in (werkbonnr., werkadres, storingsmelding en datum afspraak).
   Het delen werkt zodra de app is geinstalleerd.
-  Foto's/scans en afwijkende opmaak worden alleen binnen Claude gelezen.
+  Foto's/scans en afwijkende opmaak kunnen niet automatisch worden gelezen; vul die bon zelf in.
 
 E-MAIL VERZENDEN
 Onder Afronding staan de velden "E-mailadres klant" en "E-mailadres kantoor" met knoppen
@@ -242,6 +241,15 @@ BLOKKEREN (HELE APP)
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+UPDATES VANZELF, OOK OP DE IPHONE (v150)
+- De app zoekt naar een nieuwe versie bij openen, bij terugkomen in de app en elk half uur.
+- Staat er een nieuwe versie klaar en wordt er niets ingevuld, dan laadt de app vanzelf opnieuw (alles is
+  eerst bewaard). Is de monteur bezig (typen, verzendvenster open, meerdere mails versturen), dan verschijnt
+  onderaan een balkje "Er is een nieuwe versie van de app" met de knop Bijwerken.
+- Nog steeds nodig bij elke update: versienummer in sw.js verhogen, anders ziet de telefoon geen update.
+- Deze werkt vanaf de eerste update NA v150: de telefoon moet v150 zelf nog een keer op de oude manier
+  krijgen (app helemaal afsluiten en opnieuw openen).
 
 BEHEERPAGINA OPGEKNAPT (v149)
 - Nieuwe indeling met tabbladen: Gebruikers, Bonnen klaarzetten, Klanten, Rooster, Instellingen, Systeem.

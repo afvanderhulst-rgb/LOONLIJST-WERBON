@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v139,
-  verhoog naar v140 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v140,
+  verhoog naar v141 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -251,6 +251,8 @@ PDF-ICOONTJE IN MIJN BONNEN + GEEN ZWERVENDE PDF'S MEER (v139)
   De bon staat altijd in de app en in de online back-up. Oude PDF's in Downloads kun je zelf weggooien.
 - Beheerpagina: rode melding bovenaan als een monteur al meer dan 3 dagen geen online back-up heeft,
   met wanneer hij de app voor het laatst gebruikte.
+- v140: de regel onderaan het startscherm over de opslagmap (WERKBONNEN\jaar\Week) staat er alleen nog
+  als je bij "PDF-kopie bewaren" voor "In mijn opslagmap" hebt gekozen.
 
 DATUM, BEGIN- EN EINDTIJD VERPLICHT + MELDING BIJ OVERLAP (v138)
 - Een werkbon kan pas worden afgerond of naar de klant verstuurd als bij elke ingevulde dag de datum,

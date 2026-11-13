@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v145,
-  verhoog naar v146 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v149,
+  verhoog naar v150 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -243,11 +243,46 @@ BLOKKEREN (HELE APP)
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
 
+BEHEERPAGINA OPGEKNAPT (v149)
+- Nieuwe indeling met tabbladen: Gebruikers, Bonnen klaarzetten, Klanten, Rooster, Instellingen, Systeem.
+  * Instellingen: toegang intrekken/blokkeren, externe gebruikers, kantoor-collega's, bewaartermijn, materialen.
+  * Systeem: foutenlogboek, beveiliging controleren, onderdelen van de app. Rood bolletje = er zijn fouten.
+- Gebruikers: overzicht bovenaan (monteurs, actief deze week, back-up recent, fouten). Tik op de fouten-tegel
+  om naar het foutenlogboek te gaan. Zoeken kan nu ook op naam.
+- Per gebruiker: naam, e-mail, laatst actief, laatste back-up, telefoon en app-versie (de app stuurt de
+  versie mee vanaf v149).
+- "Back-ups en archief": naast de dagelijkse back-ups nu ook het archief, met "Archief downloaden". Dat
+  bestand kun je in de app terugzetten zoals een gewone back-up.
+- Werkt ook goed op de telefoon (tabbladen schuiven opzij, geen zijwaarts scrollen meer).
+
+BONNEN BLIJVEN ALTIJD BEWAARD IN HET ACCOUNT (ARCHIEF) + VOLGORDE (v147)
+- Naast de dagelijkse back-ups (de laatste 30 blijven staan) heeft elk account nu een archief:
+  users/{uid}/archief in Firestore. Elke werkbon en weeklijst/storingsdienstlijst staat daar los in, met
+  verwijzingen naar de foto's en bijlagen. De app wist daar nooit iets uit (alleen bij Account verwijderen).
+- Foto's en bijlagen van gearchiveerde bonnen worden ook niet meer opgeruimd.
+- Bewaartermijn op de telefoon: een oude verstuurde bon gaat pas van de telefoon als hij in het archief staat.
+- Terughalen: Instellingen > Account en online back-up > Archief > Terughalen. Zet alles terug wat niet meer
+  op de telefoon staat (handig bij een nieuwe telefoon of een per ongeluk verwijderde bon). Wat er staat
+  blijft ongewijzigd.
+- Firestore-regels hoeven niet te worden aangepast (users/{uid}/... was al toegestaan).
+- Werkbonnen bij de weeklijst (los en in de verzamel-PDF) staan nu op volgorde: datum en begintijd
+  (v148: niet meer op werkordernummer, want werkorders komen op verschillende momenten binnen).
+  (Eerder werd de datum als tekst gesorteerd, waardoor bijv. 30-10 na 02-11 kwam.)
+
+WEEKLIJST MET VEEL WERKBONNEN OP ANDROID: IN MEERDERE MAILS (v146)
+- Android deelt maximaal 10 bestanden per keer. Zijn het er meer (of samen te groot), dan verstuurt de app
+  de weeklijst in delen:
+  * Mail 1: weeklijst + verzamel-PDF + de eerste 8 werkbonnen, onderwerp "... (1 van 2)".
+  * Daarna toont de knop "Tik voor mail 2 van 2": verstuur eerst mail 1 in de mail-app, kom terug naar de app
+    en tik. Mail 2 heeft de overige werkbonnen, onderwerp "... (2 van 2)". Bij nog meer bonnen: 3 van 3 enz.
+- Het mailadres wordt gekopieerd, zodat je het in elke mail kunt plakken.
+- Pas na de laatste mail wordt de weeklijst als verstuurd gemarkeerd.
+- iPhone werkt zoals voorheen: alles in een mail.
+
 WEEKLIJST VERSTUREN OP ANDROID HERSTELD (v145)
 - Oorzaak "Versturen is niet gelukt": Android (Chrome) deelt maximaal 10 bestanden tegelijk. Een weeklijst met
   8 of meer werkbonnen (+ weeklijst + verzamel-PDF) ging daar overheen en werd geweigerd.
-- Nu: zijn het meer dan 10 bestanden (of samen te groot), dan gaan de weeklijst + de verzamel-PDF mee; daarin
-  zitten alle werkbonnen. In de mailtekst staat dat erbij.
+- (Vervangen in v146: boven 10 bestanden gaat het nu in meerdere mails, zie hierboven.)
 - De PDF's worden al gemaakt zodra het verzendvenster opent, zodat Verzenden meteen kan delen (Android staat
   delen maar een paar seconden na de tik toe).
 - Lukt delen ook de tweede keer niet, dan worden de PDF's als zip opgeslagen en opent de mail.

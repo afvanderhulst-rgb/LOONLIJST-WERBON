@@ -43,8 +43,8 @@ LET OP
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren werkt ook zonder Claude (zie hieronder).
   Het klaarzetten van bonnen via de chat werkt alleen in de versie binnen Claude.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v143,
-  verhoog naar v144 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v145,
+  verhoog naar v146 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,6 +242,21 @@ BLOKKEREN (HELE APP)
   drie puntjes > Disable account.
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
+
+WEEKLIJST VERSTUREN OP ANDROID HERSTELD (v145)
+- Oorzaak "Versturen is niet gelukt": Android (Chrome) deelt maximaal 10 bestanden tegelijk. Een weeklijst met
+  8 of meer werkbonnen (+ weeklijst + verzamel-PDF) ging daar overheen en werd geweigerd.
+- Nu: zijn het meer dan 10 bestanden (of samen te groot), dan gaan de weeklijst + de verzamel-PDF mee; daarin
+  zitten alle werkbonnen. In de mailtekst staat dat erbij.
+- De PDF's worden al gemaakt zodra het verzendvenster opent, zodat Verzenden meteen kan delen (Android staat
+  delen maar een paar seconden na de tik toe).
+- Lukt delen ook de tweede keer niet, dan worden de PDF's als zip opgeslagen en opent de mail.
+
+WEEKLIJSTEN IN DE LIJST (v144)
+- Lijst (Mijn bonnen) heeft twee tabjes: Werkbonnen en Weeklijsten.
+- Weeklijsten toont alle weeklijsten en storingsdienstlijsten met uren op deze telefoon, nieuwste bovenaan,
+  met periode, totaal uren (en onkosten), en Verstuurd / Niet verstuurd.
+- PDF-icoontje = de lijst als PDF bekijken (met Delen / opslaan); Openen = naar die week in de weeklijst.
 
 TIJDEN OP KWARTIEREN + MELDING ALS BONNEN NIET AANSLUITEN (v142)
 - Alle tijden (reis en werk, begin en eind) worden bij het verlaten van het veld naar boven afgerond op een

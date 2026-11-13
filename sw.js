@@ -1,4 +1,4 @@
-var V='mit-werkbon-v140';
+var V='mit-werkbon-v143';
 var FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','firebase-config.js','fb.js','rooster.js','libs.js','handleiding.pdf'];
 var CDN=['lib/jspdf.umd.min.js','lib/pdf.min.js','lib/pdf.worker.min.js','lib/pdf-lib.min.js','lib/jszip.min.js','lib/firebase/firebase-app.js','lib/firebase/firebase-auth.js','lib/firebase/firebase-firestore.js']; // eigen adres; ontbrekende worden overgeslagen
 self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){
@@ -12,3 +12,11 @@ self.addEventListener('fetch',function(e){
  if(e.request.method==='POST'&&u.pathname.slice(-13)==='/share-target'){e.respondWith((async function(){try{var fd=await e.request.formData(),f=fd.get('file');if(f&&f.size!==undefined){var c=await caches.open('mit-share');await c.put('shared-file',new Response(f,{headers:{'Content-Type':f.type||'application/pdf','X-Name':encodeURIComponent(f.name||'bon.pdf')}}))}}catch(err){}return Response.redirect(new URL('index.html?import=1',self.registration.scope).href,303)})());return}
  if(e.request.method!=='GET')return;
  e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(function(r){return r||fetch(e.request).then(function(res){if(res&&(res.ok||res.type==='opaque')){var cp=res.clone();caches.open(V).then(function(c){c.put(e.request,cp)})}return res})}))});
+
+/* pushmeldingen (verstuurd door de Cloud Function) */
+self.addEventListener('push',function(e){var d={};try{d=e.data?e.data.json():{}}catch(x){d={body:e.data?e.data.text():''}}
+ e.waitUntil(self.registration.showNotification(d.title||'MIT Werkbon',{body:d.body||'',icon:'icon-192.png',badge:'icon-192.png',tag:d.tag||undefined,renotify:!!d.tag,data:{url:d.url||'./'}}))});
+self.addEventListener('notificationclick',function(e){e.notification.close();var url=new URL((e.notification.data&&e.notification.data.url)||'./',self.registration.scope).href;
+ e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(function(l){
+  for(var i=0;i<l.length;i++){var c=l[i];if('focus' in c){c.postMessage({go:url});return c.focus()}}
+  return self.clients.openWindow(url)}))});

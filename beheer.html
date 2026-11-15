@@ -125,6 +125,10 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
   <div class="card"><b>Bewaartermijn op de telefoons</b><p class="mu">Hoe lang verstuurde werkbonnen (met foto's en bijlagen) op de telefoons van de monteurs blijven staan. Daarna verwijdert de app ze vanzelf van het toestel, maar alleen als ze in het archief van het account van de monteur staan (vanaf v147). In dat archief blijven ze altijd bewaard; de monteur haalt ze terug via Instellingen &gt; Account &gt; Archief. Bonnen die nog niet verstuurd zijn blijven altijd staan. Geldt voor iedereen; monteurs kunnen het niet zelf wijzigen.</p>
    <div class="tools" style="margin:0"><select id="kpSel" style="padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit"><option value="0">Altijd bewaren (oneindig)</option><option value="90">3 maanden</option><option value="182">6 maanden</option><option value="365">1 jaar</option><option value="730">2 jaar</option><option value="1825">5 jaar</option><option value="2555">7 jaar</option></select><button class="btn pr" id="kpSave" type="button">Opslaan</button></div>
    <div id="kpRes" class="mu" style="margin-top:8px"></div></div>
+  <div class="card"><b>Werkbonnen naar kantoor</b><p class="mu">Als dit aan staat, gaat een werkbon die een monteur direct vanuit de app verstuurt altijd naar het adres hieronder. De monteur ziet het adres, maar kan het niet wijzigen (de server dwingt het ook af). Uit = de monteur kan het adres zelf aanpassen (alleen adressen op @mit-installatietechniek.com). Een CC kan de monteur altijd zelf invullen.</p>
+   <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="kvChk" style="width:20px;height:20px"> Altijd naar vast adres sturen</label>
+   <label for="kvAdr">Vast adres</label><div class="tools" style="margin:0"><input id="kvAdr" type="email" placeholder="storingen@mit-installatietechniek.com"><button class="btn pr" id="kvSave" type="button">Opslaan</button></div>
+   <div id="kvRes" class="mu" style="margin-top:8px"></div></div>
   <div class="card"><b>Materialen op de PDF voor de klant</b><p class="mu">Standaard ziet de klant geen materialen op de werkbon: de klant tekent alleen voor de uren. Kantoor krijgt altijd de volledige bon met materialen. Zet dit aan als klanten de materialen wél mogen zien. Geldt voor iedere monteur.</p>
    <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="kmChk" style="width:20px;height:20px"> Klant mag materialen zien op de PDF</label>
    <div id="kmRes" class="mu" style="margin-top:8px"></div></div>
@@ -368,12 +372,18 @@ $('brf').onclick=loadSent;
 function kpName(d){var o=$('kpSel').querySelector('option[value="'+d+'"]');return o?o.textContent:d+' dagen'}
 async function loadKeep(){try{var d=await db.collection('instellingen').doc('app').get(),o=d.exists?(d.data()||{}):{},v=o.bewaar==null?0:+o.bewaar;
  if(!$('kpSel').querySelector('option[value="'+v+'"]')){var op=document.createElement('option');op.value=v;op.textContent=v+' dagen';$('kpSel').appendChild(op)}
+ $('kvChk').checked=o.kantoorVast===true;$('kvAdr').value=o.kantoorAdres||'storingen@mit-installatietechniek.com';$('kvRes').textContent=o.kantoorVast===true?'Nu: alle werkbonnen gaan naar '+(o.kantoorAdres||'storingen@mit-installatietechniek.com')+'.':'Nu: uit (monteur kan het adres zelf aanpassen).';
  $('kmChk').checked=!!o.klantMat;$('kmRes').textContent=o.klantMat?'Nu: klant ziet de materialen.':'Nu: klant ziet géén materialen (standaard).';
  $('kpSel').value=String(v);$('kpRes').textContent=d.exists?'Nu: '+kpName(v)+(o.t?' (gewijzigd '+new Date(o.t).toLocaleString('nl-NL')+')':''):'Nog niet ingesteld: de telefoons bewaren alles (oneindig).'}
  catch(e){$('kpRes').textContent='Kon de bewaartermijn niet lezen: '+err(e)+' (zijn de nieuwe Firestore-regels gepubliceerd?)'}}
 $('kpSave').onclick=async function(){var v=+$('kpSel').value,b=this;b.disabled=true;
  try{await db.collection('instellingen').doc('app').set({bewaar:v,t:Date.now(),door:auth.currentUser.email},{merge:true});$('kpRes').textContent='Opgeslagen: '+kpName(v)+'. De telefoons nemen dit over zodra ze online zijn.'}
  catch(e){$('kpRes').textContent='Opslaan mislukt: '+err(e)}b.disabled=false};
+$('kvSave').onclick=async function(){var b=this,on=$('kvChk').checked,a=String($('kvAdr').value||'').trim().toLowerCase();
+ if(!/^[^\s@<>(),;:"]+@[^\s@<>(),;:"]+\.[^\s@<>(),;:"]+$/.test(a)){$('kvRes').innerHTML='<span class="er">Vul een geldig e-mailadres in.</span>';return}
+ b.disabled=true;
+ try{await db.collection('instellingen').doc('app').set({kantoorVast:on,kantoorAdres:a,t:Date.now(),door:auth.currentUser.email},{merge:true});$('kvRes').textContent=(on?'Opgeslagen: alle werkbonnen gaan naar '+a+'.':'Opgeslagen: uit. De monteur kan het adres zelf aanpassen.')+' Geldt direct; de telefoons halen het op bij het versturen.'}
+ catch(e){$('kvRes').textContent='Opslaan mislukt: '+err(e)}b.disabled=false};
 $('kmChk').onchange=async function(){var c=this,v=!!c.checked;c.disabled=true;
  try{await db.collection('instellingen').doc('app').set({klantMat:v,t:Date.now(),door:auth.currentUser.email},{merge:true});$('kmRes').textContent=(v?'Opgeslagen: klant ziet de materialen.':'Opgeslagen: klant ziet géén materialen.')+' De telefoons nemen dit over zodra ze online zijn.'}
  catch(e){c.checked=!v;$('kmRes').textContent='Opslaan mislukt: '+err(e)}c.disabled=false};

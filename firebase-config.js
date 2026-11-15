@@ -15,5 +15,7 @@ window.MIT_FIREBASE = {
   vapidKey: "BDQmfHjAY1ts0kpFgECdQteyTEqMR8wrf6hasAgyZKwgkRyiw8iw1RK3dU3O3V6hfLvQXuPtnzoKAryLHKFZRhk",
   // Werkbon direct naar kantoor mailen via Brevo (zie INSTALLATIE.txt, "WERKBON DIRECT NAAR KANTOOR MAILEN").
   // Pas op true zetten NADAT de servercode (firebase deploy --only functions) is gepubliceerd. false = zoals eerst (mail-app).
-  mailKantoor: true
+  mailKantoor: true,
+  // Werkbonnen klaarzetten per mail: het domein waar kantoor naartoe mailt (zie MAILEN-NAAR-KANTOOR.txt). Leeg = lijst op beheer.html verborgen.
+  mailInbox: "mit-werkbon.com"
 };

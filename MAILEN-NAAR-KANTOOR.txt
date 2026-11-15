@@ -15,9 +15,20 @@ WAT HET DOET
 - Maximaal 60 mails per monteur per dag (instelbaar in functions/index.js, MAX_PER_DAG).
 - Verzenden naar de KLANT en de weeklijst gaan nog via de mail-app (zoals eerst).
 
+CC EN VAST KANTOORADRES (v154)
+- In het venster "Versturen naar kantoor" staat een veld CC (niet verplicht): tot 3 adressen, gescheiden door
+  een komma, alleen op @mit-installatietechniek.com. De app onthoudt de CC voor de volgende keer.
+  Het blijft één mail (Aan + CC + kopie monteur); bij Brevo telt elke ontvanger mee voor de 300 per dag.
+- beheer.html > Instellingen > "Werkbonnen naar kantoor": vinkje "Altijd naar vast adres sturen" + adres
+  (standaard storingen@mit-installatietechniek.com) > Opslaan. Aan = bij Aan staat dat adres en de monteur
+  kan het niet wijzigen; de server stuurt dan ALTIJD naar dat adres. Uit = de monteur kiest zelf (zoals eerst).
+- Geldt direct: de app haalt de instelling op bij het versturen. Firestore-regels hoeven niet opnieuw.
+- Hiervoor: functions/index.js opnieuw publiceren (firebase deploy --only functions) en index.html, beheer.html
+  en sw.js (mit-werkbon-v154) op GitHub zetten.
+
 NIEUWE / GEWIJZIGDE BESTANDEN
 - functions/index.js (nieuwe functie mailKantoor), functions/package.json
-- index.html (v153), sw.js (mit-werkbon-v153), firebase-config.js (mailKantoor: false)
+- index.html (v154), beheer.html, sw.js (mit-werkbon-v154), firebase-config.js (mailKantoor: true)
 
 STAPPEN (op de computer waar je ook de pushmeldingen hebt ingesteld)
 1. Brevo > Settings > SMTP & API > tabblad API Keys > "Generate a new API key".
@@ -49,3 +60,52 @@ KOSTEN
 - Brevo gratis: 300 mails per dag. Firebase: binnen de gratis hoeveelheden; verwacht EUR 0.
 - Firestore-regels hoeven NIET opnieuw (de server houdt zijn tellers bij in mailuit en mailteller;
   de app zelf kan daar niet bij).
+
+
+=====================================================================
+WERKBON KLAARZETTEN PER MAIL (kantoor -> monteur) - EENMALIG INSTELLEN
+=====================================================================
+WAT HET DOET
+- Kantoor mailt de werkbon-PDF (vanuit Outlook, gewoon doorsturen mag) naar het adres van de monteur:
+  <deel voor de @ van zijn e-mailadres>@mit-werkbon.com, bijv. jan.jansen@mit-werkbon.com.
+  De lijst met adressen staat op beheer.html > Bonnen klaarzetten > "Klaarzetten per mail" (met Kopieer-knop).
+  Hebben twee monteurs hetzelfde begin (jan@gmail.com en jan@hotmail.com), dan wordt het voornaam.achternaam;
+  hebben ze ook dezelfde naam, dan staat er "geen uniek adres": zet die bon klaar via beheer.html.
+- De server leest de PDF uit (werkbonnr., adres, storing, afspraak), zet de bon klaar en de monteur krijgt een
+  pushmelding. De tekst van de mail wordt de opmerking bij de bon (doorgestuurde kopjes en handtekening eraf).
+  Meerdere PDF's = meerdere bonnen (max. 5). Meerdere monteur-adressen bij Aan/CC = voor elk van hen.
+- Kantoor krijgt een mail terug: "Klaargezet: ..." of "Niet klaargezet: ..." met de reden.
+- Alleen mails van kantoor-collega's (beheer.html > Instellingen > Kantoor-collega's) en de beheerders worden
+  aangenomen. Andere afzenders of vervalste afzenders worden genegeerd (zonder antwoord).
+- De bon staat op beheer.html onder "Klaargezet" (verplaatsen of intrekken kan daar).
+- De mail komt binnen via Cloudflare (gratis): Email Routing vangt alle mail voor @mit-werkbon.com op
+  (catch-all) en geeft hem aan een klein script (Worker), dat hem doorstuurt naar de server.
+  Versturen vanaf noreply@mit-werkbon.com via Brevo blijft gewoon werken.
+- Het antwoord naar kantoor gaat via Brevo en telt mee voor de 300 mails per dag. Uitzetten:
+  functions/index.js > BEVESTIG = false (dan krijgt kantoor alleen nog een mail als het mislukt).
+
+STAPPEN
+1. Zet de nieuwe functions/index.js en functions/package.json in de map functions. Opdrachtprompt in de map van de app:
+     cd functions   en dan   npm install   en dan   cd ..
+     firebase deploy --only functions
+2. Zet beheer.html en firebase-config.js (met mailInbox: "mit-werkbon.com") op GitHub.
+3. Cloudflare > mit-werkbon.com > Email > Email Routing > aanzetten (Get started / Enable).
+   Cloudflare zet zelf de MX-records en een SPF-record. Meldt Cloudflare dat er al een SPF-record is (van Brevo),
+   maak er dan EEN record van met beide erin, bijv.:  v=spf1 include:_spf.mx.cloudflare.net include:spf.brevo.com ~all
+   Vraagt Cloudflare om een bestemmingsadres (destination), vul dan je eigen Gmail-adres in en bevestig het.
+4. beheer.html > Bonnen klaarzetten > "Klaarzetten per mail" > knop "Script voor Cloudflare maken" > "Script kopiëren".
+5. Cloudflare > Workers & Pages > Create > Create Worker > naam: mit-werkbon-mail > Deploy.
+   Daarna Edit code > alles weghalen > het script plakken > Deploy.
+6. Cloudflare > Email > Email Routing > Routing rules > Catch-all address > Edit:
+   Action: Send to a Worker, Destination: mit-werkbon-mail > Save. Zet de catch-all op Enabled.
+7. Testen: mail een werkbon-PDF vanaf je eigen adres (beheerder of kantoor-collega) naar je eigen adres uit de lijst.
+   Binnen een minuut: bon op het startscherm van de app + pushmelding + mail "Klaargezet".
+
+PROBLEMEN
+- Geen antwoordmail en geen bon: kijk in Firebase console > Functions > mailInbox > Logs (zet de tijd op "Laatste uur").
+  "onbekende afzender" = afzender staat niet bij Kantoor-collega's.
+  Geen regel = de mail kwam niet bij de server: kijk in Cloudflare > Email Routing > Activity log
+  (staat er "Rejected" of "Error", dan klopt het script of de catch-all-regel niet).
+- "Niet toegestaan" terug: het script in Cloudflare is oud. Maak een nieuw script (stap 4) en plak het opnieuw (stap 5).
+- Firestore-regels hoeven NIET opnieuw (de server gebruikt eigen, afgeschermde collecties systeem en inboundlog).
+- Het subdomein bon.mit-werkbon.com in Brevo (eerdere poging) is niet meer nodig; mag blijven staan.

@@ -1,0 +1,51 @@
+WERKBON DIRECT NAAR KANTOOR MAILEN (v153) - EENMALIG INSTELLEN
+
+WAT HET DOET
+- Werkbon afronden > voorbeeld > Versturen: er opent het venster "Versturen naar kantoor".
+  Aan: het kantooradres (standaard storingen@mit-installatietechniek.com, aan te passen; alleen adressen
+  op @mit-installatietechniek.com). Tik Verzenden: de PDF gaat direct naar kantoor, zonder mail-app.
+- Afzender: MIT Werkbon <noreply@mit-werkbon.com>. De monteur krijgt een kopie (CC).
+  Beantwoordt kantoor de mail, dan gaat het antwoord naar de monteur.
+- Geen internet? De bon komt in de wachtrij (label "In wachtrij" in Mijn bonnen) en gaat vanzelf
+  zodra er internet is (bij openen van de app, bij terugkomen in de app en elke minuut).
+- Lukt het echt niet (bijv. PDF groter dan 10 MB of het adres wordt geweigerd), dan krijgt de monteur
+  een melding en verstuurt hij de bon zoals eerst via zijn mail-app. Die knop staat ook in het venster:
+  "Via mijn mail-app (zelf ontvanger kiezen)".
+- Alleen voor monteurs die zijn ingelogd met een BEVESTIGD e-mailadres. Zonder account: zoals eerst.
+- Maximaal 60 mails per monteur per dag (instelbaar in functions/index.js, MAX_PER_DAG).
+- Verzenden naar de KLANT en de weeklijst gaan nog via de mail-app (zoals eerst).
+
+NIEUWE / GEWIJZIGDE BESTANDEN
+- functions/index.js (nieuwe functie mailKantoor), functions/package.json
+- index.html (v153), sw.js (mit-werkbon-v153), firebase-config.js (mailKantoor: false)
+
+STAPPEN (op de computer waar je ook de pushmeldingen hebt ingesteld)
+1. Brevo > Settings > SMTP & API > tabblad API Keys > "Generate a new API key".
+   Naam bijv. "Firebase mailKantoor". Kopieer de sleutel (begint met xkeysib-). Dit is GEEN SMTP-sleutel.
+2. Zet de nieuwe functions/index.js en functions/package.json in de map functions.
+3. Opdrachtprompt in de map van de app (waar firebase.json staat):
+     firebase functions:secrets:set BREVO_API_KEY      (plak de API-sleutel van stap 1, Enter)
+     cd functions   en dan   npm install   en dan   cd ..
+     firebase deploy --only functions
+4. In Brevo > Settings > Security: staat "blokkeren van onbekende IP-adressen" aan, dan houdt Brevo
+   de mails van Google tegen. Zet het uit (of keur het IP-adres goed in de mail die Brevo stuurt).
+5. Pas daarna: firebase-config.js > mailKantoor: true. Zet index.html, sw.js en firebase-config.js op GitHub
+   (Vercel publiceert).
+6. Testen: maak een testbon, Afronden > Versturen > Verzenden. Je krijgt de kopie in je eigen mailbox.
+   Brevo > Transactional > Logs laat zien of de mail verstuurd is.
+
+PROBLEMEN
+- "Versturen lukt nu niet ... wachtrij": geen verbinding met de server. Controleer of stap 3 gelukt is.
+  Firebase console > Functions: mailKantoor moet in de lijst staan. Logboek: Functions > mailKantoor > Logs.
+- "De mailserver weigerde de mail (401 ...)": verkeerde of verlopen API-sleutel. Maak een nieuwe en doe
+  opnieuw  firebase functions:secrets:set BREVO_API_KEY  en  firebase deploy --only functions.
+- "De mailserver weigerde de mail (400 ... sender ...)": noreply@mit-werkbon.com staat niet (meer) bij
+  Brevo > Senders, of het domein is niet Authenticated.
+- Ander afzenderadres of ander toegestaan domein: pas AFZENDER of TOEGESTANE_DOMEINEN aan in
+  functions/index.js en doe  firebase deploy --only functions.
+- Uitzetten: firebase-config.js > mailKantoor: false. De app werkt dan weer zoals eerst.
+
+KOSTEN
+- Brevo gratis: 300 mails per dag. Firebase: binnen de gratis hoeveelheden; verwacht EUR 0.
+- Firestore-regels hoeven NIET opnieuw (de server houdt zijn tellers bij in mailuit en mailteller;
+  de app zelf kan daar niet bij).

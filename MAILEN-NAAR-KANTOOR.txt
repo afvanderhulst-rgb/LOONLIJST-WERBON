@@ -41,6 +41,17 @@ WEEKLIJST DIRECT NAAR DE LEIDINGGEVENDE (v156)
 - Hiervoor: functions/index.js opnieuw publiceren (firebase deploy --only functions, of via GitHub Actions)
   en index.html en sw.js (mit-werkbon-v156) op GitHub zetten. Firestore-regels hoeven niet opnieuw.
 
+STATUS IN DE MAIL + NIEUWE VOETTEKST (v157)
+- Bovenaan de werkbon-mail naar kantoor staat de status, in kleur (HTML-mail):
+    GEREED !            groen   (Werk gereed: Ja)
+    NIET GEREED !       rood    (Werk gereed: Nee)
+    REPARATIE MELDING ! oranje  (Reparatiemelding: Ja; kan samen met gereed/niet gereed)
+  De monteur ziet dezelfde status in het venster "Versturen naar kantoor". Via de mail-app staat de status
+  als gewone tekst bovenaan (zonder kleur).
+- Onderaan de mails: "(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)".
+  Tikt kantoor toch op Beantwoorden, dan gaat het antwoord nog steeds naar de monteur.
+- Het venster "Versturen naar kantoor" verschijnt nu als popup midden in beeld (stond eerder onderaan de pagina).
+
 NIEUWE / GEWIJZIGDE BESTANDEN
 - functions/index.js (nieuwe functie mailKantoor), functions/package.json
 - index.html (v154), beheer.html, sw.js (mit-werkbon-v154), firebase-config.js (mailKantoor: true)

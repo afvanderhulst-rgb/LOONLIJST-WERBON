@@ -42,8 +42,8 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v156,
-  verhoog naar v157 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v157,
+  verhoog naar v158 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -280,6 +280,14 @@ WERKBON DIRECT NAAR KANTOOR MAILEN (v153) - EENMALIG INSTELLEN
 - v155: bijlagen uit die mail (tekeningen, foto's, Word...) komen als "Bijlagen van kantoor" bij de bon in de app.
 - v156: ook de weeklijst gaat direct via de server naar de leidinggevende (weeklijst-PDF + verzamel-PDF zonder
   foto's, met CC en wachtrij). De oude manier blijft als knop "Via mijn mail-app".
+- v157: status GEREED ! / NIET GEREED ! / REPARATIE MELDING ! in kleur in de mail naar kantoor; nieuwe voettekst;
+  verzendvenster als popup. Zie MAILEN-NAAR-KANTOOR.txt.
+
+PAUZE ALLEEN VERPLICHT ROND DE MIDDAG (v157)
+- De pauze is alleen verplicht als de reistijd en/of werktijd (deels) tussen 11:45 en 13:15 valt.
+  Dan staat er in het rood "Pauze verplicht invullen !" en kan de bon pas worden afgerond als er een pauze
+  staat (0 als je geen pauze had). Daarbuiten is het veld niet verplicht (leeg = geen pauze).
+- Andere tijden: PZ_VAN en PZ_TOT in index.html.
 - Alle stappen en oplossingen bij problemen: zie MAILEN-NAAR-KANTOOR.txt (staat naast dit bestand).
 - Mails voor bevestigen en wachtwoord vergeten gaan via Brevo: Firebase > Authentication > Templates >
   SMTP settings (smtp-relay.brevo.com, poort 587, STARTTLS, afzender noreply@mit-werkbon.com).
@@ -457,7 +465,7 @@ STORINGSDIENST: EUR 25 ALLEEN MET REISTIJD (v127)
 
 PAUZE, REISUREN EN KLANTVERSIE (v126)
 - Pauze is verplicht: het veld staat in het rood. Afronden kan pas als bij elke dag met werktijden een pauze staat
-  (vul 0 in als je geen pauze had).
+  (vul 0 in als je geen pauze had). (v157: alleen nog als de tijden tussen 11:45 en 13:15 vallen.)
 - Reisuren op de weeklijst (niet voor de storingsdienst): heenreis van de eerste bon van de dag + terugreis van de
   laatste bon van de dag. Het eerste uur daarvan is eigen tijd; wat erboven zit komt als reisuren (kolom reisuren)
   bij de laatste bon van die dag. Voorbeeld: 45 min heen + 45 min terug = 30 min (0,5) reisuren.

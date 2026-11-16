@@ -211,15 +211,20 @@ exports.mailKantoor = onRequest({
     to: [{email: aan}],
     replyTo: {email: em, name: naam || em},
     subject: onderwerp,
-    textContent: (status.length ? status.map((x) => STATUS[x][0]).join('  /  ') + '\n\n' : '') + (bericht || onderwerp),
+    textContent: bericht || onderwerp, // de status staat al in de tekst (tussen de tekst en de groet)
     attachment: bijlagen,
     tags: [soort],
   };
   if (status.length) {
     const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'})[c]);
-    mail.htmlContent = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222">' +
-      status.map((x) => '<div style="display:inline-block;margin:0 8px 8px 0;padding:8px 16px;border-radius:6px;font-size:18px;font-weight:bold;color:#fff;background:' + STATUS[x][1] + '">' + STATUS[x][0] + '</div>').join('') +
-      '<div style="margin-top:8px;white-space:pre-wrap">' + esc(bericht || onderwerp).replace(/\r?\n/g, '<br>') + '</div></div>';
+    // de statusregel in de tekst wordt in de HTML-mail een gekleurd blok (met ruimte erboven en eronder)
+    const regel = status.map((x) => STATUS[x][0]).join('  /  ');
+    const blok = '</div><div style="margin:18px 0">' + status.map((x) => '<span style="display:inline-block;margin:0 8px 6px 0;padding:8px 16px;border-radius:6px;font-size:18px;font-weight:bold;color:#fff;background:' + STATUS[x][1] + '">' + STATUS[x][0] + '</span>').join('') + '</div><div style="white-space:pre-wrap">';
+    let t = esc(bericht || onderwerp).replace(/\r?\n/g, '\n');
+    const er = esc(regel), i = t.indexOf('\n' + er + '\n');
+    if (i >= 0) t = t.slice(0, i).replace(/\n+$/, '') + blok + t.slice(i + er.length + 2).replace(/^\n+/, '');
+    else t = blok + t; // oude app-versie (status niet in de tekst): bovenaan
+    mail.htmlContent = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222"><div style="white-space:pre-wrap">' + t + '</div></div>';
   }
   if (aan.toLowerCase() !== em.toLowerCase()) cc.push({email: em, name: naam || em});
   if (cc.length) mail.cc = cc;

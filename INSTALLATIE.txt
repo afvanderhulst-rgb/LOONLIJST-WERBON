@@ -42,8 +42,8 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v159,
-  verhoog naar v160 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v162,
+  verhoog naar v163 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -286,6 +286,21 @@ WERKBON DIRECT NAAR KANTOOR MAILEN (v153) - EENMALIG INSTELLEN
   verzendvenster als popup. Zie MAILEN-NAAR-KANTOOR.txt.
 - v158: status in de mail tussen de tekst en de groet (niet meer in het verzendvenster).
 - v159: uitlegteksten bij Afronden en in Info bijgewerkt (werkbon gaat direct naar kantoor).
+
+UITERLIJK (v160)
+- Tabbladen van de bon passen op een telefoon alle 5 op een regel (bolletje = ingevuld, rechtsboven in de knop).
+- Kopbalk toont het werkbonnummer en de klant van de geopende bon.
+- Uren: "Pauze verplicht !" op een regel; in het veld staat "min.".
+- Afronden: "Afronden: PDF maken en versturen" is de enige grote knop; "Verzenden naar klant (via je mail-app)" is kleiner.
+- Weeklijst: kopjes boven de vakjes groter; totaalbalk zonder afgebroken woorden (gewoon / reis / over / diversen / onkosten).
+- v161: op brede schermen (laptop, tablet dwars) zijn tabbladen, voortgangsbalk en onderbalk even breed als het formulier.
+
+LMRA IN DE APP (v162)
+- Tabblad Werk: achter "LMRA gelezen" staat een blauw rondje met een uitroepteken. Tik erop en de LMRA-kaart
+  (Laatste Minuut Risico Analyse, De Groot Installatiegroep) verschijnt in een venster; Sluiten of ernaast tikken.
+- De kaart is het bestand lmra.png (staat in de app, werkt ook zonder internet). Nieuwe versie van de LMRA?
+  Vervang lmra.png (rechtop, als afbeelding) en verhoog het versienummer in sw.js.
+- Nieuw bestand: lmra.png (ook in build.mjs en sw.js opgenomen). Zet het mee op GitHub.
 
 PAUZE ALLEEN VERPLICHT ROND DE MIDDAG (v157)
 - De pauze is alleen verplicht als de reistijd en/of werktijd (deels) tussen 11:45 en 13:15 valt.

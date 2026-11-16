@@ -42,8 +42,8 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v153,
-  verhoog naar v154 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v156,
+  verhoog naar v157 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -242,10 +242,44 @@ BLOKKEREN (HELE APP)
 - Bonnen die al op zijn telefoon staan kun je niet op afstand wissen.
 - Let op: de Firestore-regels (firestore-regels.txt) zijn hiervoor uitgebreid (functie geblokkeerd). Plak firestore-regels.txt opnieuw en kies Publiceren.
 
+SERVERCODE AUTOMATISCH PUBLICEREN VIA GITHUB (geen opdrachtprompt meer nodig, ook vanaf de telefoon)
+Wat het doet: zet je iets nieuws in de map functions op GitHub (of firebase.json), dan zet GitHub de servercode
+zelf naar Firebase (hetzelfde als "firebase deploy --only functions"). De app zelf gaat zoals altijd via Vercel.
+Bestand: .github/workflows/firebase-functions.yml (staat in deze map).
+EENMALIG INSTELLEN
+ 1. Google Cloud: console.cloud.google.com > kies project "Backup loonlijst werkbon MIT" > menu > IAM en beheer >
+    Serviceaccounts > + Serviceaccount maken. Naam: github-deploy > Maken en doorgaan.
+    Rol: Basis > Eigenaar (Owner) > Doorgaan > Klaar.
+    (Eigenaar is de eenvoudigste rol die zeker werkt. De sleutel geeft volledige toegang tot het project:
+    bewaar hem alleen als geheim in GitHub en nergens anders.)
+ 2. Klik op het nieuwe serviceaccount > tabblad Sleutels > Sleutel toevoegen > Nieuwe sleutel maken > JSON > Maken.
+    Er wordt een .json-bestand gedownload.
+ 3. GitHub > je repository > Settings > Secrets and variables > Actions > New repository secret.
+    Name: FIREBASE_SERVICE_ACCOUNT   Secret: de HELE inhoud van het .json-bestand (openen in Kladblok, Ctrl+A, Ctrl+C, plakken).
+    Add secret. Verwijder daarna het .json-bestand van je computer (en uit de prullenbak).
+ 4. Zet op GitHub (zelfde repository als de app): de map functions (index.js en package.json), firebase.json,
+    .firebaserc en het bestand .github/workflows/firebase-functions.yml.
+    Makkelijkste manier voor dat laatste: GitHub > Add file > Create new file > als naam typen:
+    .github/workflows/firebase-functions.yml  > inhoud plakken > Commit changes.
+ 5. GitHub > tabblad Actions > "Servercode naar Firebase" > Run workflow (de eerste keer met de hand).
+    Groen vinkje = gepubliceerd (duurt een paar minuten). Rood kruis = klik erop en lees de laatste regels.
+DAARNA
+ - Nieuwe index.js of package.json voor de server? Gewoon in de map functions op GitHub zetten (ook vanaf de telefoon,
+   via github.com of de GitHub-app). GitHub publiceert zelf. Geheimen (VAPID, Brevo) blijven staan.
+ - Een geheim wijzigen (bijv. nieuwe Brevo-sleutel) kan niet via GitHub: dat blijft
+   "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
+ - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
+   (stap 2-3).
+
 WERKBON DIRECT NAAR KANTOOR MAILEN (v153) - EENMALIG INSTELLEN
 - Afronden > Versturen > "Versturen naar kantoor" > Verzenden: de PDF gaat via de server (Brevo) direct naar
   kantoor, met kopie naar de monteur. Zonder internet komt hij in de wachtrij en gaat hij later vanzelf.
 - Uit tot je in firebase-config.js mailKantoor: true zet (pas NA  firebase deploy --only functions).
+- v154: CC-veld voor de monteur en op beheer.html > Instellingen een vast kantooradres ("Altijd naar vast adres").
+- Werkbon klaarzetten per mail: kantoor mailt de PDF naar <monteur>@mit-werkbon.com (lijst op beheer.html; via Cloudflare).
+- v155: bijlagen uit die mail (tekeningen, foto's, Word...) komen als "Bijlagen van kantoor" bij de bon in de app.
+- v156: ook de weeklijst gaat direct via de server naar de leidinggevende (weeklijst-PDF + verzamel-PDF zonder
+  foto's, met CC en wachtrij). De oude manier blijft als knop "Via mijn mail-app".
 - Alle stappen en oplossingen bij problemen: zie MAILEN-NAAR-KANTOOR.txt (staat naast dit bestand).
 - Mails voor bevestigen en wachtwoord vergeten gaan via Brevo: Firebase > Authentication > Templates >
   SMTP settings (smtp-relay.brevo.com, poort 587, STARTTLS, afzender noreply@mit-werkbon.com).

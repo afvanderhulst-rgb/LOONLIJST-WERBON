@@ -1,14 +1,8 @@
 {
-  "name": "mit-werkbon-functions",
-  "description": "Servercode voor MIT Werkbon: pushmeldingen (klaargezette bon, herinneringen weeklijst en storingsdienst, testmelding), werkbon direct naar kantoor mailen en werkbonnen klaarzetten per mail (Brevo).",
+  "name": "mit-werkbon",
   "private": true,
-  "main": "index.js",
-  "engines": { "node": "22" },
-  "dependencies": {
-    "firebase-admin": "^12.7.0",
-    "firebase-functions": "^6.1.0",
-    "mailparser": "^3.7.1",
-    "pdfjs-dist": "3.11.174",
-    "web-push": "^3.6.7"
+  "description": "MIT Werkbonnen. Vercel voert bij publiceren 'node build.mjs' uit: dat haalt de externe onderdelen op en zet ze in dist/lib.",
+  "scripts": {
+    "build": "node build.mjs"
   }
 }

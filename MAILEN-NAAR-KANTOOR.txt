@@ -13,7 +13,7 @@ WAT HET DOET
   "Via mijn mail-app (zelf ontvanger kiezen)".
 - Alleen voor monteurs die zijn ingelogd met een BEVESTIGD e-mailadres. Zonder account: zoals eerst.
 - Maximaal 60 mails per monteur per dag (instelbaar in functions/index.js, MAX_PER_DAG).
-- Verzenden naar de KLANT en de weeklijst gaan nog via de mail-app (zoals eerst).
+- Verzenden naar de KLANT gaat nog via de mail-app (zoals eerst). De weeklijst gaat vanaf v156 ook direct (zie hieronder).
 
 CC EN VAST KANTOORADRES (v154)
 - In het venster "Versturen naar kantoor" staat een veld CC (niet verplicht): tot 3 adressen, gescheiden door
@@ -25,6 +25,21 @@ CC EN VAST KANTOORADRES (v154)
 - Geldt direct: de app haalt de instelling op bij het versturen. Firestore-regels hoeven niet opnieuw.
 - Hiervoor: functions/index.js opnieuw publiceren (firebase deploy --only functions) en index.html, beheer.html
   en sw.js (mit-werkbon-v154) op GitHub zetten.
+
+WEEKLIJST DIRECT NAAR DE LEIDINGGEVENDE (v156)
+- Weeklijsten > Verstuur naar leidinggevende > Verzenden: de weeklijst-PDF en de verzamel-PDF (weeklijst +
+  alle werkbonnen van die week in 1 bestand, ZONDER foto's en bijlagen) gaan via de server direct naar de
+  leidinggevende, met kopie naar de monteur. Geldt ook voor de storingsdienstlijst.
+- Er is een CC-veld (max. 3, alleen @mit-installatietechniek.com). Het adres bij Aan moet ook op
+  @mit-installatietechniek.com eindigen. Het vaste kantooradres van beheer.html geldt NIET voor de weeklijst.
+- Zonder internet: wachtrij, gaat later vanzelf. Pas als hij echt verstuurd is, staat de weeklijst (en de
+  werkbonnen van die week) op Verstuurd, zodat de herinnering op vrijdag stopt.
+- Knop "Via mijn mail-app (met alle losse werkbonnen en foto's)": de oude manier, ook voor adressen buiten MIT.
+- Max. 13 MB samen (Brevo staat 20 MB per mail toe; de omzetting maakt het groter). Groter: de app zegt het
+  en de monteur gebruikt Via mijn mail-app. Zonder werkbonnen in de week gaat alleen de weeklijst mee.
+- Telt als 1 mail per verzending (plus de ontvangers bij Brevo, net als de werkbon).
+- Hiervoor: functions/index.js opnieuw publiceren (firebase deploy --only functions, of via GitHub Actions)
+  en index.html en sw.js (mit-werkbon-v156) op GitHub zetten. Firestore-regels hoeven niet opnieuw.
 
 NIEUWE / GEWIJZIGDE BESTANDEN
 - functions/index.js (nieuwe functie mailKantoor), functions/package.json
@@ -73,8 +88,18 @@ WAT HET DOET
   hebben ze ook dezelfde naam, dan staat er "geen uniek adres": zet die bon klaar via beheer.html.
 - De server leest de PDF uit (werkbonnr., adres, storing, afspraak), zet de bon klaar en de monteur krijgt een
   pushmelding. De tekst van de mail wordt de opmerking bij de bon (doorgestuurde kopjes en handtekening eraf).
-  Meerdere PDF's = meerdere bonnen (max. 5). Meerdere monteur-adressen bij Aan/CC = voor elk van hen.
+  Een PDF MET werkbonnummer wordt een bon (meerdere werkbonnen in een mail = meerdere bonnen, max. 5).
+  Alle andere bijlagen (PDF zonder werkbonnummer zoals een tekening of offerte, foto's, Word, Excel) komen
+  BIJ de bon als "Bijlagen van kantoor" (max. 10, samen max. 20 MB). Zit er geen enkele PDF met werkbonnummer
+  in, dan is de eerste PDF de bon. Meerdere monteur-adressen bij Aan/CC = voor elk van hen.
+- De monteur ziet de bijlagen bij de klaargezette bon (tik om te openen) en na Overnemen bovenaan de bon.
+  Ze staan dan op zijn telefoon en gaan mee in de back-up en het archief. Ze gaan NIET mee in de PDF naar
+  kantoor of klant (alleen ter info). Op beheer.html staat bij de bon hoeveel bijlagen er zijn.
 - Kantoor krijgt een mail terug: "Klaargezet: ..." of "Niet klaargezet: ..." met de reden.
+  In dat antwoord zit de oorspronkelijke mail: onderaan de tekst (Van, Verzonden, Aan, Onderwerp en de hele tekst)
+  en als bijlagen de werkbon-PDF en de andere bijlagen (foto's, Word, Excel enz.). Logo's uit de handtekening niet.
+  Niet mee kunnen: soorten bestanden die Brevo weigert (bijv. .heic-foto's van een iPhone) en alles boven
+  ca. 13 MB samen (de werkbon-PDF's gaan voor). In het antwoord staat wat er niet mee kon.
 - Alleen mails van kantoor-collega's (beheer.html > Instellingen > Kantoor-collega's) en de beheerders worden
   aangenomen. Andere afzenders of vervalste afzenders worden genegeerd (zonder antwoord).
 - De bon staat op beheer.html onder "Klaargezet" (verplaatsen of intrekken kan daar).

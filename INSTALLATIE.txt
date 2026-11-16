@@ -42,8 +42,8 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v158,
-  verhoog naar v159 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v159,
+  verhoog naar v160 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -117,6 +117,8 @@ AANGELEVERDE WERKBONNEN IMPORTEREN
   Foto's/scans en afwijkende opmaak kunnen niet automatisch worden gelezen; vul die bon zelf in.
 
 E-MAIL VERZENDEN
+(Vanaf v153 gaat de werkbon naar KANTOOR met een account direct via de server, zie MAILEN-NAAR-KANTOOR.txt.
+ Wat hieronder staat geldt voor de klant en voor "Via mijn mail-app".)
 Onder Afronding staan de velden "E-mailadres klant" en "E-mailadres kantoor" met knoppen
 "Verzenden naar klant" en "Verzenden naar kantoor". Het kantooradres wordt onthouden
 (standaard storingen@mit-installatietechniek.com; pas het veld aan om het te wijzigen).
@@ -283,6 +285,7 @@ WERKBON DIRECT NAAR KANTOOR MAILEN (v153) - EENMALIG INSTELLEN
 - v157: status GEREED ! / NIET GEREED ! / REPARATIE MELDING ! in kleur in de mail naar kantoor; nieuwe voettekst;
   verzendvenster als popup. Zie MAILEN-NAAR-KANTOOR.txt.
 - v158: status in de mail tussen de tekst en de groet (niet meer in het verzendvenster).
+- v159: uitlegteksten bij Afronden en in Info bijgewerkt (werkbon gaat direct naar kantoor).
 
 PAUZE ALLEEN VERPLICHT ROND DE MIDDAG (v157)
 - De pauze is alleen verplicht als de reistijd en/of werktijd (deels) tussen 11:45 en 13:15 valt.
@@ -620,6 +623,8 @@ PRIVACY (AVG)
 - Nieuwe Firestore-regel: "match /instellingen/{doc}" (staat in firestore-regels.txt). Plak firestore-regels.txt opnieuw en kies Publiceren.
 
 WEEKLIJST VERSTUREN NAAR LEIDINGGEVENDE
+- Vanaf v156 (met account): de weeklijst-PDF en de verzamel-PDF gaan direct via de server naar de leidinggevende
+  (zie MAILEN-NAAR-KANTOOR.txt). Hieronder: de knop "Via mijn mail-app" (en zonder account).
 - Weeklijsten > kies de week > Versturen naar leidinggevende > e-mailadres > Verzenden.
 - In de e-mail gaan mee: de weeklijst (PDF), alle werkbonnen van die week als losse PDF's met hun bijlagen
   (foto's/bestanden van Aanvullend rapport) erachter, en de verzamel-PDF: weeklijst + alle werkbonnen in 1 PDF,

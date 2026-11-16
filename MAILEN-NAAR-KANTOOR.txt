@@ -42,12 +42,13 @@ WEEKLIJST DIRECT NAAR DE LEIDINGGEVENDE (v156)
   en index.html en sw.js (mit-werkbon-v156) op GitHub zetten. Firestore-regels hoeven niet opnieuw.
 
 STATUS IN DE MAIL + NIEUWE VOETTEKST (v157)
-- Bovenaan de werkbon-mail naar kantoor staat de status, in kleur (HTML-mail):
+- In de werkbon-mail naar kantoor staat de status, in kleur (HTML-mail), tussen "Hierbij het werkrapport ..."
+  en "Met vriendelijke groet" (v158; met ruimte erboven en eronder):
     GEREED !            groen   (Werk gereed: Ja)
     NIET GEREED !       rood    (Werk gereed: Nee)
     REPARATIE MELDING ! oranje  (Reparatiemelding: Ja; kan samen met gereed/niet gereed)
-  De monteur ziet dezelfde status in het venster "Versturen naar kantoor". Via de mail-app staat de status
-  als gewone tekst bovenaan (zonder kleur).
+  Via de mail-app staat de status op dezelfde plek als gewone tekst (zonder kleur).
+  Let op: hiervoor moet ook functions/index.js van v157/v158 op de server staan (anders geen kleur).
 - Onderaan de mails: "(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)".
   Tikt kantoor toch op Beantwoorden, dan gaat het antwoord nog steeds naar de monteur.
 - Het venster "Versturen naar kantoor" verschijnt nu als popup midden in beeld (stond eerder onderaan de pagina).

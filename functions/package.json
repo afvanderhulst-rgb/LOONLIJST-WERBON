@@ -1,1 +1,13 @@
-
+{
+  "name": "mit-werkbon-functions",
+  "private": true,
+  "main": "index.js",
+  "engines": { "node": "22" },
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.1.0",
+    "mailparser": "^3.7.1",
+    "pdfjs-dist": "3.11.174",
+    "web-push": "^3.6.7"
+  }
+}

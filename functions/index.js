@@ -184,6 +184,9 @@ exports.mailKantoor = onRequest({
   const maxB = soort === 'weeklijst' ? MAX_WL : MAX_PDF;
   if (grootte > maxB) return fout(413, (soort === 'weeklijst' ? "De PDF's zijn" : 'De PDF is') + ' te groot (' + (grootte / 1048576).toFixed(1).replace('.', ',') + ' MB, maximaal ' + Math.round(maxB / 1048576) + ' MB).');
   const bestand = bijlagen.map((x) => x.name).join(', ');
+  // status van de werkbon (Werk gereed / Reparatiemelding): bovenaan de mail, in kleur
+  const STATUS = {gereed: ['GEREED !', '#1e7d34', '#e3f5e8'], niet: ['NIET GEREED !', '#c62828', '#fdeaea'], repm: ['REPARATIE MELDING !', '#c25e00', '#fff1e0']};
+  const status = soort === 'werkbon' && Array.isArray(b.status) ? [...new Set(b.status.filter((x) => STATUS[x]))] : [];
 
   // 3. al eerder verstuurd (de app probeert opnieuw na een storing)? dan niet nog een keer
   const uit = db.doc(`mailuit/${tok.uid}_${id}`); // buiten users/: de app zelf kan hier niet bij (Firestore-regels)
@@ -208,10 +211,16 @@ exports.mailKantoor = onRequest({
     to: [{email: aan}],
     replyTo: {email: em, name: naam || em},
     subject: onderwerp,
-    textContent: bericht || onderwerp,
+    textContent: (status.length ? status.map((x) => STATUS[x][0]).join('  /  ') + '\n\n' : '') + (bericht || onderwerp),
     attachment: bijlagen,
     tags: [soort],
   };
+  if (status.length) {
+    const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'})[c]);
+    mail.htmlContent = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222">' +
+      status.map((x) => '<div style="display:inline-block;margin:0 8px 8px 0;padding:8px 16px;border-radius:6px;font-size:18px;font-weight:bold;color:#fff;background:' + STATUS[x][1] + '">' + STATUS[x][0] + '</div>').join('') +
+      '<div style="margin-top:8px;white-space:pre-wrap">' + esc(bericht || onderwerp).replace(/\r?\n/g, '<br>') + '</div></div>';
+  }
   if (aan.toLowerCase() !== em.toLowerCase()) cc.push({email: em, name: naam || em});
   if (cc.length) mail.cc = cc;
   let r, j = {};
@@ -232,7 +241,7 @@ exports.mailKantoor = onRequest({
     const tijdelijk = r.status >= 500 || r.status === 429;
     return fout(tijdelijk ? 503 : 422, 'De mailserver weigerde de mail (' + r.status + (j && j.message ? ': ' + tekst(j.message, 150) : '') + ').');
   }
-  await uit.set({t: Date.now(), uid: tok.uid, aan, cc: cc.map((c) => c.email), bestand, kb: Math.round(grootte / 1024), status: 'ok', soort, brevo: tekst(j.messageId, 200)}).catch(() => {});
+  await uit.set({t: Date.now(), uid: tok.uid, aan, cc: cc.map((c) => c.email), bestand, kb: Math.round(grootte / 1024), status: 'ok', soort, st: status, brevo: tekst(j.messageId, 200)}).catch(() => {});
   logger.info(soort + ' gemaild', {uid: tok.uid, aan, bestand, kb: Math.round(grootte / 1024)});
   return res.json({ok: true});
 });
@@ -465,7 +474,7 @@ async function verwerkMail(m, cache) {
         '\nOp beheer.html > Bonnen klaarzetten kun je een bon nog verplaatsen of intrekken.\n' +
         (tb.mee.length ? '\nMeegestuurd (uit de oorspronkelijke mail): ' + tb.mee.map((x) => x.naam).join(', ') + '\n' : '') +
         (tb.niet.length ? 'Niet meegestuurd: ' + tb.niet.join(', ') + '\n' : '') +
-        '\nMIT Werkbon\n\n' +
+        '\nMIT Werkbon\n(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)\n\n' +
         '---------- Oorspronkelijk bericht ----------\n' +
         'Van: ' + tekst(m.vanTekst || van, 200) + '\n' +
         (m.datum ? 'Verzonden: ' + tekst(m.datum, 100) + '\n' : '') +
@@ -514,7 +523,7 @@ exports.mailInbox = onRequest({secrets: [BREVO_API_KEY], invoker: 'public', memo
     return res.status(200).json({ok: true, uitslag});
     } catch (e) {
       logger.error('mailInbox (Cloudflare) mislukt', e);
-      return res.status(500).send(tekst(e && e.message, 200));
+      return res.status(500).json({ok: false, fout: tekst(e && e.message, 200)});
     }
   }
 
@@ -555,8 +564,9 @@ function cfScript(url, sleutel) {
     "      'content-type': 'message/rfc822', 'x-mit-sleutel': SLEUTEL,",
     "      'x-mail-from': message.from, 'x-mail-to': message.to}});",
     "    if (r.status === 403) { console.log('MIT Werkbon: sleutel klopt niet (403). Maak een nieuw script op beheer.html.'); message.setReject('Niet toegestaan.'); return; }",
-    "    if (!r.ok) { const t = await r.text().catch(() => ''); console.log('MIT Werkbon: server gaf ' + r.status + ' ' + t.slice(0, 300)); throw new Error('Server gaf ' + r.status); }",
-    "    console.log('MIT Werkbon: ' + (await r.text().catch(() => '')).slice(0, 200));",
+    "    const t = await r.text().catch(() => '');",
+    "    if (!r.ok) { console.log('MIT Werkbon: server gaf ' + r.status + ' ' + t.slice(0, 300)); throw new Error('Server gaf ' + r.status); }",
+    "    console.log('MIT Werkbon: ' + t.slice(0, 200));",
     '  },',
     '};',
     ''].join('\n');

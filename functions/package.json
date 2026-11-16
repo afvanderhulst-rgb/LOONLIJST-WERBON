@@ -1,5 +1,6 @@
 {
   "name": "mit-werkbon-functions",
+  "description": "Servercode voor MIT Werkbon: pushmeldingen (klaargezette bon, herinneringen weeklijst en storingsdienst, testmelding), werkbon direct naar kantoor mailen en werkbonnen klaarzetten per mail (Brevo).",
   "private": true,
   "main": "index.js",
   "engines": { "node": "22" },

@@ -42,8 +42,8 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v162,
-  verhoog naar v163 enz.), zodat telefoons de nieuwe versie ophalen.
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v163,
+  verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
 - Tabblad Werk > Aanvullend rapport op Ja: het vak "Bijlagen" verschijnt.
@@ -273,7 +273,22 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
-WERKBON DIRECT NAAR KANTOOR MAILEN (v153) - EENMALIG INSTELLEN
+APP OP FIREBASE HOSTING (in plaats van Vercel) - EENMALIG INSTELLEN
+Wat het doet: GitHub bouwt de app (node build.mjs) en zet hem op Firebase Hosting, net als de servercode.
+Adres: https://mit-werkbon.web.app  (extra site "mit-werkbon" in hetzelfde Firebase-project; Vercel blijft werken tot je overstapt.)
+Bestanden: firebase.json (met "hosting") en .github/workflows/firebase-hosting.yml.
+ 1. Zet op GitHub: firebase.json (vervangen) en .github/workflows/firebase-hosting.yml (Add file > Create new file,
+    naam precies zo typen, inhoud plakken). Het geheim FIREBASE_SERVICE_ACCOUNT is al ingesteld.
+ 2. GitHub > Actions > "App naar Firebase Hosting": de eerste run start vanzelf. Groen = online.
+    Rood met "site" of "Hosting" in de fout: Firebase console > Hosting > Aan de slag (doorklikken), daarna Run workflow.
+ 3. Testen: open https://mit-werkbon.web.app . (Authentication > Settings > Authorized domains moet mit-werkbon.web.app bevatten.) Dit is een ander adres, dus de app is daar leeg:
+    log in en zet je back-up terug. Werk nog NIET echt op twee adressen tegelijk.
+ 4. Optioneel: Firebase console > Hosting > Release-geschiedenis: bewaar bijv. de laatste 10 versies (scheelt opslag).
+ 5. Eigen adres (bijv. werkbon.mit-installatietechniek.com): Firebase console > Hosting > Aangepast domein toevoegen;
+    IT zet de DNS-records die Firebase geeft. Gratis, inclusief SSL.
+Kosten: gratis tot 10 GB opslag en 360 MB dataverkeer per dag (de app is ca. 37 MB; een update ca. 3-4 MB per telefoon).
+Overstappen (alle monteurs naar het nieuwe adres): pas als alles getest is; dan volgt een melding op het oude adres.
+
 - Afronden > Versturen > "Versturen naar kantoor" > Verzenden: de PDF gaat via de server (Brevo) direct naar
   kantoor, met kopie naar de monteur. Zonder internet komt hij in de wachtrij en gaat hij later vanzelf.
 - Uit tot je in firebase-config.js mailKantoor: true zet (pas NA  firebase deploy --only functions).
@@ -294,6 +309,12 @@ UITERLIJK (v160)
 - Afronden: "Afronden: PDF maken en versturen" is de enige grote knop; "Verzenden naar klant (via je mail-app)" is kleiner.
 - Weeklijst: kopjes boven de vakjes groter; totaalbalk zonder afgebroken woorden (gewoon / reis / over / diversen / onkosten).
 - v161: op brede schermen (laptop, tablet dwars) zijn tabbladen, voortgangsbalk en onderbalk even breed als het formulier.
+
+HERSTEL ARCHIEF (v163)
+- Melding "Archief bijwerken mislukt: invalid-argument" (foutenlogboek): kwam door bijlagen van kantoor (sinds v155),
+  die zonder breedte/hoogte werden doorgegeven; Firebase weigert lege waarden en het archief stopte bij die bon.
+  Opgelost; een fout bij één bon houdt de andere bonnen niet meer tegen. De dagelijkse back-ups waren altijd in orde.
+  Na de update wordt het archief bij de eerstvolgende back-up vanzelf aangevuld.
 
 LMRA IN DE APP (v162)
 - Tabblad Werk: achter "LMRA gelezen" staat een blauw rondje met een uitroepteken. Tik erop en de LMRA-kaart

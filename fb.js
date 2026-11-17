@@ -15,8 +15,9 @@ window.mitFB=function(){if(P)return P;P=(async function(){
  var m=await mods();
  var A=m[0],Au=m[1],Fs=m[2];
  var app=A.initializeApp(C);
- // App Check (reCAPTCHA v3): alleen als appCheckKey is ingevuld; zelfde bron als firebase-app gebruiken
- if(C.appCheckKey){try{var Ac=await import(BASE+'firebase-app-check.js');Ac.initializeAppCheck(app,{provider:new Ac.ReCaptchaV3Provider(C.appCheckKey),isTokenAutoRefreshEnabled:true});window.mitAppCheck='aan'}catch(e){window.mitAppCheck='fout';try{console.warn('App Check:',e)}catch(x){}}}
+ // App Check: alleen als appCheckKey is ingevuld; zelfde bron als firebase-app gebruiken.
+ // appCheckEnterprise: true = reCAPTCHA Enterprise (Fraud Defense), anders reCAPTCHA v3.
+ if(C.appCheckKey){try{var Ac=await import(BASE+'firebase-app-check.js'),Pv=C.appCheckEnterprise?Ac.ReCaptchaEnterpriseProvider:Ac.ReCaptchaV3Provider;Ac.initializeAppCheck(app,{provider:new Pv(C.appCheckKey),isTokenAutoRefreshEnabled:true});window.mitAppCheck='aan'}catch(e){window.mitAppCheck='fout';try{console.warn('App Check:',e)}catch(x){}}}
  var a=Au.initializeAuth(app,{persistence:Au.browserLocalPersistence});
  a.languageCode='nl';
  var fs=Fs.getFirestore(app);

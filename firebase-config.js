@@ -10,7 +10,7 @@ window.MIT_FIREBASE = {
   // e-mailadres(sen) van de beheerder(s) (voor beheer.html), gescheiden door komma's; moeten ook in de Firestore-regels staan
   adminEmail: "a.f.vanderhulst@gmail.com, arjan@mit-installatietechniek.com",
   // App Check: de reCAPTCHA v3-sitesleutel (zie INSTALLATIE.txt, "APP CHECK"). Leeg laten = uit.
-    appCheckKey: "6LcLYiUu...jouw volledige sleutel...",
+    appCheckKey: "6LcLYiUuAAAAAKz-99w3zlNtoIR2SYR1JjXgYuHS",
   appCheckEnterprise: true,
   // Pushmeldingen: de PUBLIEKE VAPID-sleutel (zie INSTALLATIE.txt, "PUSHMELDINGEN"). Leeg laten = uit.
   vapidKey: "BDQmfHjAY1ts0kpFgECdQteyTEqMR8wrf6hasAgyZKwgkRyiw8iw1RK3dU3O3V6hfLvQXuPtnzoKAryLHKFZRhk",

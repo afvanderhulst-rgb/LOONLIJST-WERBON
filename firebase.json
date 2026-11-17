@@ -1,6 +1,7 @@
 {
   "functions": [{ "source": "functions", "codebase": "default", "runtime": "nodejs22" }],
   "hosting": {
+    "site": "mit-werkbon",
     "public": "dist",
     "ignore": ["**/.*"],
     "headers": [

@@ -63,6 +63,10 @@ service cloud.firestore {
         && request.resource.data.src is string && request.resource.data.src.size() <= 300;
       allow read, delete: if isBeheerder();
     }
+    // verzonden mails (schrijft alleen de server); de beheerder mag ze lezen (beheer.html > Systeem > Verzonden mails)
+    match /mailuit/{id} {
+      allow read: if isBeheerder();
+    }
     match /inboxlog/{id} {
       allow create: if (isKantoor() || isBeheerder())
         && request.resource.data.door == request.auth.token.email

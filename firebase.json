@@ -1,5 +1,6 @@
 {
   "functions": [{ "source": "functions", "codebase": "default", "runtime": "nodejs22" }],
+  "firestore": { "rules": "firestore-regels.txt" },
   "hosting": {
     "site": "mit-werkbon",
     "public": "dist",

@@ -118,7 +118,7 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
   <div class="card"><b>Externe gebruikers toelaten</b><p class="mu">Iemand zonder @mit-installatietechniek.com-adres (bijv. een zzp'er of inlener) krijgt dan ook het klantenbestand en het storingsrooster, net als een collega. Hij moet zelf een account aanmaken met precies dit adres en dat adres bevestigen. Intrekken kan altijd.</p>
    <div class="tools" style="margin:0"><input id="tlm" type="email" placeholder="naam@gmail.com"><button class="btn pr" id="tlb" type="button">Toelaten</button></div>
    <div id="tll" class="mu" style="margin-top:8px"></div></div>
-  <div class="card"><b>Kantoor-collega's (bonnen klaarzetten)</b><p class="mu">Deze collega's kunnen op deze pagina werkbonnen klaarzetten voor een monteur. Ze zien alleen het tabblad "Bonnen klaarzetten", niet de gebruikers, back-ups, klanten of het rooster. Ze loggen in met hun eigen account uit de app (e-mailadres bevestigd).</p>
+  <div class="card"><b>Kantoor-collega's (bonnen klaarzetten)</b><p class="mu">Deze collega's werken op de kantoorpagina <b>kantoor.html</b> (zelfde adres als deze pagina, maar dan kantoor.html): werkbonnen klaarzetten voor een monteur en het storingsrooster publiceren. Ze zien niet de gebruikers, back-ups, klanten, instellingen of het systeem; die blijven alleen hier op beheer.html. Ze loggen in met hun eigen account uit de app (e-mailadres bevestigd).</p>
    <div class="tools" style="margin:0"><input id="kom" type="email" placeholder="naam@mit-installatietechniek.com"><button class="btn pr" id="kob" type="button">Toevoegen</button></div>
    <div id="kol" class="mu" style="margin-top:8px"></div></div>
   <h2 class="sh">App-instellingen voor iedereen</h2>
@@ -184,6 +184,8 @@ function fd(t){if(!t)return '–';var d=new Date(t);return d.getDate()+'-'+(d.ge
 function ago(t){if(!t)return '';var m=(Date.now()-t)/6e4;if(m<60)return 'net';var h=m/60;if(h<24)return Math.round(h)+' uur geleden';var d=Math.round(h/24);return d+(d===1?' dag':' dagen')+' geleden'}
 function kb(n){n=(n||0)/1024;return n<1024?Math.max(1,Math.round(n))+' kB':(n/1024).toFixed(1)+' MB'}
 function show(h){var m=$('msg');m.innerHTML=h;m.hidden=!h}
+var KP=/kantoor(\.html)?$/i.test(location.pathname); // kantoor.html = zelfde code, alleen klaarzetten + rooster
+if(KP){document.title='MIT Werkbon kantoor';try{$('login').querySelector('b').textContent='Inloggen (kantoor)';$('who').textContent='Bonnen klaarzetten en storingsrooster'}catch(e){}}
 var ERR=[],ERRN={},ROLE='',C=window.MIT_FIREBASE||{},ADMINS=String(C.adminEmail||'').toLowerCase().split(/[,;\s]+/).filter(Boolean),ADMIN=ADMINS[0]||'',isAdm=function(e){return ADMINS.indexOf(String(e||'').toLowerCase())>=0},auth,db,USERS=[],BLOCK={},TOE={},KL=[],DOM='@mit-installatietechniek.com';
 if(!C.apiKey||String(C.apiKey).indexOf('VUL')===0){show('<b>Nog niet ingesteld.</b><p class="mu">Vul eerst firebase-config.js in (zie INSTALLATIE.txt).</p>');return}
 show('<p class="mu">Firebase laden…</p>');
@@ -198,12 +200,14 @@ $('q').oninput=function(){render()};
 
 auth.onAuthStateChanged(async function(u){
  $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('rlist').hidden=true;$('blist').hidden=true;$('tabs').hidden=true;show('');ROLE='';
- if(!u){$('who').textContent='Gebruikers en back-ups';if(ADMIN)$('lm').value=ADMIN;return}
+ if(!u){$('who').textContent=KP?'Bonnen klaarzetten en storingsrooster':'Gebruikers en back-ups';if(ADMIN&&!KP)$('lm').value=ADMIN;return}
  $('who').textContent='Ingelogd als '+u.email;
  ROLE='admin';
- if(ADMIN&&!isAdm(u.email)){var isK=false;try{isK=(await db.collection('kantoor').doc(String(u.email).toLowerCase()).get()).exists}catch(x){}
-  if(!isK){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina. Kantoor-collega\'s worden toegevoegd door de beheerder ('+ee(ADMIN)+').</p>');return}
-  ROLE='kantoor';TAB='b';$('who').textContent='Kantoor · '+u.email}
+ var isK=false;if(KP||(ADMIN&&!isAdm(u.email))){try{isK=(await db.collection('kantoor').doc(String(u.email).toLowerCase()).get()).exists}catch(x){}}
+ if(KP){if(!isK&&!isAdm(u.email)){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') staat niet in de lijst met kantoor-collega\'s. Vraag de beheerder ('+ee(ADMIN)+') om je toe te voegen.</p>');return}
+  ROLE='kantoor';if(!/^[br]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email}
+ else if(ADMIN&&!isAdm(u.email)){
+  show(isK?'<b>Gebruik de kantoorpagina</b><p class="mu">Bonnen klaarzetten en het storingsrooster staan op een eigen pagina.</p><p><a class="btn pr" href="kantoor.html" style="text-decoration:none;display:inline-block">Naar kantoor.html</a></p>':'<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina.</p>');return}
  try{await u.reload()}catch(x){}
  if(!auth.currentUser.emailVerified){
   show('<b>Bevestig eerst je e-mailadres</b><p class="mu">Ter beveiliging werkt het beheer pas als bevestigd is dat '+ee(u.email)+' echt van jou is. Klik op de knop, open de mail en klik op de link. Kom daarna hier terug en klik op "Ik heb bevestigd".</p><div class="tools"><button class="btn pr" id="vf" type="button">Bevestigingsmail sturen</button><button class="btn" id="vd" type="button">Ik heb bevestigd</button></div><div class="mu" id="vs"></div>');
@@ -212,9 +216,9 @@ auth.onAuthStateChanged(async function(u){
   return}
  load()});
 
-var TAB='u';try{var _t=sessionStorage.getItem('bh:tab');if(/^[ukrbis]$/.test(_t||''))TAB=_t}catch(e){}
-function showTab(){[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x.dataset.tab===TAB);if(x.dataset.tab===TAB&&x.scrollIntoView)try{x.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}x.hidden=ROLE==='kantoor'&&x.dataset.tab!=='b'});$('list').hidden=TAB!=='u';$('ilist').hidden=TAB!=='i';$('slist').hidden=TAB!=='s';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';$('blist').hidden=TAB!=='b'}
-$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;TAB=b.dataset.tab;try{sessionStorage.setItem('bh:tab',TAB)}catch(e){}showTab();window.scrollTo(0,0);if(TAB==='b')loadSent();if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR()};
+var TAB=KP?'b':'u',TABK=KP?'kt:tab':'bh:tab';try{var _t=sessionStorage.getItem(TABK);if((KP?/^[br]$/:/^[ukrbis]$/).test(_t||''))TAB=_t}catch(e){}
+function showTab(){[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x.dataset.tab===TAB);if(x.dataset.tab===TAB&&x.scrollIntoView)try{x.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}x.hidden=ROLE==='kantoor'&&!/^[br]$/.test(x.dataset.tab)});$('list').hidden=TAB!=='u';$('ilist').hidden=TAB!=='i';$('slist').hidden=TAB!=='s';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';$('blist').hidden=TAB!=='b'}
+$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;TAB=b.dataset.tab;try{sessionStorage.setItem(TABK,TAB)}catch(e){}showTab();window.scrollTo(0,0);if(TAB==='b')loadSent();if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR()};
 /* ---------- rooster ---------- */
 var RP=null,RFILE='';
 function fdate(iso){if(!iso)return '';var p=iso.split('-');return +p[2]+'-'+(+p[1])+'-'+p[0].slice(2)}

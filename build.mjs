@@ -34,6 +34,8 @@ function copy(from, to) {
   catch (e) { miss.push(from); return false; }
 }
 for (const f of APP) if (!copy(f, path.join(OUT, f))) console.warn('LET OP: app-bestand ontbreekt:', f);
+// kantoorpagina: dezelfde code als beheer.html, die aan het adres (kantoor.html) ziet dat hij in kantoor-stand moet
+copy('beheer.html', path.join(OUT, 'kantoor.html'));
 
 // losse onderdelen
 copy(`${P('pdfjs-dist')}/build/pdf.min.js`, `${LIB}/pdf.min.js`);

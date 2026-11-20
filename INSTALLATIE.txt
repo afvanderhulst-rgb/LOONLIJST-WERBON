@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v163,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v168,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -136,6 +136,8 @@ Tik op "Als PDF".
 - Bij "Verzenden naar klant/kantoor" wordt de PDF direct gedownload, zodat je hem als bijlage
   kunt toevoegen.
 Naam van het bestand: naam-werkordernummer (Werkrapport) of servicerapport-werkbonnummer.
+Vanaf v168 met de datum van de laatste werkdag erachter: bijv. Zorgcentrum De Linde-29191_17-11-2026.pdf
+(de laatste datum bij Uren; zonder datum blijft het zoals het was). Geldt voor kantoor, klant en opslaan.
 
 INVULVELDEN VOOR KANTOOR IN DE WERKBON-PDF
 De PDF van een werkbon heeft invulvelden; de rest van de tekst staat vast. Kantoor opent de PDF in
@@ -273,6 +275,18 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+FIRESTORE-REGELS AUTOMATISCH VIA GITHUB (vanaf v168, geen plakken meer)
+Wat het doet: zet je een nieuwe firestore-regels.txt op GitHub, dan zet GitHub de regels zelf in Firebase
+(hetzelfde als plakken + Publiceren in de console). Firebase controleert ze eerst: klopt er iets niet, dan wordt
+de run rood en blijven de oude regels gewoon staan.
+Bestanden: firebase.json (met "firestore") en .github/workflows/firebase-rules.yml.
+ 1. Zet op GitHub: firebase.json (vervangen), firestore-regels.txt (vervangen) en
+    .github/workflows/firebase-rules.yml (Add file > Create new file, naam precies zo typen, inhoud plakken).
+    Het geheim FIREBASE_SERVICE_ACCOUNT is al ingesteld.
+ 2. GitHub > Actions > "Firestore-regels naar Firebase": de run start vanzelf. Groen = de regels staan in Firebase.
+ 3. Daarna: nieuwe regels? Alleen firestore-regels.txt op GitHub uploaden (Add file > Upload files). Niet meer plakken.
+ (firebase.json vervangen laat ook de servercode en de app opnieuw publiceren; dat is normaal en kan geen kwaad.)
+
 APP OP FIREBASE HOSTING (in plaats van Vercel) - EENMALIG INSTELLEN
 Wat het doet: GitHub bouwt de app (node build.mjs) en zet hem op Firebase Hosting, net als de servercode.
 Adres: https://mit-werkbon.web.app  (extra site "mit-werkbon" in hetzelfde Firebase-project; Vercel blijft werken tot je overstapt.)
@@ -309,6 +323,60 @@ UITERLIJK (v160)
 - Afronden: "Afronden: PDF maken en versturen" is de enige grote knop; "Verzenden naar klant (via je mail-app)" is kleiner.
 - Weeklijst: kopjes boven de vakjes groter; totaalbalk zonder afgebroken woorden (gewoon / reis / over / diversen / onkosten).
 - v161: op brede schermen (laptop, tablet dwars) zijn tabbladen, voortgangsbalk en onderbalk even breed als het formulier.
+
+WACHTRIJ ZICHTBAAR (v167)
+- Lukt direct mailen (werkbon naar kantoor of weeklijst naar leidinggevende) niet meteen, dan blijft hij in de wachtrij
+  op de telefoon. De app probeert het elke minuut opnieuw zolang hij openstaat, en bij elke keer openen.
+- Nieuw: zolang er iets in de wachtrij staat:
+  * startscherm: oranje kaart "Nog niet verstuurd (n)" met per mail: wat, naar wie, sinds wanneer, aantal pogingen en
+    de laatste foutmelding;
+  * weeklijst: dezelfde oranje melding bovenaan die week;
+  * knoppen "Nu opnieuw proberen" en "Uit de wachtrij halen" (twee keer tikken; daarna wordt hij niet meer verstuurd).
+- Opent de monteur "Verstuur naar leidinggevende" terwijl die week nog in de wachtrij staat, dan waarschuwt de app dat
+  de leidinggevende hem anders misschien twee keer krijgt.
+- De echte oorzaak staat in Firebase console > Functions > mailKantoor > Logboeken ("brevo weigert ...").
+- beheer.html > Systeem > "Verzonden mails": de laatste 150 mails die de app direct mailde, met Verstuurd (groen) of
+  Mislukt (rood) + de foutmelding, van wie, aan wie, aantal pogingen. Vinkje "alleen mislukt".
+  Komt uit Firestore > mailuit (de server schrijft daar nu ook mislukte pogingen in). Een mail die de server nooit
+  bereikte (geen internet) staat er niet in; die zie je alleen op de telefoon.
+  BIJWERKEN: functions/index.js op GitHub zetten (map functions; GitHub publiceert de servercode zelf),
+  beheer.html op GitHub, en firestore-regels.txt opnieuw plakken in Firebase > Firestore > Regels > Publiceren
+  (nieuw: match /mailuit, alleen lezen door de beheerder).
+
+VERLOF/ZIEK-KNOPPEN EN NAVIGEREN/BELLEN (v166)
+- Weeklijst: onder elke werkdag (ma t/m vr) de knoppen "+ Verlof", "+ Ziek" en "+ ADV". Op een feestdag staat er ook
+  "+ Koningsdag" enz. Een tik zet een regel met die naam en vult de dag aan tot 8 uur (bij diversen). Staat er al 6 uur,
+  dan komt er 2 uur bij. Heeft de dag al 8 uur, dan gebeurt er niets. Weghalen met het kruisje; uren zijn aan te passen.
+- Het uurtotaal naast de dag en de regel "Totaal" in het verzendvenster tellen nu ook diversen mee.
+- Werkbon > Opdracht: zijn adres en postcode/plaats ingevuld, dan staan eronder de knoppen "Route (Google Maps)" en "Waze".
+  Staat er een telefoonnummer bij Contactpersoon (bijv. "Mevr. Bakker 074 123 4567"), dan staat eronder "Bel 074 123 4567".
+  Bij twee nummers twee knoppen. Op de PDF komt niets extra's.
+
+WEEKLIJST: CONTROLE 40 UUR + KOPIËREN (v165)
+- Bij "Verstuur naar leidinggevende" controleert de app de weeklijst (niet de storingsdienstlijst):
+  * elke werkdag (ma t/m vr) 8 uur, en samen 40 uur. Geteld worden gewone uren + diversen (bijv. verlof, ziek, ADV);
+    reisuren en overuren tellen niet mee.
+  * Klopt het niet, dan staat er bovenaan in het verzendvenster in het rood bijv. "Geen 40 uur: deze week staan er
+    30,5 uur" en per dag "Di 17-nov: maar 6,5 uur (moet 8 uur zijn)". Meer dan 40 gewone uren geeft ook een melding.
+  * Een feestdag (Koningsdag, Hemelvaart enz.) zonder uren telt niet mee; dan moet de week 32 uur zijn.
+  * Het is een waarschuwing: versturen kan nog wel. Klopt alles, dan staat er "✓ 40 uur".
+- Kopiëren van een werkbon (Lijst > Kopiëren): werkordernummer en "werkzaamheden volgens opgave klant" gaan nu mee.
+  Datum, tijden, verrichte werkzaamheden en handtekeningen niet.
+
+MELDINGEN STANDAARD AAN (v164)
+- Meldingen (o.a. "Nieuwe werkbon klaargezet") gaan nu zoveel mogelijk vanzelf aan. Helemaal zonder vraag kan niet:
+  Android en iPhone eisen dat de gebruiker één keer op Toestaan tikt.
+- Nieuwe gebruiker: bij de laatste stap van "Eerste keer" staat "Stuur me een melding als kantoor een werkbon klaarzet"
+  al aangevinkt. Bij "Aan de slag" vraagt de telefoon toestemming.
+- Bestaande gebruiker zonder meldingen: bij het openen van de app verschijnt het venster "Meldingen aanzetten?"
+  (Aanzetten / Later). Na Later komt de vraag na 7 dagen terug.
+- Heeft de telefoon al toestemming gegeven, dan zet de app de meldingen zelf aan, zonder vraag.
+- Wie de meldingen zelf uitzet (tandwieltje > Meldingen > Uitzetten) krijgt de vraag niet meer.
+- Wie op de telefoon "Niet toestaan" koos, krijgt geen venster; aanzetten kan dan alleen via de telefooninstellingen.
+- Wegwijzer "Eerste keer" op het startscherm heeft de stap "Meldingen aan".
+- Melding van een klaargezette bon trilt langer en blijft staan tot je erop tikt.
+- Pop-up bovenin het scherm: dat bepaalt Android. Instellingen > Apps > MIT Werkbon (of Chrome) > Meldingen >
+  "Pop-up op scherm" / "Weergeven als pop-up" aan.
 
 HERSTEL ARCHIEF (v163)
 - Melding "Archief bijwerken mislukt: invalid-argument" (foutenlogboek): kwam door bijlagen van kantoor (sinds v155),
@@ -611,6 +679,11 @@ BEVEILIGING CONTROLEREN (EEN KEER)
   9. Firestore-regels: de nieuwste uit dit bestand gepubliceerd.
 
 APP CHECK (AFSCHERMEN TEGEN NEP-APPS EN BOTS)
+(Nieuw, v163: ook reCAPTCHA Enterprise / "Fraud Defense" kan. Firebase console > App Check > Apps > web-app >
+ Fraud Defense (reCAPTCHA Enterprise): de sitesleutel plakken > Save. Zet dezelfde sitesleutel in firebase-config.js bij
+ appCheckKey en laat appCheckEnterprise: true staan. Domeinen bij de sleutel: mit-werkbon.web.app, loonlijst-werkbon.vercel.app.
+ Pas na 1-2 weken met bijna alles "verified" bij APIs op Enforce zetten. Bij de gewone reCAPTCHA v3 (stappen hieronder):
+ appCheckEnterprise: false.)
 App Check zorgt dat alleen JOUW app (op loonlijst-werkbon.vercel.app) bij Firebase kan, niet een script of een
 nagemaakte app. Het gebruikt reCAPTCHA v3 van Google (onzichtbaar, geen plaatjes aanklikken).
 Let op: reCAPTCHA stuurt technische gegevens (zoals IP-adres) naar Google. Noem dat in de privacyafspraken.

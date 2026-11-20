@@ -1,0 +1,40 @@
+# MIT Werkbon: Firestore-regels automatisch naar Firebase zetten (geen plakken meer in de console).
+# Draait vanzelf als er op GitHub een nieuwe firestore-regels.txt (of firebase.json) komt,
+# of met de hand: GitHub > Actions > "Firestore-regels naar Firebase" > Run workflow.
+# Firebase controleert de regels eerst; klopt er iets niet, dan wordt de run rood en blijven de oude regels staan.
+# Nodig: repository secret FIREBASE_SERVICE_ACCOUNT (dezelfde als voor de servercode).
+name: Firestore-regels naar Firebase
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'firestore-regels.txt'
+      - 'firebase.json'
+      - '.github/workflows/firebase-rules.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: firebase-rules
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Code ophalen
+        uses: actions/checkout@v6
+
+      - name: Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Inloggen bij Google
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Publiceren (firebase deploy --only firestore:rules)
+        run: npx --yes firebase-tools@latest deploy --only firestore:rules --project backup-loonlijst-werkbon-mit --non-interactive

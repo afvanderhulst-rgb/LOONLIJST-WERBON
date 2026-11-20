@@ -134,6 +134,8 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
    <div id="kmRes" class="mu" style="margin-top:8px"></div></div>
  </div>
  <div id="slist" hidden>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b id="mlT">Verzonden mails</b><span style="display:flex;gap:6px;align-items:center"><label class="mu" style="display:flex;gap:4px;align-items:center;margin:0"><input type="checkbox" id="mlF"> alleen mislukt</label><button class="btn sm" id="mlRf" type="button">Vernieuwen</button></span></div>
+   <p class="mu" style="margin-top:4px">Werkbonnen en weeklijsten die de app direct mailt (via de server). <b style="color:#1e7d34">Verstuurd</b> = de mailserver heeft hem aangenomen. <b style="color:#c62828">Mislukt</b> = de laatste poging ging mis; de monteur ziet hem dan in zijn app bij "Nog niet verstuurd" en de app probeert het opnieuw. Een mail die nog nooit de server bereikte (bijv. geen internet) staat hier niet. De laatste 150.</p><div id="mlL"></div></div>
   <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b id="errT">Foutenlogboek</b><span style="display:flex;gap:6px"><button class="btn sm" id="errRf" type="button">Vernieuwen</button> <button class="btn sm dg" id="errClr" type="button">Alles wissen</button></span></div>
    <p class="mu" style="margin-top:4px">Fouten die in de app van monteurs optreden (alleen met account), zoals een mislukte back-up of import, of een vastloper. Gelijke fouten zijn samengevoegd; tik erop voor details. Er staat geen inhoud van bonnen in. Ouder dan 90 dagen wordt opgeruimd.</p><div id="errL"></div></div>
   <div class="card"><b>Beveiliging controleren</b><p class="mu">Instellingen die je één keer in Google en Firebase zet. Vink af wat klaar is (wordt alleen op dit apparaat onthouden).</p><div id="sec"></div></div>
@@ -277,6 +279,23 @@ function drawErr(){var el=$('errL'),G={},L=[];ERR.forEach(function(o){var k=(o.s
 $('errRf').onclick=async function(){await loadErr();render()};
 $('errClr').onclick=async function(){var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.dataset.sure='';b.textContent='Alles wissen';b.disabled=true;
  for(var k=0;k<ERR.length;k++){try{await ERR[k].ref.delete()}catch(e){}}b.disabled=false;await loadErr();render()};
+/* ---------- verzonden mails (mailuit, v167) ---------- */
+var ML=[];
+async function loadMail(){var el=$('mlL');if(!el)return;el.innerHTML='<p class="mu">Laden…</p>';
+ try{var q=await db.collection('mailuit').orderBy('t','desc').limit(150).get();ML=q.docs.map(function(d){var o=d.data()||{};o.id=d.id;return o});drawMail()}
+ catch(e){el.innerHTML='<div class="er">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd? Daarin staat nu ook match /mailuit.)</div>'}}
+function drawMail(){var el=$('mlL'),alleen=$('mlF').checked,nf=ML.filter(function(o){return o.status!=='ok'}).length;
+ $('mlT').innerHTML='Verzonden mails'+(nf?' <span style="color:#c62828">('+nf+' mislukt)</span>':'');
+ var L=alleen?ML.filter(function(o){return o.status!=='ok'}):ML;
+ if(!L.length){el.innerHTML='<p class="ok">'+(alleen?'Geen mislukte mails.':'Nog geen mails.')+'</p>';return}
+ var wie=function(o){var u=(USERS||[]).filter(function(x){return x.uid===o.uid})[0]||{};return o.naam||u.naam||o.van||u.email||o.uid};
+ el.innerHTML=L.map(function(o){var ok=o.status==='ok';
+  return '<div style="border-top:1px solid var(--bd);padding:8px 0"><span class="tag" style="margin:0 6px 0 0;background:'+(ok?'#e3f5e8':'#fdeaea')+';color:'+(ok?'#1e7d34':'#c62828')+'">'+(ok?'Verstuurd':'Mislukt')+'</span>'+
+   '<b>'+ee(o.soort==='weeklijst'?'Weeklijst':'Werkbon')+'</b> '+ee(o.bestand||o.onderwerp||'')+
+   '<div class="mu" style="margin-top:2px">'+ee(fd(o.t))+' · van '+ee(wie(o))+' · aan '+ee(o.aan||'?')+(o.pogingen>1?' · '+o.pogingen+' pogingen':'')+(o.kb?' · '+o.kb+' kB':'')+
+   (o.eerst&&o.t&&o.t-o.eerst>60000?' · eerste poging '+ee(fd(o.eerst)):'')+'</div>'+
+   (!ok&&o.fout?'<div style="color:#c62828;font-size:13px;margin-top:2px">'+ee(o.fout)+'</div>':'')+'</div>'}).join('')}
+$('mlRf').onclick=function(){loadMail()};$('mlF').onchange=drawMail;
 /* ---------- kantoor-collega's ---------- */
 async function loadKantoor(){var M={};try{var q=await db.collection('kantoor').get();q.docs.forEach(function(d){M[d.id]=d.data()||{}})}catch(e){}
  var ks=Object.keys(M).sort();$('kol').innerHTML=ks.length?'Kantoor: '+ks.map(function(k){return '<span style="white-space:nowrap">'+ee(k)+' <a href="#" data-ko="'+ee(k)+'">verwijderen</a></span>'}).join(' · '):'Nog geen kantoor-collega\'s.';
@@ -452,7 +471,7 @@ $('blb').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\
 async function load(){show('');$('tabs').hidden=false;showTab();if(TAB==='r')loadR();$('users').innerHTML='<p class="mu">Laden…</p>';
  if(ROLE==='kantoor'){$('blogc').hidden=true;try{await auth.currentUser.getIdToken(true);var qk=await db.collection('monteurs').get();USERS=qk.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o})}catch(e){show('<b>Kon de monteurs niet laden.</b><p class="mu">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</p>')}renderNew();loadSent();return}
  try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();
-  USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();await loadToe();await loadErr();render();loadKeep();loadKantoor();renderNew();syncMon();$('blogc').hidden=false;try{window.mitSecDraw()}catch(x){}}
+  USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();await loadToe();await loadErr();render();loadMail();loadKeep();loadKantoor();renderNew();syncMon();$('blogc').hidden=false;try{window.mitSecDraw()}catch(x){}}
  catch(e){$('users').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}
  if(TAB==='b')loadSent();
  if(TAB==='k')loadK()}

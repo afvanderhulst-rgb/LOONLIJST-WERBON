@@ -98,8 +98,8 @@ service cloud.firestore {
       allow delete: if isBeheerder();
     }
     match /rooster/{doc} {
-      allow read: if isMit() || isBeheerder();
-      allow write: if isBeheerder();
+      allow read: if isMit() || isBeheerder() || isKantoor();
+      allow write: if isBeheerder() || isKantoor();
     }
     match /klantlog/{id} {
       allow create: if (isMit() || isBeheerder())

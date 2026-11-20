@@ -275,6 +275,17 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+KANTOORPAGINA (kantoor.html)
+- Adres: https://mit-werkbon.web.app/kantoor.html (ook op loonlijst-werkbon.vercel.app/kantoor.html).
+- Voor kantoor-collega's (lijst op beheer.html > Instellingen > Kantoor-collega's) en de beheerder.
+  Twee tabbladen: Bonnen klaarzetten (ook verplaatsen/intrekken, adressen voor klaarzetten per mail) en Rooster
+  (storingsrooster-PDF inlezen, controleren en publiceren voor alle collega's).
+- beheer.html is alleen nog voor de beheerder (gebruikers, back-ups, klanten, instellingen, systeem).
+  Een kantoor-collega die beheer.html opent, krijgt een knop naar kantoor.html.
+- Er is maar één bestand: kantoor.html wordt bij het publiceren gemaakt uit beheer.html (build.mjs).
+  Op GitHub dus alleen beheer.html bijwerken.
+- Firestore-regels: kantoor mag nu ook het rooster publiceren (match /rooster: isKantoor). Gaat vanzelf via GitHub.
+
 FIRESTORE-REGELS AUTOMATISCH VIA GITHUB (vanaf v168, geen plakken meer)
 Wat het doet: zet je een nieuwe firestore-regels.txt op GitHub, dan zet GitHub de regels zelf in Firebase
 (hetzelfde als plakken + Publiceren in de console). Firebase controleert ze eerst: klopt er iets niet, dan wordt

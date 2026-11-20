@@ -32,7 +32,8 @@ window.mitFB=function(){if(P)return P;P=(async function(){
   orderBy:function(f,d){return col(c,cons.concat([Fs.orderBy(f,d||'asc')]))},
   limit:function(n){return col(c,cons.concat([Fs.limit(n)]))},
   where:function(f,op,v){return col(c,cons.concat([Fs.where(f,op,v)]))},
-  get:async function(){var q=await Fs.getDocs(cons.length?Fs.query.apply(null,[c].concat(cons)):c);var d=q.docs.map(snap);return {docs:d,size:d.length}}}}
+  get:async function(){var q=await Fs.getDocs(cons.length?Fs.query.apply(null,[c].concat(cons)):c);var d=q.docs.map(snap);return {docs:d,size:d.length}},
+  onSnapshot:function(cb,err){return Fs.onSnapshot(cons.length?Fs.query.apply(null,[c].concat(cons)):c,function(q){var d=q.docs.map(snap);cb({docs:d,size:d.length})},err)}}}
  var db={collection:function(p){return col(Fs.collection(fs,p),[])}};
  var auth={
   get currentUser(){return a.currentUser},

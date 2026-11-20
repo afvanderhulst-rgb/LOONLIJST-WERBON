@@ -1,0 +1,17 @@
+{
+  "id": "./kantoor.html",
+  "name": "MIT Werkbon kantoor",
+  "short_name": "MIT Kantoor",
+  "description": "Werkbonnen klaarzetten en het storingsrooster publiceren.",
+  "start_url": "./kantoor.html",
+  "scope": "./kantoor.html",
+  "display": "standalone",
+  "background_color": "#e1e3ef",
+  "theme_color": "#1a147f",
+  "lang": "nl",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

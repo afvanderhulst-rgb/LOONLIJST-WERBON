@@ -153,43 +153,56 @@ exports.mailKantoor = onRequest({
   const naamPdf = (v, std) => { let x = tekst(v, 120).replace(/[\\/:*?"<>|]+/g, '-').trim() || std; if (!/\.pdf$/i.test(x)) x += '.pdf'; return x; };
   const isPdf = (x) => typeof x === 'string' && /^[A-Za-z0-9+/]+={0,2}$/.test(x) && Buffer.from(x.slice(0, 8), 'base64').toString('latin1').slice(0, 4) === '%PDF';
   if (!/^[\w-]{6,80}$/.test(id)) return fout(400, 'Ongeldig verzoek.');
+  // mislukte pogingen ook vastleggen in mailuit (beheer.html > Systeem > Verzonden mails); een verstuurde mail blijft 'ok'
+  const uitRef = db.doc(`mailuit/${tok.uid}_${id}`); // buiten users/: de app zelf kan hier niet bij (Firestore-regels)
+  const mislukt = async (code, msg) => {
+    try {
+      const o = await uitRef.get();
+      if (!(o.exists && o.get('status') === 'ok')) {
+        const nu = Date.now();
+        await uitRef.set({t: nu, eerst: (o.exists && o.get('eerst')) || nu, uid: tok.uid, van: em, naam, aan, soort, onderwerp: tekst(b.subject, 200),
+          status: 'fout', fout: tekst(msg, 300), code, pogingen: admin.firestore.FieldValue.increment(1)}, {merge: true});
+      }
+    } catch (e) { logger.warn('mailuit (fout) schrijven', e); }
+    return fout(code, msg);
+  };
   const ccIn = Array.isArray(b.cc) ? b.cc : [];
-  if (ccIn.length > MAX_CC) return fout(400, 'CC: maximaal ' + MAX_CC + ' adressen.');
+  if (ccIn.length > MAX_CC) return mislukt(400, 'CC: maximaal ' + MAX_CC + ' adressen.');
   const cc = [], gezien = new Set([aan.toLowerCase(), em.toLowerCase()]);
   for (const x of ccIn) {
     const a = tekst(x, 200).trim();
-    if (!magNaar(a)) return fout(400, 'CC: naar ' + a + ' kan de app niet mailen. Alleen adressen op @' + TOEGESTANE_DOMEINEN.join(' of @') + '.');
+    if (!magNaar(a)) return mislukt(400, 'CC: naar ' + a + ' kan de app niet mailen. Alleen adressen op @' + TOEGESTANE_DOMEINEN.join(' of @') + '.');
     if (!gezien.has(a.toLowerCase())) { gezien.add(a.toLowerCase()); cc.push({email: a}); }
   }
-  if (!vast && !magNaar(aan)) return fout(400, 'Naar dit adres kan de app niet mailen. Alleen adressen op @' + TOEGESTANE_DOMEINEN.join(' of @') + '.');
+  if (!vast && !magNaar(aan)) return mislukt(400, 'Naar dit adres kan de app niet mailen. Alleen adressen op @' + TOEGESTANE_DOMEINEN.join(' of @') + '.');
   // de PDF('s): werkbon = 1 PDF (b.pdf), weeklijst = lijst b.bijlagen [{name, pdf}]
   const bijlagen = [];
   if (soort === 'weeklijst') {
     const l = Array.isArray(b.bijlagen) ? b.bijlagen : [];
-    if (!l.length) return fout(400, 'De PDF ontbreekt.');
-    if (l.length > MAX_WL_BIJL) return fout(400, 'Te veel bijlagen.');
+    if (!l.length) return mislukt(400, 'De PDF ontbreekt.');
+    if (l.length > MAX_WL_BIJL) return mislukt(400, 'Te veel bijlagen.');
     for (const x of l) {
       const c = x && typeof x.pdf === 'string' ? x.pdf : '';
-      if (!c) return fout(400, 'De PDF ontbreekt.');
-      if (!isPdf(c)) return fout(400, 'Dit is geen PDF.');
+      if (!c) return mislukt(400, 'De PDF ontbreekt.');
+      if (!isPdf(c)) return mislukt(400, 'Dit is geen PDF.');
       bijlagen.push({name: naamPdf(x.name, 'weeklijst.pdf'), content: c});
     }
   } else {
     const pdf = typeof b.pdf === 'string' ? b.pdf : '';
-    if (!pdf || !/^[A-Za-z0-9+/]+={0,2}$/.test(pdf)) return fout(400, 'De PDF ontbreekt.');
-    if (!isPdf(pdf)) return fout(400, 'Dit is geen PDF.');
+    if (!pdf || !/^[A-Za-z0-9+/]+={0,2}$/.test(pdf)) return mislukt(400, 'De PDF ontbreekt.');
+    if (!isPdf(pdf)) return mislukt(400, 'Dit is geen PDF.');
     bijlagen.push({name: naamPdf(b.name, 'werkbon.pdf'), content: pdf});
   }
   const grootte = bijlagen.reduce((s, x) => s + Math.floor(x.content.length * 3 / 4), 0);
   const maxB = soort === 'weeklijst' ? MAX_WL : MAX_PDF;
-  if (grootte > maxB) return fout(413, (soort === 'weeklijst' ? "De PDF's zijn" : 'De PDF is') + ' te groot (' + (grootte / 1048576).toFixed(1).replace('.', ',') + ' MB, maximaal ' + Math.round(maxB / 1048576) + ' MB).');
+  if (grootte > maxB) return mislukt(413, (soort === 'weeklijst' ? "De PDF's zijn" : 'De PDF is') + ' te groot (' + (grootte / 1048576).toFixed(1).replace('.', ',') + ' MB, maximaal ' + Math.round(maxB / 1048576) + ' MB).');
   const bestand = bijlagen.map((x) => x.name).join(', ');
   // status van de werkbon (Werk gereed / Reparatiemelding): bovenaan de mail, in kleur
   const STATUS = {gereed: ['GEREED !', '#1e7d34', '#e3f5e8'], niet: ['NIET GEREED !', '#c62828', '#fdeaea'], repm: ['REPARATIE MELDING !', '#c25e00', '#fff1e0']};
   const status = soort === 'werkbon' && Array.isArray(b.status) ? [...new Set(b.status.filter((x) => STATUS[x]))] : [];
 
   // 3. al eerder verstuurd (de app probeert opnieuw na een storing)? dan niet nog een keer
-  const uit = db.doc(`mailuit/${tok.uid}_${id}`); // buiten users/: de app zelf kan hier niet bij (Firestore-regels)
+  const uit = uitRef;
   const al = await uit.get();
   if (al.exists && al.get('status') === 'ok') return res.json({ok: true, dubbel: true});
 
@@ -202,7 +215,7 @@ exports.mailKantoor = onRequest({
       if (v <= MAX_PER_DAG) t.set(teller, {n: v, t: Date.now()});
       return v;
     });
-    if (n > MAX_PER_DAG) return fout(429, 'Je hebt vandaag al ' + MAX_PER_DAG + ' mails verstuurd. Verstuur deze via je mail-app.');
+    if (n > MAX_PER_DAG) return mislukt(429, 'Je hebt vandaag al ' + MAX_PER_DAG + ' mails verstuurd. Verstuur deze via je mail-app.');
   } catch (e) { logger.warn('teller', e); }
 
   // 5. versturen via Brevo
@@ -238,15 +251,16 @@ exports.mailKantoor = onRequest({
     j = await r.json().catch(() => ({}));
   } catch (e) {
     logger.error('brevo onbereikbaar', e);
-    return fout(502, 'De mailserver is nu niet bereikbaar. De app probeert het later opnieuw.');
+    return mislukt(502, 'De mailserver is nu niet bereikbaar. De app probeert het later opnieuw.');
   }
   if (!r.ok) {
     logger.error('brevo weigert', {status: r.status, antwoord: j, uid: tok.uid});
     // 5xx/429 = tijdelijk (de app probeert later opnieuw); anders blijvend (de app meldt het de monteur)
     const tijdelijk = r.status >= 500 || r.status === 429;
-    return fout(tijdelijk ? 503 : 422, 'De mailserver weigerde de mail (' + r.status + (j && j.message ? ': ' + tekst(j.message, 150) : '') + ').');
+    return mislukt(tijdelijk ? 503 : 422, 'De mailserver weigerde de mail (' + r.status + (j && j.message ? ': ' + tekst(j.message, 150) : '') + ').');
   }
-  await uit.set({t: Date.now(), uid: tok.uid, aan, cc: cc.map((c) => c.email), bestand, kb: Math.round(grootte / 1024), status: 'ok', soort, st: status, brevo: tekst(j.messageId, 200)}).catch(() => {});
+  await uit.set({t: Date.now(), eerst: (al.exists && al.get('eerst')) || Date.now(), uid: tok.uid, van: em, naam, aan, cc: cc.map((c) => c.email), onderwerp, bestand, kb: Math.round(grootte / 1024), status: 'ok', soort, st: status, brevo: tekst(j.messageId, 200),
+    fout: admin.firestore.FieldValue.delete(), code: admin.firestore.FieldValue.delete(), pogingen: admin.firestore.FieldValue.increment(1)}, {merge: true}).catch(() => {});
   logger.info(soort + ' gemaild', {uid: tok.uid, aan, bestand, kb: Math.round(grootte / 1024)});
   return res.json({ok: true});
 });

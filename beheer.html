@@ -89,10 +89,25 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 .u.open .chev{transform:rotate(90deg)}
 .bl h4{margin:12px 0 4px;font-size:14px}.br>span{font-size:14px}
 @media (max-width:640px){.uh{flex-wrap:wrap}.chev{display:none}.tools input{min-width:0}}
+/* ---- kantoor op de computer (v169) ---- */
+body.kp main,body.kp .hw{max-width:1500px}
+@media (min-width:1000px){
+ body.kp #blist{display:grid;grid-template-columns:minmax(380px,5fr) 8fr;gap:14px;align-items:start}
+ body.kp #blist>.card{margin:0}
+ body.kp #bsentC{grid-column:2;grid-row:1/span 6}
+ body.kp #bdrop{padding:56px 16px;font-size:18px}
+}
+.bsf{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}.bsf input,.bsf select{flex:1;min-width:140px;padding:8px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}
+table.st{width:100%;border-collapse:collapse;font-size:14px}table.st th{text-align:left;font-size:12px;color:var(--mu);font-weight:600;padding:6px;border-bottom:1px solid var(--bd)}
+table.st td{padding:8px 6px;border-bottom:1px solid var(--bd);vertical-align:top}table.st tr:hover td{background:var(--ac2)}
+table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st select{padding:5px;border:1px solid var(--bd);border-radius:8px;font:inherit;font-size:13px;max-width:190px}
+#kToast{position:fixed;right:16px;bottom:16px;z-index:50;max-width:380px;background:var(--ac);color:#fff;padding:12px 16px;border-radius:12px;box-shadow:0 6px 24px #0004;font-size:15px}
+.ball{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding:10px;border:1.5px solid var(--ac);border-radius:12px;background:var(--ac2)}
+.ball select{flex:1;min-width:200px;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit}
 </style>
 </head>
 <body>
-<header><div class="hw"><div class="brand"><img src="icon-192.png" alt="" width="40" height="40"><div><b>MIT Werkbon beheer</b><small id="who">Gebruikers en back-ups</small></div></div><button class="btn" id="out" hidden>Uitloggen</button></div></header>
+<header><div class="hw"><div class="brand"><img src="icon-192.png" alt="" width="40" height="40"><div><b>MIT Werkbon beheer</b><small id="who">Gebruikers en back-ups</small></div></div><span style="display:flex;gap:8px"><button class="btn" id="inst" type="button" hidden>Installeren als programma</button><button class="btn" id="out" hidden>Uitloggen</button></span></div></header>
 <main>
  <div class="card" id="login" hidden>
   <b>Inloggen als beheerder</b>
@@ -159,8 +174,10 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
     <p class="mu">1. Cloudflare &gt; mit-werkbon.com &gt; Email &gt; Email Routing: aanzetten (Cloudflare zet de MX-records zelf).<br>2. Klik hieronder op de knop en kopieer het script.<br>3. Cloudflare &gt; Workers &amp; Pages &gt; Create &gt; Worker, naam <b>mit-werkbon-mail</b> &gt; Deploy &gt; Edit code: alles vervangen door het script &gt; Deploy.<br>4. Email Routing &gt; Routing rules &gt; Catch-all address &gt; Edit: actie <b>Send to a Worker</b>, Worker <b>mit-werkbon-mail</b> &gt; Save, en zet hem aan.<br>Opnieuw op de knop klikken maakt een nieuwe sleutel: plak dan ook het nieuwe script in Cloudflare.</p>
     <button class="btn" id="mailAdrB" type="button">Script voor Cloudflare maken</button><div id="mailAdrR" class="mu" style="margin-top:8px"></div>
     <div id="mailAdrW" hidden style="margin-top:8px"><textarea id="mailAdrT" readonly rows="12" style="width:100%;font:12px/1.4 ui-monospace,Consolas,monospace;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)"></textarea><button class="btn sm" id="mailAdrK" type="button" style="margin-top:6px">Script kopiëren</button></div></div></div>
-  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Klaargezet</b><button class="btn sm" id="brf" type="button">Vernieuwen</button></div>
-   <p class="mu" style="margin-top:4px">Opgehaalde bonnen worden na 30 dagen opgeruimd, bonnen die niet zijn opgehaald na 60 dagen. Een bon die nog niet is opgehaald kun je naar een andere monteur verplaatsen of intrekken.</p><div id="bsent"></div></div>
+  <div class="card" id="bsentC"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b id="bsT">Klaargezet</b><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" id="bnot" type="button" hidden>Meldingen op deze computer aan</button><button class="btn sm" id="brf" type="button">Vernieuwen</button></span></div>
+   <p class="mu" style="margin-top:4px">Werkt vanzelf bij: overneemt een monteur een bon, dan zie je dat meteen (met een melding). Opgehaalde bonnen worden na 30 dagen opgeruimd, bonnen die niet zijn opgehaald na 60 dagen. Een bon die nog niet is opgehaald kun je naar een andere monteur verplaatsen of intrekken.</p>
+   <div class="bsf"><input id="bsq" type="search" placeholder="Zoek op werkbon, klant of monteur…"><select id="bsm"><option value="">Alle monteurs</option></select><select id="bss"><option value="">Alle</option><option value="klaar">Nog niet opgehaald</option><option value="opgehaald">Opgehaald</option></select></div>
+   <div id="bsent"></div></div>
   <div class="card" id="blogc" hidden><b>Logboek klaarzetten</b><p class="mu">Wie heeft welke bon klaargezet, verplaatst of ingetrokken. Alleen zichtbaar voor de beheerder. Ouder dan een jaar wordt opgeruimd.</p><button class="btn" id="blog" type="button">Logboek tonen</button><div id="blogl" style="margin-top:10px"></div></div>
  </div>
  <div id="klist" hidden>
@@ -185,11 +202,16 @@ function ago(t){if(!t)return '';var m=(Date.now()-t)/6e4;if(m<60)return 'net';va
 function kb(n){n=(n||0)/1024;return n<1024?Math.max(1,Math.round(n))+' kB':(n/1024).toFixed(1)+' MB'}
 function show(h){var m=$('msg');m.innerHTML=h;m.hidden=!h}
 var KP=/kantoor(\.html)?$/i.test(location.pathname); // kantoor.html = zelfde code, alleen klaarzetten + rooster
-if(KP){document.title='MIT Werkbon kantoor';try{$('login').querySelector('b').textContent='Inloggen (kantoor)';$('who').textContent='Bonnen klaarzetten en storingsrooster'}catch(e){}}
+if(KP){document.body.classList.add('kp');document.title='MIT Werkbon kantoor';try{document.querySelector('.brand b').textContent='MIT Werkbon kantoor'}catch(e){}try{$('login').querySelector('b').textContent='Inloggen (kantoor)';$('who').textContent='Bonnen klaarzetten en storingsrooster'}catch(e){}}
 var ERR=[],ERRN={},ROLE='',C=window.MIT_FIREBASE||{},ADMINS=String(C.adminEmail||'').toLowerCase().split(/[,;\s]+/).filter(Boolean),ADMIN=ADMINS[0]||'',isAdm=function(e){return ADMINS.indexOf(String(e||'').toLowerCase())>=0},auth,db,USERS=[],BLOCK={},TOE={},KL=[],DOM='@mit-installatietechniek.com';
 if(!C.apiKey||String(C.apiKey).indexOf('VUL')===0){show('<b>Nog niet ingesteld.</b><p class="mu">Vul eerst firebase-config.js in (zie INSTALLATIE.txt).</p>');return}
 show('<p class="mu">Firebase laden…</p>');
 try{var F=await window.mitFB();auth=F.auth;db=F.db;show('')}catch(e){show('<b>Firebase kon niet geladen worden.</b><p class="mu">Controleer je internet en laad de pagina opnieuw.</p>');return}
+/* installeren als programma (kantoor) */
+var INSTP=null;window.addEventListener('beforeinstallprompt',function(e){if(!KP)return;e.preventDefault();INSTP=e;$('inst').hidden=false});
+$('inst').onclick=async function(){if(!INSTP)return;INSTP.prompt();try{await INSTP.userChoice}catch(e){}INSTP=null;$('inst').hidden=true};
+window.addEventListener('appinstalled',function(){$('inst').hidden=true});
+function kToast(t,ms){var el=$('kToast');if(!el){el=document.createElement('div');el.id='kToast';document.body.appendChild(el)}el.textContent=t;el.hidden=false;clearTimeout(el._t);el._t=setTimeout(function(){el.hidden=true},ms||6000)}
 function err(e){var c=(e&&e.code)||'';return ({'auth/invalid-credential':'E-mailadres of wachtwoord klopt niet.','auth/invalid-login-credentials':'E-mailadres of wachtwoord klopt niet.','auth/wrong-password':'E-mailadres of wachtwoord klopt niet.','auth/user-not-found':'Er is geen account met dit e-mailadres. Maak het eerst aan in de app.','auth/too-many-requests':'Te vaak geprobeerd. Wacht een paar minuten.','auth/network-request-failed':'Geen internetverbinding.','permission-denied':'Geen toegang. Controleer of de Firestore-regels uit INSTALLATIE.txt (met jouw e-mailadres) zijn gepubliceerd en of je e-mailadres is bevestigd.'})[c]||('Er ging iets mis'+(c?' ('+c+')':'')+'.')}
 
 $('lf').onsubmit=async function(e){e.preventDefault();$('le').textContent='';$('lb').disabled=true;
@@ -199,6 +221,7 @@ $('rf').onclick=function(){load()};
 $('q').oninput=function(){render()};
 
 auth.onAuthStateChanged(async function(u){
+ try{if(UNSUB){UNSUB();UNSUB=null}}catch(x){}
  $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('rlist').hidden=true;$('blist').hidden=true;$('tabs').hidden=true;show('');ROLE='';
  if(!u){$('who').textContent=KP?'Bonnen klaarzetten en storingsrooster':'Gebruikers en back-ups';if(ADMIN&&!KP)$('lm').value=ADMIN;return}
  $('who').textContent='Ingelogd als '+u.email;
@@ -323,7 +346,9 @@ function parseSR(it){var g={},all=lineText(it).join(' '),m=all.match(/Werkbonnr\
  if(s.length)g.storing=s.join(NL);
  return g}
 function b64(buf){var u=new Uint8Array(buf),s='',k=0x8000;for(var i=0;i<u.length;i+=k)s+=String.fromCharCode.apply(null,u.subarray(i,i+k));return btoa(s)}
-async function readBon(file){var o={file:file,name:file.name,size:file.size,g:null,err:'',opm:'',voor:''};
+function lastMon(){var v='';try{v=localStorage.getItem('kt:mon')||''}catch(e){}return monteurs().some(function(u){return u.uid===v})?v:''}
+function setLastMon(v){try{if(v)localStorage.setItem('kt:mon',v)}catch(e){}}
+async function readBon(file){var o={file:file,name:file.name,size:file.size,g:null,err:'',opm:'',voor:lastMon()};
  try{if(file.size>15*1024*1024)throw new Error('Bestand is groter dan 15 MB.');var buf=await file.arrayBuffer();o.b64=b64(buf);
   await loadPdfjs();var d=await pdfjsLib.getDocument({isEvalSupported:false,data:new Uint8Array(buf)}).promise,pg=await d.getPage(1),vp=pg.getViewport({scale:1}),tc=await pg.getTextContent();
   var it=tc.items.filter(function(i){return i.str&&i.str.trim()}).map(function(i){var p=vp.convertToViewportPoint(i.transform[4],i.transform[5]);return{s:i.str,x:p[0]*924/vp.width,y:p[1]*1307/vp.height}});
@@ -367,46 +392,80 @@ $('mailAdrB').onclick=async function(){var b=this;b.disabled=true;$('mailAdrR').
  catch(e){$('mailAdrR').innerHTML='<span class="er">Geen verbinding met de server. Is de servercode gepubliceerd (firebase deploy --only functions)?</span>'}b.disabled=false};
 $('mailAdrK').onclick=function(){var b=this;try{navigator.clipboard.writeText($('mailAdrT').value);b.textContent='Gekopieerd';setTimeout(function(){b.textContent='Script kopiëren'},2000)}catch(e){$('mailAdrT').select()}};
 function renderNew(){try{mailAdr()}catch(e){}var el=$('bnew');if(!el)return;if(!NEWB.length){el.innerHTML='';return}
- el.innerHTML=NEWB.map(function(o,i){return '<div class="card" style="margin:12px 0 0;background:var(--bg)"><b>'+ee(gTitle(o.g,o.name))+'</b><div class="mu">'+ee(gSub(o.g))+'</div>'+
+ var alle=NEWB.length>1?'<div class="ball"><b>Alle '+NEWB.length+' bonnen naar:</b><select id="ballM">'+opts(NEWB.every(function(o){return o.voor&&o.voor===NEWB[0].voor})?NEWB[0].voor:'')+'</select><button class="btn pr" type="button" id="ballK">Alle klaarzetten</button><span class="mu" id="ballS"></span></div>':'';
+ el.innerHTML=alle+NEWB.map(function(o,i){return '<div class="card" style="margin:12px 0 0;background:var(--bg)"><b>'+ee(gTitle(o.g,o.name))+'</b><div class="mu">'+ee(gSub(o.g))+'</div>'+
   (o.g&&o.g.storing?'<div style="margin-top:4px">'+ee(String(o.g.storing).split(NL)[0])+'</div>':'')+(o.err?'<div class="er" style="margin-top:4px">'+ee(o.err)+'</div>':'')+
   '<div class="mu" style="margin-top:4px">'+ee(o.name)+' · '+kb(o.size)+'</div>'+
   '<label style="display:block;margin-top:10px">Monteur</label><select data-bv="'+i+'" style="width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit">'+opts(o.voor)+'</select>'+
-  '<label style="display:block;margin-top:8px">Opmerking (optioneel)</label><input data-bo="'+i+'" value="'+ee(o.opm)+'" maxlength="300" placeholder="bijv. vandaag nog, sleutel bij de buren">'+
+  '<label style="display:block;margin-top:8px">Opmerking (optioneel) <span class="mu">· Enter = klaarzetten</span></label><input data-bo="'+i+'" value="'+ee(o.opm)+'" maxlength="300" placeholder="bijv. vandaag nog, sleutel bij de buren">'+
   '<div class="tools" style="margin:10px 0 0"><button class="btn pr" type="button" data-bk="'+i+'">Klaarzetten</button><button class="btn" type="button" data-bx="'+i+'">Weghalen</button></div><div class="mu" data-bs="'+i+'"></div></div>'}).join('');
- el.querySelectorAll('[data-bv]').forEach(function(s){s.onchange=function(){NEWB[+s.dataset.bv].voor=s.value}});
- el.querySelectorAll('[data-bo]').forEach(function(s){s.oninput=function(){NEWB[+s.dataset.bo].opm=s.value}});
+ el.querySelectorAll('[data-bv]').forEach(function(s){s.onchange=function(){NEWB[+s.dataset.bv].voor=s.value;setLastMon(s.value)}});
+ el.querySelectorAll('[data-bo]').forEach(function(s){s.oninput=function(){NEWB[+s.dataset.bo].opm=s.value};
+  s.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();var k=el.querySelector('[data-bk="'+s.dataset.bo+'"]');if(k&&!k.disabled)k.click()}}});
  el.querySelectorAll('[data-bx]').forEach(function(b){b.onclick=function(){NEWB.splice(+b.dataset.bx,1);renderNew()}});
  el.querySelectorAll('[data-bk]').forEach(function(b){b.onclick=async function(){var i=+b.dataset.bk,o=NEWB[i],st=el.querySelector('[data-bs="'+i+'"]');
-  if(!o.voor){st.innerHTML='<span class="er">Kies eerst een monteur.</span>';return}if(!o.b64){st.innerHTML='<span class="er">Dit bestand kon niet gelezen worden.</span>';return}
-  b.disabled=true;st.textContent='Bezig met klaarzetten…';
-  try{var u=USERS.filter(function(x){return x.uid===o.voor})[0]||{},id=Date.now()+'_'+Math.random().toString(36).slice(2,8),ref=db.collection('inbox').doc(id),n=Math.ceil(o.b64.length/CH);
-   for(var k=0;k<n;k++)await ref.collection('parts').doc(String(k)).set({d:o.b64.slice(k*CH,(k+1)*CH)});
-   await ref.set({voor:o.voor,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||'',door:String(auth.currentUser.email||'').toLowerCase(),t:Date.now(),status:'klaar',bestand:o.name,size:o.size,parts:n,g:o.g||{},opm:String(o.opm||'').trim()});
-   blog('klaargezet',{g:o.g,bestand:o.name,voorNaam:u.naam,voorMail:u.email});NEWB.splice(i,1);renderNew();loadSent()}
-  catch(e){b.disabled=false;st.innerHTML='<span class="er">Klaarzetten mislukt: '+ee(err(e))+'</span>'}}})}
+  b.disabled=true;st.textContent='Bezig met klaarzetten…';var r=await klaarZet(o);
+  if(r){st.innerHTML='<span class="er">'+ee(r)+'</span>';b.disabled=false;return}
+  NEWB.splice(NEWB.indexOf(o),1);renderNew();loadSent()}});
+ if($('ballM')){$('ballM').onchange=function(){var v=this.value;if(!v)return;setLastMon(v);NEWB.forEach(function(o){o.voor=v});renderNew()};
+  $('ballK').onclick=async function(){var b=this,L=NEWB.slice(),fout=0;if(L.some(function(o){return !o.voor})){$('ballS').innerHTML='<span class="er">Kies eerst een monteur.</span>';return}
+   b.disabled=true;for(var k=0;k<L.length;k++){$('ballS').textContent='Bezig: '+(k+1)+' van '+L.length+'…';var r=await klaarZet(L[k]);if(r){fout++;L[k].err=r}else NEWB.splice(NEWB.indexOf(L[k]),1)}
+   renderNew();loadSent();kToast(fout?(L.length-fout)+' klaargezet, '+fout+' mislukt (zie hieronder).':'Alle '+L.length+' bonnen klaargezet.',6000)}}}
+// één bon klaarzetten; geeft een foutmelding terug, of '' als het gelukt is
+async function klaarZet(o){if(!o.voor)return 'Kies eerst een monteur.';if(!o.b64)return 'Dit bestand kon niet gelezen worden.';
+ try{var u=USERS.filter(function(x){return x.uid===o.voor})[0]||{},id=Date.now()+'_'+Math.random().toString(36).slice(2,8),ref=db.collection('inbox').doc(id),n=Math.ceil(o.b64.length/CH);
+  for(var k=0;k<n;k++)await ref.collection('parts').doc(String(k)).set({d:o.b64.slice(k*CH,(k+1)*CH)});
+  await ref.set({voor:o.voor,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||'',door:String(auth.currentUser.email||'').toLowerCase(),t:Date.now(),status:'klaar',bestand:o.name,size:o.size,parts:n,g:o.g||{},opm:String(o.opm||'').trim()});
+  setLastMon(o.voor);blog('klaargezet',{g:o.g,bestand:o.name,voorNaam:u.naam,voorMail:u.email});return ''}
+ catch(e){return 'Klaarzetten mislukt: '+err(e)}}
 async function pdfOf(ref,n){var s='';for(var k=0;k<n;k++){var d=await ref.collection('parts').doc(String(k)).get();if(!d.exists)throw new Error('PDF onvolledig');s+=(d.data()||{}).d||''}
  var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new Blob([u],{type:'application/pdf'})}
 async function delBon(ref,n,bijl){for(var k=0;k<(n||0);k++){try{await ref.collection('parts').doc(String(k)).delete()}catch(e){}}
  (bijl||[]).forEach(function(x,j){for(var k=0;k<(x.n||1);k++)ref.collection('parts').doc('b'+j+'_'+k).delete().catch(function(){})});await ref.delete()}
-var SENT=[];
-async function loadSent(){var el=$('bsent');if(!el||!db)return;el.innerHTML='<p class="mu">Laden…</p>';
- try{var q=await db.collection('inbox').orderBy('t','desc').limit(200).get(),oud=Date.now()-30*864e5;SENT=q.docs.map(function(d){var o=d.data()||{};o.id=d.id;o.ref=d.ref;return o});
-  var oud60=Date.now()-60*864e5,weg=function(o){return (o.status==='opgehaald'&&(o.opgehaald||o.t||0)<oud)||(o.status==='klaar'&&(o.t||0)<oud60)};
-  SENT.filter(weg).forEach(function(o){if(o.status==='klaar')blog('opgeruimd (niet opgehaald)',o);delBon(o.ref,o.parts,o.bijl).catch(function(){})});
-  SENT=SENT.filter(function(o){return !weg(o)});
-  if(!SENT.length){el.innerHTML='<p class="mu">Nog niets klaargezet.</p>';return}
-  el.innerHTML=SENT.map(function(o,i){var wie=o.voorNaam||o.voorMail||o.voor,klaar=o.status==='klaar';
-   return '<div style="padding:10px 0;border-top:1px solid var(--bd)"><b>'+ee(gTitle(o.g,o.bestand))+'</b> <span class="tag'+(klaar?'':' ok')+'">'+(klaar?'klaargezet':'opgehaald '+ee(fd(o.opgehaald)))+'</span>'+
-    '<div class="mu">Voor <b>'+ee(wie)+'</b> · '+ee(fd(o.t))+' door '+ee(o.door||'?')+(o.via==='mail'?' · per mail':'')+((o.bijl&&o.bijl.length)?' · 📎 '+o.bijl.length+(o.bijl.length===1?' bijlage':' bijlagen'):'')+'</div>'+(o.opm?'<div>Opmerking: '+ee(o.opm)+'</div>':'')+
-    '<div class="tools" style="margin:6px 0 0;flex-wrap:wrap"><button class="btn sm" type="button" data-sp="'+i+'">PDF bekijken</button>'+
-    (klaar?'<select data-sm="'+i+'" style="padding:6px;border:1px solid var(--bd);border-radius:8px;font:inherit;max-width:220px"><option value="">Verplaatsen naar…</option>'+monteurs().filter(function(u){return u.uid!==o.voor}).map(function(u){return '<option value="'+ee(u.uid)+'">'+ee(uLabel(u))+'</option>'}).join('')+'</select><button class="btn sm dg" type="button" data-sx="'+i+'">Intrekken</button>':'')+'</div></div>'}).join('');
-  el.querySelectorAll('[data-sp]').forEach(function(b){b.onclick=async function(){var o=SENT[+b.dataset.sp],w=window.open('','_blank');b.disabled=true;
-   try{var bl=await pdfOf(o.ref,o.parts),url=URL.createObjectURL(bl);if(w)w.location.href=url;else location.href=url}catch(e){if(w)w.close();alert0('PDF openen mislukt: '+err(e))}b.disabled=false}});
-  el.querySelectorAll('[data-sm]').forEach(function(s){s.onchange=async function(){var o=SENT[+s.dataset.sm],u=USERS.filter(function(x){return x.uid===s.value})[0];if(!u)return;
-   try{await o.ref.set({voor:u.uid,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||''},{merge:true});blog('verplaatst',o,u.naam||u.email);loadSent()}catch(e){alert0(err(e))}}});
-  el.querySelectorAll('[data-sx]').forEach(function(b){b.onclick=async function(){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;var o=SENT[+b.dataset.sx];
-   try{await delBon(o.ref,o.parts,o.bijl);blog('ingetrokken',o);loadSent()}catch(e){b.disabled=false;alert0(err(e))}}})}
+var SENT=[],SEEN={},UNSUB=null,SPEND=false,WIDE=window.matchMedia?window.matchMedia('(min-width:1000px)'):null;
+var oudS=function(o){var oud=Date.now()-30*864e5,oud60=Date.now()-60*864e5;return (o.status==='opgehaald'&&(o.opgehaald||o.t||0)<oud)||(o.status==='klaar'&&(o.t||0)<oud60)};
+async function loadSent(){var el=$('bsent');if(!el||!db)return;if(!SENT.length)el.innerHTML='<p class="mu">Laden…</p>';
+ try{var q=await db.collection('inbox').orderBy('t','desc').limit(200).get();var L=q.docs.map(function(d){var o=d.data()||{};o.id=d.id;o.ref=d.ref;return o});
+  L.filter(oudS).forEach(function(o){if(o.status==='klaar')blog('opgeruimd (niet opgehaald)',o);delBon(o.ref,o.parts,o.bijl).catch(function(){})});
+  SENT=L.filter(function(o){return !oudS(o)});SENT.forEach(function(o){SEEN[o.id]=o.status});drawSent();startLive()}
  catch(e){el.innerHTML='<div class="er">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</div>'}}
+// live: zodra een monteur een bon overneemt (of iemand anders klaarzet) wordt de lijst vanzelf bijgewerkt
+function startLive(){if(UNSUB||!db)return;try{UNSUB=db.collection('inbox').orderBy('t','desc').limit(200).onSnapshot(function(q){
+  var L=q.docs.map(function(d){var o=d.data()||{};o.id=d.id;o.ref=d.ref;return o});
+  L.forEach(function(o){if(SEEN[o.id]==='klaar'&&o.status==='opgehaald')ping(o);SEEN[o.id]=o.status});
+  SENT=L.filter(function(o){return !oudS(o)});drawSent()},function(){UNSUB=null})}catch(e){UNSUB=null}}
+function ping(o){var t=(o.voorNaam||o.voorMail||'De monteur')+' heeft '+gTitle(o.g,o.bestand)+' overgenomen.';kToast('✓ '+t,8000);
+ try{if(window.Notification&&Notification.permission==='granted'&&document.visibilityState!=='visible')new Notification('Bon overgenomen',{body:t,icon:'icon-192.png',tag:'kt-'+o.id})}catch(e){}}
+function notBtn(){var b=$('bnot');if(!b)return;b.hidden=!(window.Notification&&Notification.permission==='default');
+ b.onclick=async function(){try{await Notification.requestPermission()}catch(e){}notBtn();if(Notification.permission==='granted')kToast('Meldingen staan aan. Je krijgt er een als een monteur een bon overneemt en dit venster niet vooraan staat.',7000)}}
+function drawSent(){var el=$('bsent');if(!el)return;if(el.contains(document.activeElement)&&document.activeElement.tagName==='SELECT'){SPEND=true;return}SPEND=false;notBtn();
+ var ms=$('bsm'),cur=ms.value,ids={};SENT.forEach(function(o){ids[o.voor]=o.voorNaam||o.voorMail||o.voor});
+ ms.innerHTML='<option value="">Alle monteurs</option>'+Object.keys(ids).sort(function(a,b){return String(ids[a]).localeCompare(String(ids[b]))}).map(function(k){return '<option value="'+ee(k)+'"'+(k===cur?' selected':'')+'>'+ee(ids[k])+'</option>'}).join('');
+ var zq=normK($('bsq').value),zs=$('bss').value,nk=SENT.filter(function(o){return o.status==='klaar'}).length;
+ $('bsT').textContent='Klaargezet'+(SENT.length?' ('+nk+' nog niet opgehaald)':'');
+ var L=[];SENT.forEach(function(o,i){if(cur&&o.voor!==cur)return;if(zs&&o.status!==zs)return;
+  if(zq&&normK([gTitle(o.g,o.bestand),gSub(o.g),o.voorNaam,o.voorMail,o.opm,o.door].join(' ')).indexOf(zq)<0)return;L.push(i)});
+ if(!SENT.length){el.innerHTML='<p class="mu">Nog niets klaargezet.</p>';return}
+ if(!L.length){el.innerHTML='<p class="mu">Niets gevonden met deze filters.</p>';return}
+ var tag=function(o){var klaar=o.status==='klaar';return '<span class="tag'+(klaar?'':' ok')+'" style="margin:0">'+(klaar?'klaargezet':'opgehaald '+ee(fd(o.opgehaald)))+'</span>'};
+ var acties=function(o,i){var klaar=o.status==='klaar';return '<button class="btn sm" type="button" data-sp="'+i+'">PDF</button>'+
+  (klaar?'<select data-sm="'+i+'"><option value="">Verplaatsen naar…</option>'+monteurs().filter(function(u){return u.uid!==o.voor}).map(function(u){return '<option value="'+ee(u.uid)+'">'+ee(uLabel(u))+'</option>'}).join('')+'</select><button class="btn sm dg" type="button" data-sx="'+i+'">Intrekken</button>':'')};
+ if(KP&&WIDE&&WIDE.matches){
+  el.innerHTML='<table class="st"><thead><tr><th>Werkbon</th><th>Monteur</th><th>Klaargezet</th><th>Status</th><th></th></tr></thead><tbody>'+L.map(function(i){var o=SENT[i];
+   return '<tr><td><b>'+ee(gTitle(o.g,o.bestand))+'</b><div class="mu">'+ee(gSub(o.g))+'</div>'+(o.opm?'<div class="mu">Opm.: '+ee(o.opm)+'</div>':'')+((o.bijl&&o.bijl.length)?'<div class="mu">📎 '+o.bijl.length+(o.bijl.length===1?' bijlage':' bijlagen')+'</div>':'')+'</td>'+
+    '<td>'+ee(o.voorNaam||o.voorMail||o.voor)+'</td><td class="mu">'+ee(fd(o.t))+'<br>'+ee(o.door||'?')+(o.via==='mail'?' · per mail':'')+'</td><td>'+tag(o)+'</td><td><div class="ac">'+acties(o,i)+'</div></td></tr>'}).join('')+'</tbody></table>'}
+ else el.innerHTML=L.map(function(i){var o=SENT[i],wie=o.voorNaam||o.voorMail||o.voor;
+   return '<div style="padding:10px 0;border-top:1px solid var(--bd)"><b>'+ee(gTitle(o.g,o.bestand))+'</b> '+tag(o)+
+    '<div class="mu">Voor <b>'+ee(wie)+'</b> · '+ee(fd(o.t))+' door '+ee(o.door||'?')+(o.via==='mail'?' · per mail':'')+((o.bijl&&o.bijl.length)?' · 📎 '+o.bijl.length+(o.bijl.length===1?' bijlage':' bijlagen'):'')+'</div>'+(o.opm?'<div>Opmerking: '+ee(o.opm)+'</div>':'')+
+    '<div class="tools" style="margin:6px 0 0;flex-wrap:wrap">'+acties(o,i)+'</div></div>'}).join('');
+ el.querySelectorAll('[data-sp]').forEach(function(b){b.onclick=async function(){var o=SENT[+b.dataset.sp],w=window.open('','_blank');b.disabled=true;
+  try{var bl=await pdfOf(o.ref,o.parts),url=URL.createObjectURL(bl);if(w)w.location.href=url;else location.href=url}catch(e){if(w)w.close();alert0('PDF openen mislukt: '+err(e))}b.disabled=false}});
+ el.querySelectorAll('[data-sm]').forEach(function(s){s.onchange=async function(){var o=SENT[+s.dataset.sm],u=USERS.filter(function(x){return x.uid===s.value})[0];s.blur();if(!u)return;
+  try{await o.ref.set({voor:u.uid,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||''},{merge:true});blog('verplaatst',o,u.naam||u.email);kToast('Verplaatst naar '+(u.naam||u.email)+'.',4000);loadSent()}catch(e){alert0(err(e))}}});
+ el.querySelectorAll('[data-sx]').forEach(function(b){b.onclick=async function(){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;var o=SENT[+b.dataset.sx];
+  try{await delBon(o.ref,o.parts,o.bijl);blog('ingetrokken',o);loadSent()}catch(e){b.disabled=false;alert0(err(e))}}})}
+$('bsent').addEventListener('focusout',function(){if(SPEND)setTimeout(drawSent,150)});
+$('bsq').oninput=drawSent;$('bsm').onchange=drawSent;$('bss').onchange=drawSent;if(WIDE&&WIDE.addEventListener)WIDE.addEventListener('change',drawSent);
 $('bfile').onchange=function(){addBonFiles(this.files);this.value=''};
 $('brf').onclick=loadSent;
 (function(){var d=$('bdrop');['dragenter','dragover'].forEach(function(n){d.addEventListener(n,function(e){e.preventDefault();d.style.borderColor='var(--ac)';d.style.background='var(--ac2)'})});

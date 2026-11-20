@@ -23,7 +23,7 @@ const P = n => path.join(dirOf(n), 'node_modules', n);
 
 const OUT = 'dist', LIB = path.join(OUT, 'lib');
 const APP = ['index.html', 'beheer.html', 'sw.js', 'manifest.webmanifest', 'fb.js', 'rooster.js', 'libs.js',
-  'firebase-config.js', 'handleiding.pdf', 'lmra.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'];
+  'firebase-config.js', 'handleiding.pdf', 'lmra.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'kantoor.webmanifest'];
 const log = [], miss = [];
 
 fs.rmSync(OUT, { recursive: true, force: true });
@@ -34,8 +34,13 @@ function copy(from, to) {
   catch (e) { miss.push(from); return false; }
 }
 for (const f of APP) if (!copy(f, path.join(OUT, f))) console.warn('LET OP: app-bestand ontbreekt:', f);
-// kantoorpagina: dezelfde code als beheer.html, die aan het adres (kantoor.html) ziet dat hij in kantoor-stand moet
-copy('beheer.html', path.join(OUT, 'kantoor.html'));
+// kantoorpagina: dezelfde code als beheer.html, die aan het adres (kantoor.html) ziet dat hij in kantoor-stand moet.
+// Met een eigen manifest, zodat kantoor hem op Windows als programma kan installeren (Edge/Chrome).
+try {
+  const k = fs.readFileSync('beheer.html', 'utf8').replace('<title>MIT Werkbon beheer</title>',
+    '<title>MIT Werkbon kantoor</title>\n<link rel="manifest" href="kantoor.webmanifest">\n<link rel="icon" href="icon-192.png">\n<meta name="theme-color" content="#1a147f">');
+  fs.writeFileSync(path.join(OUT, 'kantoor.html'), k); log.push('kantoor.html');
+} catch (e) { miss.push('kantoor.html'); console.warn('LET OP: kantoor.html kon niet worden gemaakt.'); }
 
 // losse onderdelen
 copy(`${P('pdfjs-dist')}/build/pdf.min.js`, `${LIB}/pdf.min.js`);

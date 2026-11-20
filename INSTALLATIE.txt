@@ -285,6 +285,18 @@ KANTOORPAGINA (kantoor.html)
 - Er is maar één bestand: kantoor.html wordt bij het publiceren gemaakt uit beheer.html (build.mjs).
   Op GitHub dus alleen beheer.html bijwerken.
 - Firestore-regels: kantoor mag nu ook het rooster publiceren (match /rooster: isKantoor). Gaat vanzelf via GitHub.
+- Op de computer (v169):
+  * Installeren als programma: Edge of Chrome > knop "Installeren als programma" rechtsboven (of Edge: menu ... >
+    Apps > Deze site als app installeren; Chrome: installeer-icoon rechts in de adresbalk). Dan staat "MIT Kantoor"
+    met eigen icoon in het startmenu/op de taakbalk en opent hij in een eigen venster.
+  * Breed scherm: links het sleepvak om PDF's klaar te zetten, rechts "Klaargezet" als tabel met zoeken en filters
+    (monteur, nog niet opgehaald / opgehaald).
+  * Sneller klaarzetten: meerdere PDF's tegelijk -> balk "Alle n bonnen naar: [monteur]" + "Alle klaarzetten".
+    De laatst gekozen monteur wordt onthouden. Enter in het opmerkingveld = klaarzetten.
+  * Live: neemt een monteur een bon over, dan werkt de lijst vanzelf bij en verschijnt er een melding
+    ("Jan Jansen heeft werkbon 29191 overgenomen"). Met "Meldingen op deze computer aan" ook een Windows-melding
+    als het venster niet vooraan staat.
+  * Nieuw bestand: kantoor.webmanifest (staat in build.mjs). fb.js kan nu ook live luisteren (onSnapshot).
 
 FIRESTORE-REGELS AUTOMATISCH VIA GITHUB (vanaf v168, geen plakken meer)
 Wat het doet: zet je een nieuwe firestore-regels.txt op GitHub, dan zet GitHub de regels zelf in Firebase

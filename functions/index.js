@@ -5,14 +5,15 @@
    - mailKantoor: werkbon (PDF) direct naar kantoor mailen via Brevo, met kopie naar de monteur;
                   ook de weeklijst (weeklijst-PDF + verzamel-PDF) naar de leidinggevende (soort: 'weeklijst')
    - mailInbox:   werkbon klaarzetten doordat kantoor hem mailt naar <monteur>@mit-werkbon.com
-                  (Cloudflare Email Routing + Worker; Brevo inbound wordt ook nog aangenomen)
-   - inboxSetup:  knop op beheer.html die het Cloudflare-script maakt (of de koppeling met Brevo)
+                  (Cloudflare Email Routing + Worker; afzender wordt gecontroleerd met DMARC/DKIM/ARC)
+   - inboxSetup:  knop op beheer.html die het Cloudflare-script maakt
    Geheimen (Secret Manager): VAPID_PRIVATE_KEY (pushmeldingen), BREVO_API_KEY (mailen). */
 const {onDocumentCreated, onDocumentUpdated} = require('firebase-functions/v2/firestore');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {onRequest} = require('firebase-functions/v2/https');
 const {setGlobalOptions, logger} = require('firebase-functions/v2');
 const {defineSecret} = require('firebase-functions/params');
+const functionsV1 = require('firebase-functions/v1'); // alleen voor de trigger bij een nieuw account (v173)
 const admin = require('firebase-admin');
 const webpush = require('web-push');
 const crypto = require('crypto');
@@ -318,8 +319,7 @@ exports.mailKantoor = onRequest({
    Het deel voor de @ = het deel voor de @ van het e-mailadres van de monteur, of zijn naam met punten
    (Jan Jansen -> jan.jansen). De afzender krijgt een mail terug of het gelukt is.
    (De oude route via Brevo inbound, bon.mit-werkbon.com, wordt ook nog aangenomen.) */
-const INBOUND_DOMEIN = 'bon.mit-werkbon.com';                 // Brevo inbound (oude route)
-const INBOUND_DOMEINEN = ['mit-werkbon.com', INBOUND_DOMEIN];  // alle domeinen waarop bonnen binnenkomen
+const INBOUND_DOMEINEN = ['mit-werkbon.com'];  // domein waarop bonnen binnenkomen (Cloudflare Email Routing)
 const BEHEERDERS = ['a.f.vanderhulst@gmail.com', 'arjan@mit-installatietechniek.com']; // zelfde als in firestore-regels.txt
 const MAX_PDF_IN = 15 * 1024 * 1024;   // per bijlage
 const MAX_BIJLAGEN = 5;                // PDF's per mail
@@ -417,7 +417,38 @@ async function magKlaarzetten(van) {
   if (BEHEERDERS.includes(em)) return true;
   return (await db.doc('kantoor/' + em).get()).exists;
 }
-// geeft de mail-authenticatie aan dat de afzender vervalst is?
+// v173: is de mail aantoonbaar echt van de afzender? Controle op de ruwe mail met mailauth:
+// DMARC pass, of een geldige ARC-keten (Cloudflare) waarin DMARC pass staat, of een geldige DKIM-handtekening van het
+// domein van de afzender. Strenge stand (standaard): anders geweigerd. Uit (beheer > Instellingen): alleen weigeren
+// als de controle aantoonbaar mislukt (zoals vroeger).
+async function afzenderControle(raw, van, envFrom) {
+  let streng = true;
+  try { const s = await db.doc('instellingen/app').get(); if (s.exists && s.get('afzenderStreng') === false) streng = false; } catch (e) { /* standaard streng */ }
+  const dom = String(van || '').toLowerCase().split('@')[1] || '';
+  if (!raw || !raw.length || !dom) return {ok: !streng, waarom: 'geen mail om te controleren'};
+  let r;
+  try {
+    const {authenticate} = require('mailauth');
+    r = await authenticate(raw, Object.assign({trustReceived: true, mta: 'mit-werkbon', disableBimi: true}, envFrom ? {sender: String(envFrom)} : {}));
+  } catch (e) {
+    logger.warn('afzendercontrole mislukt', e && e.message);
+    return {ok: !streng, waarom: 'controle mislukt (' + tekst(e && e.message, 80) + ')'};
+  }
+  const dm = (r.dmarc && r.dmarc.status && r.dmarc.status.result) || 'none';
+  if (dm === 'pass') return {ok: true, waarom: 'dmarc=pass'};
+  const arcR = (r.arc && r.arc.status) || {}, ac = String(arcR.comment || '').toLowerCase();
+  if (arcR.result === 'pass' && /dmarc=pass/.test(ac) && ac.includes('fromdomain=' + dom)) return {ok: true, waarom: 'arc dmarc=pass'};
+  const dk = ((r.dkim && r.dkim.results) || []).find((x) => x && x.status && x.status.result === 'pass' &&
+    (String(x.signingDomain || '').toLowerCase() === dom || String(x.signingDomain || '').toLowerCase().endsWith('.' + dom)));
+  if (dk) return {ok: true, waarom: 'dkim=pass ' + dk.signingDomain};
+  const spf = (r.spf && r.spf.status && r.spf.status.result) || 'none';
+  const spfDom = String((r.spf && r.spf.domain) || String(envFrom || '').split('@')[1] || '').toLowerCase();
+  if (spf === 'pass' && spfDom && (spfDom === dom || spfDom.endsWith('.' + dom))) return {ok: true, waarom: 'spf=pass ' + spfDom};
+  const waarom = 'niet aantoonbaar echt (dmarc=' + dm + ', spf=' + spf + ', arc=' + (arcR.result || 'none') + ')';
+  if (/^(fail|reject|quarantine)$/.test(dm)) return {ok: false, waarom};
+  return {ok: !streng, waarom};
+}
+// (oud, blijft als extra controle) geeft de mail-authenticatie aan dat de afzender vervalst is?
 function vervalst(headers) {
   const h = headers || {}, waarden = [];
   for (const k of Object.keys(h)) if (/^(arc-)?authentication-results$/i.test(k)) waarden.push(...[].concat(h[k]).map(String));
@@ -460,6 +491,23 @@ async function verwerkMail(m, cache) {
     await logRef.set({t: Date.now(), van, onderwerp: tekst(m.onderwerp, 200), status: 'bezig'});
     // afzender controleren; onbekenden krijgen GEEN antwoord (geen spam terugsturen)
     if (!(await magKlaarzetten(van))) { await logRef.set({status: 'geweigerd: afzender onbekend'}, {merge: true}); logger.warn('klaarzetten: onbekende afzender', {van}); return 'onbekend'; }
+    const ck = await afzenderControle(m.raw, van, m.envFrom);
+    if (!ck.ok) {
+      await logRef.set({status: 'geweigerd: ' + ck.waarom}, {merge: true});
+      logger.warn('klaarzetten: afzender niet gecontroleerd', {van, waarom: ck.waarom});
+      // hoogstens één uitleg-mail per afzender per uur (geen mailbom als iemand het adres vervalst)
+      const wRef = db.doc('inboundweiger/' + crypto.createHash('sha256').update(van).digest('hex').slice(0, 32));
+      const wOud = await wRef.get().catch(() => null);
+      if (wOud && wOud.exists && Date.now() - (wOud.get('t') || 0) < 3600000) return 'niet gecontroleerd';
+      await wRef.set({t: Date.now()}).catch(() => {});
+      await brevoMail(van, 'Niet klaargezet: ' + tekst(m.onderwerp || 'werkbon', 150),
+        'Er kwam een mail binnen op ' + tekst((m.adressen || []).join(', '), 200) + ' met jouw adres als afzender, maar we konden niet controleren ' +
+        'dat die echt van jou kwam (' + ck.waarom + '). Daarom is er niets klaargezet.\n\n' +
+        'Heb jij deze mail gestuurd? Zet de bon dan klaar via kantoor.html, of vraag de beheerder om naar de afzendercontrole te kijken ' +
+        '(beheer.html > Instellingen). Heb je hem niet gestuurd? Meld het dan bij de beheerder.\n\nMIT Werkbon\n' +
+        '(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)');
+      return 'niet gecontroleerd';
+    }
     if (vervalst(m.headers)) { await logRef.set({status: 'geweigerd: afzender niet echt'}, {merge: true}); logger.warn('klaarzetten: vervalste afzender?', {van}); return 'vervalst'; }
     // voor welke monteur(s)?
     const adressen = [...new Set((m.adressen || []).map((a) => String(a || '').trim().toLowerCase())
@@ -576,7 +624,7 @@ exports.mailInbox = onRequest({secrets: [BREVO_API_KEY], invoker: 'public', memo
     const aan = String(req.get('x-mail-to') || '');
     const uitslag = await verwerkMail({
       sleutel: 'cf|' + (mail.messageId || crypto.createHash('sha256').update(raw).digest('hex')) + '|' + aan.toLowerCase(),
-      van, onderwerp: mail.subject || '', opm: opmerking(mail.text || ''), adressen: [aan], headers: hdr,
+      van, onderwerp: mail.subject || '', opm: opmerking(mail.text || ''), adressen: [aan], headers: hdr, raw, envFrom: req.get('x-mail-from') || '',
       vanTekst: (mail.from && mail.from.text) || van, aanTekst: [mail.to && mail.to.text, mail.cc && ('CC: ' + mail.cc.text)].filter(Boolean).join('; ') || aan,
       datum: mail.date ? mail.date.toLocaleString('nl-NL', {timeZone: 'Europe/Amsterdam'}) : '', tekstVolledig: mail.text || '',
       bijlagen: (mail.attachments || []).map((a) => ({naam: a.filename || (/pdf/i.test(a.contentType || '') ? 'werkbon.pdf' : 'bijlage'), type: a.contentType,
@@ -590,26 +638,8 @@ exports.mailInbox = onRequest({secrets: [BREVO_API_KEY], invoker: 'public', memo
     }
   }
 
-  // B. Brevo inbound (oude route): JSON met items, sleutel in het adres
-  if (!gelijk(String(req.query.key || ''), sys.token)) return res.status(403).send('');
-  const items = Array.isArray(req.body && req.body.items) ? req.body.items : [];
-  for (const it of items.slice(0, 20)) {
-    const key = String(BREVO_API_KEY.value() || '').trim();
-    await verwerkMail({
-      sleutel: String(it.MessageId || it.Uuid || JSON.stringify(it.Subject) + JSON.stringify(it.From)),
-      van: it.From && it.From.Address, onderwerp: it.Subject || '', opm: opmerking(it.ExtractedMarkdownMessage || it.RawTextBody || ''),
-      adressen: [].concat(it.Recipients || [], (it.To || []).map((x) => x && x.Address), (it.Cc || []).map((x) => x && x.Address)), headers: it.Headers,
-      vanTekst: it.From ? ((it.From.Name ? it.From.Name + ' ' : '') + '<' + it.From.Address + '>') : '', datum: it.SentAtDate || '',
-      aanTekst: (it.To || []).map((x) => x && x.Address).filter(Boolean).join(', '), tekstVolledig: it.RawTextBody || '',
-      bijlagen: (it.Attachments || []).filter((b) => b && b.DownloadToken).map((b) => ({naam: b.Name, type: b.ContentType, size: b.ContentLength || 0, inline: !!b.ContentID,
-        buf: async () => {
-          const r = await fetch('https://api.brevo.com/v3/inbound/attachments/' + encodeURIComponent(b.DownloadToken), {headers: {'api-key': key}});
-          if (!r.ok) throw new Error('status ' + r.status);
-          return Buffer.from(await r.arrayBuffer());
-        }})),
-    }, cache);
-  }
-  return res.status(200).json({ok: true});
+  // alleen Cloudflare (de oude route via Brevo inbound is weggehaald, v173)
+  return res.status(403).send('');
 });
 
 // het script voor Cloudflare (Workers & Pages > je Worker > Code bewerken > plakken > Deploy)
@@ -635,8 +665,8 @@ function cfScript(url, sleutel) {
     ''].join('\n');
 }
 
-// ---- koppeling met Brevo aanleggen (knop op beheer.html, alleen beheerder) ----
-exports.inboxSetup = onRequest({secrets: [BREVO_API_KEY], cors: true, invoker: 'public', timeoutSeconds: 60}, async (req, res) => {
+// ---- script voor Cloudflare maken (knop op beheer.html, alleen beheerder) ----
+exports.inboxSetup = onRequest({cors: true, invoker: 'public', timeoutSeconds: 60}, async (req, res) => {
   const fout = (c, m) => res.status(c).json({ok: false, fout: m});
   if (req.method !== 'POST') return fout(405, 'Alleen POST.');
   const m = /^Bearer (.+)$/.exec(req.get('Authorization') || '');
@@ -648,21 +678,26 @@ exports.inboxSetup = onRequest({secrets: [BREVO_API_KEY], cors: true, invoker: '
     await db.doc('systeem/inbound').set({cfToken, cfT: Date.now(), cfDoor: tok.email}, {merge: true});
     return res.json({ok: true, script: cfScript(inboxUrl(), cfToken)});
   }
-  const key = String(BREVO_API_KEY.value() || '').trim(), H = {'api-key': key, 'content-type': 'application/json', 'accept': 'application/json'};
+  return fout(400, 'Alleen de koppeling met Cloudflare wordt nog ondersteund.');
+});
+
+// ---- v173: nieuwe accounts alleen voor MIT-adressen en toegelaten adressen ----
+// Iemand met een ander adres kan in de app geen account meer maken (de app controleert het al). Lukt het toch
+// (bijvoorbeeld rechtstreeks via de Firebase-API), dan haalt deze functie het account direct weer weg.
+// Toegelaten zijn: @mit-installatietechniek.com, de beheerders, en adressen in toegang/ of kantoor/ (beheer.html).
+exports.nieuwAccount = functionsV1.region('europe-west1').auth.user().onCreate(async (user) => {
+  const a = String((user && user.email) || '').trim().toLowerCase();
+  let ok = !!a && (TOEGESTANE_DOMEINEN.some((d) => a.endsWith('@' + d)) || BEHEERDERS.includes(a));
+  if (!ok && a) {
+    try {
+      const [t, k] = await Promise.all([db.doc('toegang/' + a).get(), db.doc('kantoor/' + a).get()]);
+      ok = t.exists || k.exists;
+    } catch (e) { logger.error('nieuwAccount: controle mislukt, account blijft staan', e); return; }
+  }
+  if (ok) return;
   try {
-    // oude koppelingen voor dit domein weghalen
-    // (Brevo geeft een fout "Webhook record does not exist" als er nog geen koppeling is: dan is er niets weg te halen)
-    const l = await fetch('https://api.brevo.com/v3/webhooks?type=inbound', {headers: H});
-    const lj = await l.json().catch(() => ({}));
-    if (!l.ok && (l.status === 401 || l.status === 403)) return fout(502, 'Brevo weigert (' + l.status + (lj.message ? ': ' + lj.message : '') + '). Heeft de API-sleutel volledige toegang?');
-    for (const w of (l.ok ? (lj.webhooks || []) : [])) if (w && w.id && (w.domain === INBOUND_DOMEIN || String(w.url || '').indexOf('/mailInbox') > 0)) await fetch('https://api.brevo.com/v3/webhooks/' + w.id, {method: 'DELETE', headers: H});
-    // nieuwe geheime sleutel + koppeling
-    const token = crypto.randomBytes(24).toString('hex');
-    await db.doc('systeem/inbound').set({token, t: Date.now(), door: tok.email}, {merge: true});
-    const c = await fetch('https://api.brevo.com/v3/webhooks', {method: 'POST', headers: H, body: JSON.stringify({type: 'inbound', events: ['inboundEmailProcessed'],
-      url: inboxUrl() + '?key=' + token, domain: INBOUND_DOMEIN, description: 'MIT Werkbon: bonnen klaarzetten per mail'})});
-    const cj = await c.json().catch(() => ({}));
-    if (!c.ok) return fout(502, 'Brevo weigert de koppeling (' + c.status + (cj.message ? ': ' + cj.message : '') + '). Is inkomende mail beschikbaar in jullie Brevo-abonnement?');
-    return res.json({ok: true, domein: INBOUND_DOMEIN, id: cj.id});
-  } catch (e) { logger.error('inboxSetup', e); return fout(500, 'Er ging iets mis: ' + tekst(e && e.message, 150)); }
+    await admin.auth().deleteUser(user.uid);
+    await db.collection('users').doc(user.uid).delete().catch(() => {});
+    logger.warn('nieuwAccount: account weggehaald (adres niet toegelaten)', {uid: user.uid, domein: a.split('@')[1] || '(geen adres)'});
+  } catch (e) { logger.error('nieuwAccount: weghalen mislukt', e); }
 });

@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v172,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v173,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,47 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+BEVEILIGING (v173)
+- Beveiligingskoppen op de website (Content-Security-Policy, nosniff, Referrer-Policy, X-Frame-Options,
+  Permissions-Policy) in firebase.json en vercel.json. Daardoor mag de pagina alleen scripts laden van het eigen adres,
+  Firebase/Google (inloggen, App Check) en de terugval-adressen voor pdf.js/Tesseract.
+- Account maken: alleen met een @mit-installatietechniek.com-adres, een beheerder, of een adres dat de beheerder
+  heeft toegelaten (beheer.html > Toegang, of als kantoor-account). Een ander adres krijgt een melding en het account
+  wordt direct weer weggehaald (in de app én door de server: functie nieuwAccount). Back-ups in users/ mogen ook alleen
+  nog voor zulke adressen. Wil iemand met een ander adres de app gebruiken: eerst toelaten, dan pas account maken.
+- Hoofdletters in een e-mailadres maken niet meer uit voor toegang, blokkeren en kantoor (Firestore-regels).
+- Klaarzetten per mail: de server controleert de ruwe mail zelf (DMARC, DKIM of SPF van het domein van de afzender;
+  ook de ARC-keten van Cloudflare). Niet aantoonbaar echt = niets klaargezet; de afzender krijgt een mail met de reden
+  (max. één per uur) en de reden staat in Firestore bij inboundlog. Noodknop: beheer.html > Instellingen >
+  "Strenge afzendercontrole" uit (dan alleen weigeren bij een aantoonbaar vervalste afzender).
+  Laat de ICT van kantoor DKIM en DMARC instellen voor mit-installatietechniek.com, dan blijft de strenge stand werken.
+- De oude koppeling via Brevo inbound (bon.mit-werkbon.com, sleutel in het adres) is weg. Alleen Cloudflare telt nog.
+  Staat er in Brevo nog een inbound-webhook? Brevo > Settings > Webhooks > Inbound: verwijderen.
+- GitHub Actions zijn vastgezet op een vaste versie (commit), zodat een gekaapte nieuwe versie niets kan doen.
+- Serviceaccount github-deploy: zie "MINDER RECHTEN VOOR HET SERVICEACCOUNT" hieronder.
+
+MINDER RECHTEN VOOR HET SERVICEACCOUNT (v173, zelf doen in Google Cloud)
+1. console.cloud.google.com > project backup-loonlijst-werkbon-mit > IAM en beheer > IAM.
+2. Bij github-deploy@... op het potlood. Voeg deze rollen toe (Een andere rol toevoegen):
+   - Cloud Functions-beheerder (Cloud Functions Admin)
+   - Cloud Run-beheerder (Cloud Run Admin)
+   - Beheerder Firebase Hosting (Firebase Hosting Admin)
+   - Beheerder Firebase-regels (Firebase Rules Admin)
+   - Gebruiker serviceaccount (Service Account User)
+   - Beheerder Artifact Registry (Artifact Registry Administrator)
+   - Cloud Build-editor (Cloud Build Editor)
+   - Beheerder Cloud Scheduler (Cloud Scheduler Admin)
+   - Secret Manager: toegang tot geheimen (Secret Manager Secret Accessor) en Secret Manager-viewer
+   - Eventarc-beheerder (Eventarc Admin) en Pub/Sub-editor (Pub/Sub Editor)
+   - Consument van servicegebruik (Service Usage Consumer)
+   - Firebase-extensies: niet nodig.
+   Opslaan.
+3. Daarna bij github-deploy de rol Eigenaar (Owner) weghalen. Opslaan.
+4. GitHub > Actions > "Firebase functions" > Run workflow, en ook "Firebase hosting" en "Firestore-regels".
+   Alle drie groen? Klaar. Rood met "permission"/"PERMISSION_DENIED"? De melding noemt welke rechten missen
+   (bijv. iam.serviceAccounts.actAs, run.services.setIamPolicy, secretmanager.secrets.get): voeg de rol toe die
+   in de melding staat, of zet tijdelijk Eigenaar terug en laat het mij weten.
 
 PLANNING-MELDINGEN (v172)
 - Zolang de planning uit staat (beheer > Instellingen) krijgen monteurs geen meldingen over dag/tijd in de planning.

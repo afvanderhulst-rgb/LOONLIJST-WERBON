@@ -5,12 +5,16 @@
 // 2. Plak de VOLLEDIGE inhoud van dit bestand (deze uitleg mag mee, het zijn opmerkingen).
 // 3. Klik op Publiceren (Publish). Een rode foutmelding? Dan is er iets niet helemaal meegekopieerd.
 // Doe dit na elke update waarin staat dat de regels veranderd zijn.
-// De beheerdersadressen staan bij isBeheerder(); pas ze daar aan als er een beheerder bijkomt of weggaat.
+// De beheerdersadressen staan bij isBeheerder() en magAccount(); pas ze daar aan als er een beheerder bijkomt of weggaat.
 // =====================================================================
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // e-mailadres van de ingelogde gebruiker in kleine letters (v173: hoofdletters in het adres tellen niet)
+    function em() {
+      return request.auth.token.email.lower();
+    }
     function isBeheerder() {
       return request.auth != null
         && request.auth.token.email.lower() in ['a.f.vanderhulst@gmail.com', 'arjan@mit-installatietechniek.com']
@@ -19,18 +23,26 @@ service cloud.firestore {
     function isMit() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && (request.auth.token.email.matches('.*@mit-installatietechniek[.]com$')
-            || exists(/databases/$(database)/documents/toegang/$(request.auth.token.email)))
-        && !exists(/databases/$(database)/documents/geblokkeerd/$(request.auth.token.email));
+        && (em().matches('.*@mit-installatietechniek[.]com$')
+            || exists(/databases/$(database)/documents/toegang/$(em())))
+        && !exists(/databases/$(database)/documents/geblokkeerd/$(em()));
     }
     function geblokkeerd() {
-      let pad = /databases/$(database)/documents/geblokkeerd/$(request.auth.token.email);
-      return exists(pad) && get(pad).data.get('volledig', false) == true;
+      let pad = /databases/$(database)/documents/geblokkeerd/$(em());
+      return request.auth != null && exists(pad) && get(pad).data.get('volledig', false) == true;
+    }
+    // v173: mag dit adres een account hebben? (MIT-adres, beheerder, of toegelaten via toegang/ of kantoor/)
+    function magAccount() {
+      return request.auth != null
+        && (em().matches('.*@mit-installatietechniek[.]com$')
+            || em() in ['a.f.vanderhulst@gmail.com', 'arjan@mit-installatietechniek.com']
+            || exists(/databases/$(database)/documents/toegang/$(em()))
+            || exists(/databases/$(database)/documents/kantoor/$(em())));
     }
     function isKantoor() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && exists(/databases/$(database)/documents/kantoor/$(request.auth.token.email))
+        && exists(/databases/$(database)/documents/kantoor/$(em()))
         && !geblokkeerd();
     }
     function klantOk() {
@@ -39,10 +51,10 @@ service cloud.firestore {
         && d.naam is string && d.naam.size() > 0 && d.naam.size() <= 200
         && d.adres is string && d.adres.size() <= 200
         && d.plaats is string && d.plaats.size() <= 200
-        && d.door == request.auth.token.email;
+        && d.door is string && d.door.lower() == em();
     }
     match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid && !geblokkeerd();
+      allow read, write: if request.auth != null && request.auth.uid == uid && magAccount() && !geblokkeerd();
       allow read: if isBeheerder();
     }
     match /monteurs/{uid} {
@@ -50,7 +62,7 @@ service cloud.firestore {
       allow create, update: if isBeheerder()
         || (request.auth != null && request.auth.uid == uid && !geblokkeerd()
             && request.resource.data.keys().hasOnly(['email','naam'])
-            && request.resource.data.email == request.auth.token.email
+            && request.resource.data.email is string && request.resource.data.email.lower() == em()
             && (!('naam' in request.resource.data)
                 || (request.resource.data.naam is string && request.resource.data.naam.size() <= 80)));
       allow delete: if isBeheerder() || (request.auth != null && request.auth.uid == uid);
@@ -69,12 +81,12 @@ service cloud.firestore {
     }
     match /inboxlog/{id} {
       allow create: if (isKantoor() || isBeheerder())
-        && request.resource.data.door == request.auth.token.email
+        && request.resource.data.door is string && request.resource.data.door.lower() == em()
         && request.resource.data.keys().hasOnly(['t','door','actie','wb','klant','voor','naar']);
       allow read, delete: if isBeheerder();
     }
     match /kantoor/{email} {
-      allow get: if request.auth != null && request.auth.token.email == email;
+      allow get: if request.auth != null && em() == email;
       allow read, write: if isBeheerder();
     }
     match /inbox/{id} {
@@ -103,12 +115,12 @@ service cloud.firestore {
     }
     match /klantlog/{id} {
       allow create: if (isMit() || isBeheerder())
-        && request.resource.data.door == request.auth.token.email
+        && request.resource.data.door is string && request.resource.data.door.lower() == em()
         && request.resource.data.keys().hasOnly(['k','soort','naam','adres','plaats','oud','door','t']);
       allow read, delete: if isBeheerder();
     }
     match /toegang/{email} {
-      allow get: if request.auth != null && request.auth.token.email == email;
+      allow get: if request.auth != null && em() == email;
       allow read, write: if isBeheerder();
     }
     match /instellingen/{doc} {
@@ -116,7 +128,7 @@ service cloud.firestore {
       allow write: if isBeheerder();
     }
     match /geblokkeerd/{email} {
-      allow get: if request.auth != null && request.auth.token.email == email;
+      allow get: if request.auth != null && em() == email;
       allow read, write: if isBeheerder();
     }
   }

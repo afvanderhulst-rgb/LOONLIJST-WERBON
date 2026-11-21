@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v171,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v172,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,18 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+PLANNING VULLEN PER MAIL (v172)
+- Mail de werkbon-PDF naar <monteur>@mit-werkbon.com (zoals bij klaarzetten per mail). Nieuw:
+  * Dag en tijd in het ONDERWERP (bijv. "Werkbon 29191 di 24-11 10:30", "24-11-2026 8.15" of alleen "24-11"):
+    de bon staat meteen op die dag (en tijd) in de planning van die monteur.
+  * Geen dag in het onderwerp: dan de "Datum afspraak" en "Tijd" uit de PDF (als die erin staan).
+  * Niets gevonden: de bon komt bij "Nog in te plannen" (met de monteur al ingevuld).
+- planning@mit-werkbon.com: als de monteur nog niet bekend is. De bon komt zonder monteur bij "Nog in te plannen";
+  kantoor sleept hem op kantoor.html > Planning naar een monteur en een dag.
+- De bevestigingsmail aan kantoor noemt per bon de dag in de planning.
+- Staat de planning nog uit (beheer > Instellingen), dan werkt alles zoals vroeger: de monteur ziet de bon bij
+  "Klaargezet door kantoor" en krijgt een gewone melding.
 
 SCHERMGROOTTE OP DE TELEFOON (v171)
 - Android: is alles klein met ruimte aan de zijkanten, dan staat Chrome op "desktopsite". De app toont dan bovenaan

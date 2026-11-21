@@ -67,9 +67,15 @@ const bonWie = (d) => {
   return [(g.wb ? 'Werkbon ' + g.wb : ''), a[0], a[2]].filter(Boolean).join(' - ') || 'Een werkbon';
 };
 
+// staat de planning aan voor monteurs? (beheer.html > Instellingen > Planning)
+async function planAan() {
+  try { const s = await db.doc('instellingen/app').get(); return !!(s.exists && s.get('planAan')); } catch (e) { return false; }
+}
+
 exports.pushKlaar = onDocumentCreated({document: 'inbox/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
-  const d = (ev.data && ev.data.data()) || {};
+  let d = (ev.data && ev.data.data()) || {};
   if (!d.voor || d.status !== 'klaar') return;
+  if (d.pd && !(await planAan())) d = Object.assign({}, d, {pd: ''}); // planning nog uit: gewone melding
   const g = d.g || {};
   const wie = [g.naam || g.klant, [g.adres, g.plaats].filter(Boolean).join(', ')].filter(Boolean).join(' - ');
   await sendTo(d.voor, {
@@ -84,6 +90,8 @@ exports.pushPlanning = onDocumentUpdated({document: 'inbox/{id}', secrets: [VAPI
   const a = (ev.data && ev.data.before && ev.data.before.data()) || {}, b = (ev.data && ev.data.after && ev.data.after.data()) || {};
   if (b.verstuurd) return; // al afgerond
   const wie = bonWie(b), id = ev.params.id;
+  if ((a.voor || '') === (b.voor || '') && !(await planAan())) return; // planning nog uit: geen meldingen over dag/tijd
+  if (!(await planAan())) { b.pd = ''; a.pd = ''; }
   if ((a.voor || '') !== (b.voor || '')) {
     if (b.voor) {
       await sendTo(b.voor, {title: b.pd ? 'Werkbon voor je ingepland' : 'Nieuwe werkbon klaargezet',
@@ -428,6 +436,31 @@ async function zoekMonteur(adres, cache) {
   return uniek.length === 1 ? uniek[0] : (uniek.length > 1 ? 'dubbel' : null);
 }
 
+// planning (v172): dag en tijd uit het onderwerp van de mail (bijv. "24-11 10:30" of "di 24-11-2026 8.00"),
+// anders uit de PDF (Datum afspraak / Tijd). Geeft {pd: 'jjjj-mm-dd', pt: 'uu:mm'} (leeg als niets gevonden).
+function planVan(onderwerp, g) {
+  const p2 = (n) => String(n).padStart(2, '0');
+  const iso = (d, mnd, j) => {
+    let y = j ? +j : 0;
+    if (y && y < 100) y += 2000;
+    const nu = new Date();
+    if (!y) { y = nu.getFullYear(); if (new Date(y, mnd - 1, d) < new Date(nu.getTime() - 60 * 864e5)) y++; }
+    const dt = new Date(Date.UTC(y, mnd - 1, d));
+    if (mnd < 1 || mnd > 12 || dt.getUTCDate() !== d || dt.getUTCMonth() !== mnd - 1) return '';
+    return y + '-' + p2(mnd) + '-' + p2(d);
+  };
+  let s = String(onderwerp || ''), pd = '', pt = '';
+  const m = /(?:^|[^\d])(\d{1,2})[-/.](\d{1,2})(?:[-/.](\d{2,4}))?(?!\d)/.exec(s);
+  if (m) { pd = iso(+m[1], +m[2], m[3]); if (pd) s = s.replace(m[0], ' '); }
+  const t = /(?:^|[^\d])([01]?\d|2[0-3])[:.u]([0-5]\d)(?!\d)/.exec(s);
+  if (t) pt = p2(t[1]) + ':' + t[2];
+  const gd = /^(\d{1,2})-(\d{1,2})-(\d{2,4})$/.exec(String((g && g.da) || '').trim());
+  if (!pd && gd) pd = iso(+gd[1], +gd[2], gd[3]);
+  const gt = /^(\d{1,2}):(\d{2})$/.exec(String((g && g.tijd) || '').trim());
+  if (!pt && gt && pd) pt = p2(gt[1]) + ':' + gt[2];
+  return {pd, pt: pd ? pt : ''};
+}
+
 // tekst van de mail -> opmerking (doorgestuurde kopjes en handtekening eraf, max. 300 tekens)
 function opmerking(t) {
   const regels = String(t || '').split(/\r?\n/), uit = [];
@@ -458,6 +491,8 @@ async function verwerkMail(m, cache) {
       .filter((a) => INBOUND_DOMEINEN.some((d) => a.endsWith('@' + d))))];
     const monteurs = [], fouten = [];
     for (const a of adressen) {
+      // planning@mit-werkbon.com: nog geen monteur; kantoor plant hem in op kantoor.html > Planning
+      if (lokaal(a) === 'planning') { if (!monteurs.some((x) => x.planning)) monteurs.push({uid: '', email: '', naam: 'Nog in te plannen', planning: true}); continue; }
       const mt = await zoekMonteur(a, cache);
       if (mt === 'dubbel') fouten.push(a + ': meerdere monteurs passen bij dit adres. Gebruik het adres uit de lijst op beheer.html.');
       else if (!mt) fouten.push(a + ': geen monteur gevonden. Kijk op beheer.html > Bonnen klaarzetten voor de juiste adressen.');
@@ -507,12 +542,14 @@ async function verwerkMail(m, cache) {
           for (let i = 0; i < xn; i++) await ref.collection('parts').doc('b' + j + '_' + i).set({d: xb.slice(i * CH, (i + 1) * CH)});
           bijl.push({naam: x.naam, type: x.type, size: x.buf.length, n: xn});
         }
-        await ref.set({voor: mt.uid, voorMail: String(mt.email || '').toLowerCase(), voorNaam: mt.naam || '', door: van, t: Date.now(), status: 'klaar',
-          bestand: f.naam, size: f.buf.length, parts: n, g: f.g || {}, opm, via: 'mail', bijl});
+        const pl = planVan(m.onderwerp, f.g);
+        await ref.set(Object.assign({voor: mt.uid, voorMail: String(mt.email || '').toLowerCase(), voorNaam: mt.planning ? '' : (mt.naam || ''), door: van, t: Date.now(), status: 'klaar',
+          bestand: f.naam, size: f.buf.length, parts: n, g: f.g || {}, opm, via: 'mail', bijl}, pl.pd ? {pd: pl.pd, pt: pl.pt, pv: Date.now()} : {}));
         const klant = String((f.g && f.g.wadres) || '').split('\n')[0];
         await db.collection('inboxlog').doc(Date.now() + '_' + crypto.randomBytes(2).toString('hex')).set({t: Date.now(), door: van, actie: 'klaargezet (per mail)',
           wb: String((f.g && f.g.wb) || f.naam), klant, voor: mt.naam || mt.email || '', naar: ''});
         gelukt.push('- ' + (mt.naam || mt.email) + ': ' + (f.g && f.g.wb ? 'werkbon ' + f.g.wb : f.naam) + (klant ? ' (' + klant + ')' : '') +
+          (pl.pd ? ', in de planning op ' + planTxt(pl) : (mt.planning ? '' : ', nog zonder dag in de planning')) +
           (bijl.length ? ', met ' + bijl.length + (bijl.length === 1 ? ' bijlage' : ' bijlagen') : ''));
       }
     }

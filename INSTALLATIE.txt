@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v168,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v170,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,23 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+PLANNING / AGENDA (v170)
+- Aan/uit: beheer.html > Instellingen > "Planning (agenda)" > Planning tonen voor kantoor en monteurs.
+  Uit (standaard) = alleen de beheerder ziet de planning (tabblad Planning op beheer.html en "Mijn planning" in de
+  app op het account van de beheerder), om eerst te testen. Aan = ook kantoor (kantoor.html) en alle monteurs.
+- Kantoor (tabblad Planning): week per monteur, maandag t/m zaterdag, met < > en "Deze week".
+  * Links "Nog in te plannen": klaargezette bonnen zonder dag of zonder monteur. PDF's hier inslepen = klaarzetten
+    zonder monteur. Staat er in de PDF een afspraakdatum/tijd, dan stelt de app die voor.
+  * Slepen naar een monteur + dag (computer), of klikken op een bon: monteur, dag, tijd, opmerking, "Uit de planning", PDF.
+  * Kleuren: blauw = gepland, oranje = monteur heeft hem overgenomen, groen = afgerond en naar kantoor verstuurd. Live.
+- Monteur: kaart "Mijn planning" op het startscherm (vandaag + volgende bon); tik = weekoverzicht (ma t/m za) met per
+  bon tijd, klant, storing, opmerking kantoor, Route, Bel en Overnemen / Werkbon openen. Ziet alleen zijn eigen bonnen.
+  Bonnen zonder dag blijven gewoon bij "Klaargezet door kantoor" staan.
+- Meldingen: nieuwe bon ingepland, dag/tijd gewijzigd, of naar een collega verplaatst -> pushmelding (servercode
+  pushPlanning) + melding in de app. Tikken opent "Mijn planning".
+- Afgerond: verstuurt de monteur de bon (op welke manier ook), dan meldt de app dat aan kantoor (groen).
+- Firestore-regels: monteur mag nu ook "verstuurd" zetten op zijn eigen klaargezette bon (gaat vanzelf via GitHub).
 
 KANTOORPAGINA (kantoor.html)
 - Adres: https://mit-werkbon.web.app/kantoor.html (ook op loonlijst-werkbon.vercel.app/kantoor.html).

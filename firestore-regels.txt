@@ -83,7 +83,7 @@ service cloud.firestore {
       allow create, delete: if isBeheerder() || isKantoor();
       allow update: if isBeheerder() || isKantoor()
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald','verstuurd'])
             && request.resource.data.status == 'opgehaald');
       match /parts/{p} {
         allow read: if isBeheerder() || isKantoor()

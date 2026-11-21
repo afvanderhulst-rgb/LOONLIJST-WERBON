@@ -8,7 +8,7 @@
                   (Cloudflare Email Routing + Worker; Brevo inbound wordt ook nog aangenomen)
    - inboxSetup:  knop op beheer.html die het Cloudflare-script maakt (of de koppeling met Brevo)
    Geheimen (Secret Manager): VAPID_PRIVATE_KEY (pushmeldingen), BREVO_API_KEY (mailen). */
-const {onDocumentCreated} = require('firebase-functions/v2/firestore');
+const {onDocumentCreated, onDocumentUpdated} = require('firebase-functions/v2/firestore');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {onRequest} = require('firebase-functions/v2/https');
 const {setGlobalOptions, logger} = require('firebase-functions/v2');
@@ -54,6 +54,19 @@ async function sendTo(uid, msg) {
   return ok;
 }
 
+// planning (v170): dag en tijd als tekst, bijv. "di 24-11 10:30"
+const DGN = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
+const planTxt = (d) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d.pd || ''));
+  if (!m) return '';
+  const dt = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return DGN[dt.getUTCDay()] + ' ' + (+m[3]) + '-' + (+m[2]) + (d.pt ? ' ' + d.pt : '');
+};
+const bonWie = (d) => {
+  const g = d.g || {}, a = String(g.wadres || '').split('\n');
+  return [(g.wb ? 'Werkbon ' + g.wb : ''), a[0], a[2]].filter(Boolean).join(' - ') || 'Een werkbon';
+};
+
 exports.pushKlaar = onDocumentCreated({document: 'inbox/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
   const d = (ev.data && ev.data.data()) || {};
   if (!d.voor || d.status !== 'klaar') return;
@@ -61,9 +74,32 @@ exports.pushKlaar = onDocumentCreated({document: 'inbox/{id}', secrets: [VAPID_P
   const wie = [g.naam || g.klant, [g.adres, g.plaats].filter(Boolean).join(', ')].filter(Boolean).join(' - ');
   await sendTo(d.voor, {
     title: 'Nieuwe werkbon klaargezet',
-    body: (wie || 'Kantoor heeft een werkbon voor je klaargezet.') + (d.opm ? '\n' + String(d.opm).slice(0, 120) : ''),
-    url: './?go=home', tag: 'klaar-' + ev.params.id,
+    body: (wie || 'Kantoor heeft een werkbon voor je klaargezet.') + (d.pd ? '\nGepland: ' + planTxt(d) : '') + (d.opm ? '\n' + String(d.opm).slice(0, 120) : ''),
+    url: d.pd ? './?go=plan' : './?go=home', tag: 'klaar-' + ev.params.id,
   });
+});
+
+// planning gewijzigd (andere monteur, dag of tijd): melding naar de monteur(s)
+exports.pushPlanning = onDocumentUpdated({document: 'inbox/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
+  const a = (ev.data && ev.data.before && ev.data.before.data()) || {}, b = (ev.data && ev.data.after && ev.data.after.data()) || {};
+  if (b.verstuurd) return; // al afgerond
+  const wie = bonWie(b), id = ev.params.id;
+  if ((a.voor || '') !== (b.voor || '')) {
+    if (b.voor) {
+      await sendTo(b.voor, {title: b.pd ? 'Werkbon voor je ingepland' : 'Nieuwe werkbon klaargezet',
+        body: wie + (b.pd ? '\nGepland: ' + planTxt(b) : '') + (b.opm ? '\n' + String(b.opm).slice(0, 120) : ''),
+        url: b.pd ? './?go=plan' : './?go=home', tag: 'klaar-' + id});
+    }
+    if (a.voor && a.status !== 'opgehaald') {
+      await sendTo(a.voor, {title: 'Werkbon verplaatst', body: wie + '\nKantoor heeft deze werkbon aan een collega gegeven.', url: './?go=plan', tag: 'weg-' + id});
+    }
+    return;
+  }
+  if (b.voor && ((a.pd || '') !== (b.pd || '') || (a.pt || '') !== (b.pt || ''))) {
+    await sendTo(b.voor, {title: 'Planning gewijzigd',
+      body: wie + '\n' + (b.pd ? (a.pd ? 'Was ' + planTxt(a) + ', nu ' : 'Gepland: ') + planTxt(b) : 'Niet meer ingepland (kantoor plant hem opnieuw).'),
+      url: './?go=plan', tag: 'klaar-' + id});
+  }
 });
 
 exports.pushTest = onDocumentCreated({document: 'users/{uid}/pushq/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {

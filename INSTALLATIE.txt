@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v170,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v171,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,13 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+SCHERMGROOTTE OP DE TELEFOON (v171)
+- Android: is alles klein met ruimte aan de zijkanten, dan staat Chrome op "desktopsite". De app toont dan bovenaan
+  een rode uitleg. Oplossing: Chrome > ... > Instellingen > Site-instellingen > Desktopsite uit (of
+  mit-werkbon.web.app uit de uitzonderingen halen), app helemaal sluiten en opnieuw openen.
+- iPhone: vakjes zijn minimaal 16px, zodat de iPhone niet meer inzoomt als je in een vakje tikt (o.a. weeklijst).
+- Tekstgrootte blijft gelijk bij draaien; extra kopregels zodat de app op de iPhone schermvullend opent.
 
 PLANNING / AGENDA (v170)
 - Aan/uit: beheer.html > Instellingen > "Planning (agenda)" > Planning tonen voor kantoor en monteurs.

@@ -57,5 +57,9 @@
  ],
  "launch_handler": {
   "client_mode": "focus-existing"
- }
+ },
+ "display_override": [
+  "standalone"
+ ],
+ "id": "./index.html"
 }

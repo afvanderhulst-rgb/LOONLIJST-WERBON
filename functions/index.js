@@ -6,6 +6,7 @@
                   ook de weeklijst (weeklijst-PDF + verzamel-PDF) naar de leidinggevende (soort: 'weeklijst')
    - mailInbox:   werkbon klaarzetten doordat kantoor hem mailt naar <monteur>@mit-werkbon.com
                   (Cloudflare Email Routing + Worker; afzender wordt gecontroleerd met DMARC/DKIM/ARC)
+   - (v180) agenda@mit-werkbon.com: agenda-PDF van kantoor -> planning (collectie agenda), pushAgenda meldt het de monteur
    - inboxSetup:  knop op beheer.html die het Cloudflare-script maakt
    Geheimen (Secret Manager): VAPID_PRIVATE_KEY (pushmeldingen), BREVO_API_KEY (mailen). */
 const {onDocumentCreated, onDocumentUpdated} = require('firebase-functions/v2/firestore');
@@ -87,6 +88,16 @@ exports.pushKlaar = onDocumentCreated({document: 'inbox/{id}', secrets: [VAPID_P
 });
 
 // planning gewijzigd (andere monteur, dag of tijd): melding naar de monteur(s)
+// agenda (v180): kantoor heeft een agenda-PDF ingelezen voor een monteur -> één melding per keer
+exports.pushAgenda = onDocumentCreated({document: 'agendaimport/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
+  const d = (ev.data && ev.data.data()) || {};
+  if (!d.voor || !(await planAan())) return;
+  const dt = (iso) => { const p = String(iso || '').split('-'); if (p.length !== 3) return ''; const x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); return DGN[x.getUTCDay()] + ' ' + (+p[2]) + '-' + (+p[1]); };
+  await sendTo(d.voor, {title: 'Nieuwe planning van kantoor',
+    body: (d.n || 0) + ((d.n === 1) ? ' afspraak' : ' afspraken') + (d.van ? ' (' + dt(d.van) + (d.tot && d.tot !== d.van ? ' t/m ' + dt(d.tot) : '') + ')' : '') + '. Tik om je planning te zien.',
+    url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id)});
+});
+
 exports.pushPlanning = onDocumentUpdated({document: 'inbox/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
   const a = (ev.data && ev.data.before && ev.data.before.data()) || {}, b = (ev.data && ev.data.after && ev.data.after.data()) || {};
   if (b.verstuurd) return; // al afgerond
@@ -358,6 +369,68 @@ function parseSR(it) {
   if (s.length) g.storing = s.join(NLc);
   return g;
 }
+// ---- agenda-PDF (v180): tekst met posities -> regels (zelfde lezer als kantoor.html: agenda-parse.js) ----
+async function pdfWoorden(buf) {
+  const pdfjs = require('pdfjs-dist/legacy/build/pdf.js');
+  const doc = await pdfjs.getDocument({data: new Uint8Array(buf), isEvalSupported: false, disableFontFace: true, useSystemFonts: false, verbosity: 0}).promise;
+  const P = [];
+  for (let p = 1; p <= Math.min(doc.numPages, 20); p++) {
+    const pg = await doc.getPage(p), vp = pg.getViewport({scale: 1}), tc = await pg.getTextContent();
+    P.push({w: vp.width, h: vp.height, items: tc.items.filter((i) => i.str && i.str.trim()).map((i) => { const q = vp.convertToViewportPoint(i.transform[4], i.transform[5]); return {s: i.str, x: q[0], y: q[1], w: i.width}; })});
+  }
+  await doc.destroy();
+  return P;
+}
+// agenda-regels opslaan voor één monteur; bestaande regels van die monteur in dezelfde periode worden vervangen
+async function zetAgenda(mt, regels, door, bestand, via) {
+  const van = regels.reduce((a, r) => (!a || r.pd < a ? r.pd : a), ''), tot = regels.reduce((a, r) => (r.pd > a ? r.pd : a), '');
+  const oud = await db.collection('agenda').where('voor', '==', mt.uid).get();
+  let weg = 0;
+  for (const d of oud.docs) { const pd = d.get('pd') || ''; if (pd >= van && pd <= tot) { await d.ref.delete(); weg++; } }
+  const imp = db.collection('agendaimport').doc(), t = Date.now();
+  let b = db.batch(), n = 0;
+  for (const r of regels) {
+    b.set(db.collection('agenda').doc(), {voor: mt.uid, voorMail: String(mt.email || '').toLowerCase(), voorNaam: mt.naam || '', pd: r.pd, pt: r.pt || '', duur: r.duur || '', min: r.min || 0,
+      wb: tekst(r.wb, 12), inst: tekst(r.inst, 40), klant: tekst(r.klant, 120), adres: tekst(r.adres, 160), plaats: tekst(r.plaats, 80), tel: tekst(r.tel, 40), oms: tekst(r.oms, 800),
+      imp: imp.id, t, door, bestand: tekst(bestand, 120)});
+    if (++n % 400 === 0) { await b.commit(); b = db.batch(); }
+  }
+  await b.commit();
+  await imp.set({voor: mt.uid, voorNaam: mt.naam || '', voorMail: String(mt.email || '').toLowerCase(), door, t, n: regels.length, van, tot, weg, bestand: tekst(bestand, 120), via});
+  return {van, tot, weg};
+}
+async function verwerkAgendaMail(m, van, logRef, cache) {
+  const A = require('./agenda-parse.js');
+  if (!cache.lijst) cache.lijst = (await db.collection('monteurs').get()).docs.map((d) => Object.assign({uid: d.id}, d.data() || {}));
+  const pdfs = (m.bijlagen || []).filter((b) => /pdf/i.test(b.type || '') || /\.pdf$/i.test(b.naam || '')).slice(0, 10);
+  const goed = [], fouten = [];
+  if (!pdfs.length) fouten.push('Er zat geen PDF bij de mail.');
+  for (const b of pdfs) {
+    let buf; try { buf = await b.buf(); } catch (e) { fouten.push((b.naam || 'bijlage') + ' kon niet worden opgehaald.'); continue; }
+    if (buf.length > MAX_PDF_IN || buf.slice(0, 4).toString('latin1') !== '%PDF') { fouten.push((b.naam || 'bijlage') + ' is geen PDF of is te groot.'); continue; }
+    let P; try { P = await pdfWoorden(buf); } catch (e) { fouten.push((b.naam || 'bijlage') + ' kon niet worden gelezen.'); continue; }
+    if (!P.some((p) => p.items.length > 20)) { fouten.push((b.naam || 'bijlage') + ': hierin staat geen tekst (een foto of scan zonder tekstherkenning). Sleep deze PDF in kantoor.html > Planning > Agenda inlezen: daar wordt de tekst herkend.'); continue; }
+    const r = A.leesAgenda(P);
+    r.fouten.forEach((f) => fouten.push((b.naam || 'agenda') + ': ' + f));
+    if (!r.regels.length) { fouten.push((b.naam || 'agenda') + ': geen afspraken gevonden. Is dit de "Agenda servicemonteurs"?'); continue; }
+    const V = A.verdeel(r.regels, cache.lijst);
+    V.los.forEach((x) => fouten.push('Monteur "' + (x.monteur || '?') + '" (' + x.pd + ' ' + x.pt + ') niet gevonden in de app; die regel is overgeslagen.'));
+    for (const g of V.groepen) {
+      const z = await zetAgenda(g.mt, g.regels, van, b.naam || 'agenda.pdf', 'mail');
+      goed.push('- ' + (g.mt.naam || g.mt.email) + ': ' + g.regels.length + (g.regels.length === 1 ? ' afspraak' : ' afspraken') + ' (' + z.van + ' t/m ' + z.tot + ')' + (z.weg ? ', ' + z.weg + ' oude vervangen' : ''));
+    }
+  }
+  const aan = await planAan();
+  await logRef.set({status: goed.length ? 'agenda ingelezen' : 'agenda mislukt', aantal: goed.length, fouten}, {merge: true});
+  logger.info('agenda per mail', {van, goed: goed.length, fouten});
+  await brevoMail(van, (goed.length ? 'Agenda ingelezen' : 'Agenda niet ingelezen') + ': ' + tekst(m.onderwerp || 'agenda', 150),
+    (goed.length ? 'Deze planning staat nu in de app:\n' + goed.join('\n') + '\n' : 'Er is niets in de planning gezet.\n') +
+    (fouten.length ? '\nLet op:\n- ' + fouten.join('\n- ') + '\n' : '') +
+    (goed.length && !aan ? '\nDe planning staat nog uit (beheer.html > Instellingen): alleen de beheerder ziet hem nu.\n' : '') +
+    '\nControleren of aanpassen: kantoor.html > Planning.\n\nMIT Werkbon\n(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)');
+  return goed.length ? 'agenda' : 'agenda mislukt';
+}
+
 async function leesBon(buf) {
   try {
     const pdfjs = require('pdfjs-dist/legacy/build/pdf.js');
@@ -509,6 +582,8 @@ async function verwerkMail(m, cache) {
       return 'niet gecontroleerd';
     }
     if (vervalst(m.headers)) { await logRef.set({status: 'geweigerd: afzender niet echt'}, {merge: true}); logger.warn('klaarzetten: vervalste afzender?', {van}); return 'vervalst'; }
+    // agenda@mit-werkbon.com: weekplanning van kantoor (v180)
+    if ((m.adressen || []).some((a) => /^agenda@/i.test(String(a || '').trim()))) return await verwerkAgendaMail(m, van, logRef, cache);
     // voor welke monteur(s)?
     const adressen = [...new Set((m.adressen || []).map((a) => String(a || '').trim().toLowerCase())
       .filter((a) => INBOUND_DOMEINEN.some((d) => a.endsWith('@' + d))))];

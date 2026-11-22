@@ -104,6 +104,18 @@ service cloud.firestore {
         allow write: if isBeheerder() || isKantoor();
       }
     }
+    // agenda (v180): planning uit de agenda-PDF van kantoor; de monteur leest alleen zijn eigen regels
+    match /agenda/{id} {
+      allow read: if isBeheerder() || isKantoor()
+        || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd());
+      allow write: if isBeheerder() || isKantoor();
+    }
+    match /agendaimport/{id} {
+      allow read: if isBeheerder() || isKantoor();
+      allow create: if (isBeheerder() || isKantoor())
+        && request.resource.data.door is string && request.resource.data.door.lower() == em();
+      allow delete: if isBeheerder();
+    }
     match /klanten/{id} {
       allow read: if isMit() || isBeheerder();
       allow create, update: if (isMit() || isBeheerder()) && klantOk();

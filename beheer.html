@@ -258,7 +258,7 @@ function ago(t){if(!t)return '';var m=(Date.now()-t)/6e4;if(m<60)return 'net';va
 function kb(n){n=(n||0)/1024;return n<1024?Math.max(1,Math.round(n))+' kB':(n/1024).toFixed(1)+' MB'}
 function show(h){var m=$('msg');m.innerHTML=h;m.hidden=!h}
 var KP=!!window.MIT_KP||/kantoor(\.html)?$/i.test(location.pathname); // kantoor.html = zelfde code, alleen klaarzetten + rooster
-if(KP){document.body.classList.add('kp');document.title='MIT Werkbon kantoor';try{document.querySelector('.brand b').textContent='MIT Werkbon kantoor'}catch(e){}try{$('login').querySelector('b').textContent='Inloggen (kantoor)';$('who').textContent='Bonnen klaarzetten en storingsrooster'}catch(e){}}
+if(KP){document.body.classList.add('kp');document.title='MIT Werkbon kantoor';try{document.querySelector('.brand img').src='kantoor-192.png'}catch(e){}try{document.querySelector('.brand b').textContent='MIT Werkbon kantoor'}catch(e){}try{$('login').querySelector('b').textContent='Inloggen (kantoor)';$('who').textContent='Bonnen klaarzetten en storingsrooster'}catch(e){}}
 var ERR=[],ERRN={},ROLE='',C=window.MIT_FIREBASE||{},ADMINS=String(C.adminEmail||'').toLowerCase().split(/[,;\s]+/).filter(Boolean),ADMIN=ADMINS[0]||'',isAdm=function(e){return ADMINS.indexOf(String(e||'').toLowerCase())>=0},auth,db,USERS=[],BLOCK={},TOE={},KL=[],DOM='@mit-installatietechniek.com';
 if(!C.apiKey||String(C.apiKey).indexOf('VUL')===0){show('<b>Nog niet ingesteld.</b><p class="mu">Vul eerst firebase-config.js in (zie INSTALLATIE.txt).</p>');return}
 show('<p class="mu">Firebase laden…</p>');

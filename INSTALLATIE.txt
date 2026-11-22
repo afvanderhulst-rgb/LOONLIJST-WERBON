@@ -275,6 +275,12 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+EIGEN ICOON VOOR MIT KANTOOR (v191)
+- De kantoor-app heeft een oranje icoon met "MIT" en een blauw blokje "KANTOOR" (kantoor-192.png, kantoor-512.png,
+  kantoor-maskable-512.png), zodat hij niet te verwarren is met het blauwe icoon van de werkbon-app.
+- Al geïnstalleerd? Chrome werkt het icoon vanzelf bij (computer: bij het volgende openen; Android: kan een paar
+  dagen duren). Sneller: kantoor-app verwijderen en opnieuw installeren via https://mit-kantoor.web.app
+
 KANTOOR ALS EIGEN APP: https://mit-kantoor.web.app (v190)
 - De kantoor-app staat nu ook op een eigen adres. Daardoor is hij los van de werkbon-app te installeren (op hetzelfde
   adres zegt de browser "al geïnstalleerd"). Zelfde gegevens, zelfde inlog, zelfde functies als kantoor.html.

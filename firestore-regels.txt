@@ -119,6 +119,15 @@ service cloud.firestore {
       allow update: if request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bezig','verstuurd','gereed','repm']);
     }
+    // v194: verstuurde werkbonnen (datum, klant, gereed) voor het weekrooster van kantoor; de monteur schrijft zijn eigen
+    match /bonlog/{id} {
+      allow read: if isBeheerder() || isKantoor();
+      allow create, update: if request.auth != null && !geblokkeerd()
+        && request.resource.data.voor == request.auth.uid && id.matches(request.auth.uid + '_.*')
+        && request.resource.data.keys().hasOnly(['voor','wb','klant','plaats','dagen','van','tot','verstuurd','gereed','repm','t'])
+        && request.resource.data.dagen is list && request.resource.data.dagen.size() <= 14;
+      allow delete: if isBeheerder();
+    }
     match /agendaimport/{id} {
       allow read: if isBeheerder() || isKantoor();
       allow create: if (isBeheerder() || isKantoor())

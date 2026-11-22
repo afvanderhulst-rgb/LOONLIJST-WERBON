@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v176,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v177,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -277,13 +277,14 @@ DAARNA
 
 VRIJE DAGEN EN ADV SAMEN (v175-v176)
 - v175: startscherm zonder uitlegtekst onder Werkbonnen, Weeklijsten en Werkbon importeren.
-- v176: tandwieltje > "Verlof, ADV en ziek" toont vrije dagen en ADV samen, in dagen (1 dag = 8 uur):
+- v176: tandwieltje > "Verlof, ADV en ziek" toont vrije dagen en ADV samen (v177: in uren, met de dagen eronder; 1 dag = 8 uur):
   Tegoed = tegoed van dit jaar (standaard 25 vrije dagen + 13 ADV = 38 dagen) + wat over was van vorig jaar;
   Opgenomen = verlof + ADV (apart vermeld); Nog over. Rood als het negatief is.
 - Meegenomen uit vorig jaar wordt vanzelf uitgerekend als dat jaar ook in de app staat. Klopt het niet (bijv. het
   eerste jaar met de app, of een ander saldo van de salarisadministratie), dan vult de monteur het zelf in.
   Ook het tegoed per jaar kan hij aanpassen (parttime). Leeg = vanzelf.
-- beheer.html > Instellingen: "Vrije dagen per jaar" (25) en "ADV-dagen per jaar" (13), in dagen.
+- beheer.html > Instellingen: "Vrije uren per jaar" (200 = 25 dagen) en "ADV-uren per jaar" (104 = 13 dagen).
+  Ook "Meegenomen" en "Tegoed" in de app vult de monteur in uren in. Ziek: uren, met dagen eronder.
 
 VERLOF/ADV/ZIEK, KLAARGEZET-KAART EN SALDO (v174)
 - Weeklijst: de knoppen "+ Verlof", "+ Ziek" en "+ ADV" zetten de uren nu bij GEWONE UREN (was diversen).

@@ -31,6 +31,7 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
       - name: Site voor de kantoor-app (eenmalig aanmaken)
-        run: npx --yes firebase-tools@latest hosting:sites:create mit-kantoor --project backup-loonlijst-werkbon-mit --non-interactive || echo "Site bestaat al (of naam bezet: zie de melding hierboven)"
+        run: |
+          npx --yes firebase-tools@latest hosting:sites:create mit-kantoor --project backup-loonlijst-werkbon-mit --non-interactive || echo "Site bestaat al of de naam is bezet (zie hierboven)"
       - name: Publiceren
         run: npx --yes firebase-tools@latest deploy --only hosting --project backup-loonlijst-werkbon-mit --non-interactive

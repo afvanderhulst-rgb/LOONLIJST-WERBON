@@ -275,6 +275,11 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+BEHEER > INFO > WEBSITES (v200)
+- Nieuw tabblad Info in beheer met alle adressen: werkbon-app, kantoor-app, beheer, handleiding, en de diensten erachter
+  (Firebase, Google Cloud, GitHub, Brevo, Cloudflare), plus de mailadressen van de app. Met knop Kopiëren.
+  Aanpassen: in beheer.html bij <div id="flist">.
+
 ZOEKEN IN DE PLANNING (v199)
 - Kantoor-app > Planning: zoekvak boven het weekrooster. Zoek op bonnummer, klant, adres, plaats, telefoon, omschrijving
   of monteur (meerdere woorden mogen, bijv. "kerkstraat huizen"). Zoekt in klaargezette bonnen, agenda-afspraken en

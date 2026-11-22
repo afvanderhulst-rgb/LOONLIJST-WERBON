@@ -516,7 +516,7 @@ function drawSent(){var el=$('bsent');if(!el)return;if(el.contains(document.acti
  if(!SENT.length){el.innerHTML='<p class="mu">Nog niets klaargezet.</p>';return}
  if(!L.length){el.innerHTML='<p class="mu">Niets gevonden met deze filters.</p>';return}
  var tag=function(o){var klaar=o.status==='klaar';if(o.verstuurd)return '<span class="tag" style="margin:0;border:1px solid;'+(o.gereed==='nee'?'background:#fdeaea;color:#b3261e':'background:#e3f5e8;color:#16693e')+'">verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</span>';return '<span class="tag'+(klaar?'':' ok')+'" style="margin:0">'+(klaar?'klaargezet':'opgehaald '+ee(fd(o.opgehaald)))+'</span>'};
- var acties=function(o,i){var klaar=o.status==='klaar';return (o.parts?'<button class="btn sm" type="button" data-sp="'+i+'">PDF</button>':'<span class="tag" style="margin:0">handmatig</span>')+
+ var acties=function(o,i){var klaar=o.status==='klaar';return (o.verstuurd?bonPdfKnop(o.voor,(o.g||{}).wb||'','').replace('class="btn"','class="btn sm"').replace('Verstuurde werkbon (PDF)','Verstuurde bon'):'')+(o.parts?'<button class="btn sm" type="button" data-sp="'+i+'">PDF</button>':'<span class="tag" style="margin:0">handmatig</span>')+
   (klaar?'<select data-sm="'+i+'"><option value="">Verplaatsen naar…</option>'+monteurs().filter(function(u){return u.uid!==o.voor}).map(function(u){return '<option value="'+ee(u.uid)+'">'+ee(uLabel(u))+'</option>'}).join('')+'</select><button class="btn sm dg" type="button" data-sx="'+i+'">Intrekken</button>':'')};
  if(KP&&WIDE&&WIDE.matches){
   el.innerHTML='<table class="st"><thead><tr><th>Werkbon</th><th>Monteur</th><th>Klaargezet</th><th>Status</th><th></th></tr></thead><tbody>'+L.map(function(i){var o=SENT[i];
@@ -582,11 +582,11 @@ async function plZet(id,w,stil){var o=plO(id);if(!o)return false;var d={pv:Date.
   drawPlan();try{drawSent()}catch(e){}return true}catch(e){alert0(err(e));return false}}
 function plDlg(id){var o=plO(id),dl=$('plDlg');if(!o)return;var g=o.g||{},a=String(g.wadres||'').split(NL);
  dl.innerHTML='<div class="card"><b>'+ee(g.wb?'Werkbon '+g.wb:o.bestand)+'</b><div class="mu">'+ee(a.filter(Boolean).join(', '))+'</div>'+(g.storing?'<div style="margin-top:4px">'+ee(String(g.storing).split(NL).join(' '))+'</div>':'')+
-  (o.status==='opgehaald'?'<p class="mu" style="color:#9a5a00">De monteur heeft deze bon al overgenomen'+(o.verstuurd?' en verstuurd':'')+'.</p>':'')+
+  (o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.status==='opgehaald'?'<p class="mu" style="color:#9a5a00">De monteur heeft deze bon al overgenomen.</p>':'')+
   '<label>Monteur</label><select id="pdM"><option value="">— nog geen monteur —</option>'+planMonteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===o.voor?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
   '<div style="display:flex;gap:8px"><div style="flex:1"><label>Dag</label><input type="date" id="pdD" value="'+ee(o.pd||daIso(g.da)||'')+'"></div><div style="flex:1"><label>Tijd</label><input type="time" id="pdT" value="'+ee(o.pt||g.tijd||'')+'"></div></div>'+
   '<label>Opmerking voor de monteur</label><input id="pdO" maxlength="300" value="'+ee(o.opm||'')+'">'+
-  '<div class="tools" style="margin:14px 0 0;flex-wrap:wrap"><button class="btn pr" type="button" id="pdS">Opslaan</button>'+(o.pd?'<button class="btn" type="button" id="pdU">Uit de planning</button>':'')+''+(o.parts?'<button class="btn" type="button" id="pdP">PDF</button>':'')+'<button class="btn" type="button" id="pdX">Sluiten</button></div><div class="mu" id="pdR"></div></div>';
+  '<div class="tools" style="margin:14px 0 0;flex-wrap:wrap"><button class="btn pr" type="button" id="pdS">Opslaan</button>'+(o.pd?'<button class="btn" type="button" id="pdU">Uit de planning</button>':'')+''+(o.parts?'<button class="btn" type="button" id="pdP">PDF</button>':'')+(o.verstuurd?bonPdfKnop(o.voor,g.wb||'',''):'')+'<button class="btn" type="button" id="pdX">Sluiten</button></div><div class="mu" id="pdR"></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('pdX').onclick=function(){dl.hidden=true};
  $('pdS').onclick=async function(){var b=this,m=$('pdM').value,dd=$('pdD').value;if(dd&&!m){$('pdR').innerHTML='<span class="er">Kies een monteur, of maak de dag leeg.</span>';return}
   b.disabled=true;if(await plZet(id,{voor:m,pd:dd,pt:$('pdT').value,opm:$('pdO').value.trim()}))dl.hidden=true;else b.disabled=false};
@@ -616,6 +616,18 @@ $('brf').onclick=loadSent;
  ['dragleave','drop'].forEach(function(n){d.addEventListener(n,function(){d.style.borderColor='';d.style.background=''})});
  d.addEventListener('drop',function(e){e.preventDefault();addBonFiles(e.dataTransfer&&e.dataTransfer.files)});
  window.addEventListener('dragover',function(e){if(TAB==='b')e.preventDefault()});window.addEventListener('drop',function(e){if(TAB==='b'&&!d.contains(e.target)){e.preventDefault();addBonFiles(e.dataTransfer&&e.dataTransfer.files)}})})();
+/* ---------- verstuurde werkbon-PDF openen (v197) ---------- */
+async function bonPdf(uid,wb,bonId,btn){var w=window.open('','_blank'),t=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='Ophalen…'}
+ try{var d=null;if(bonId){var x=await db.collection('bonpdf').doc(uid+'_'+String(bonId).replace(/[^A-Za-z0-9_-]/g,'').slice(0,60)).get();if(x.exists)d=x}
+  if(!d&&wb){var q=await db.collection('bonpdf').where('uid','==',uid).get();q.docs.forEach(function(y){var o=y.data()||{};if(String(o.wb||'')===String(wb)&&(!d||(o.t||0)>((d.data()||{}).t||0)))d=y})}
+  if(!d){if(w)w.close();alert0('De PDF van deze werkbon is niet bewaard. Dat gebeurt pas bij werkbonnen die direct naar kantoor zijn gemaild met app-versie 197 of nieuwer (niet via de eigen mail-app), en ze blijven 120 dagen.');return}
+  var o=d.data()||{},s='';for(var i=0;i<(o.parts||0);i++){var p=await d.ref.collection('parts').doc(String(i)).get();s+=(p.data()||{}).d||''}
+  var bin=atob(s),u=new Uint8Array(bin.length);for(var j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);var url=URL.createObjectURL(new Blob([u],{type:'application/pdf'}));
+  if(w)w.location.href=url;else location.href=url}
+ catch(e){if(w)w.close();alert0('PDF openen mislukt: '+err(e))}
+ if(btn){btn.disabled=false;btn.textContent=t}}
+function bonPdfKnop(uid,wb,bonId){return '<button class="btn" type="button" data-bpu="'+ee(uid||'')+'" data-bpw="'+ee(wb||'')+'" data-bpb="'+ee(bonId||'')+'">Verstuurde werkbon (PDF)</button>'}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-bpu]');if(!b)return;e.preventDefault();bonPdf(b.dataset.bpu,b.dataset.bpw,b.dataset.bpb,b)});
 /* ---------- monteursfilter + verstuurde werkbonnen van de monteur zelf (v194) ---------- */
 var PLMON='',BL=[],BLL=false;try{PLMON=localStorage.getItem('kt:plmon')||''}catch(e){}
 $('plMon').onchange=function(){PLMON=this.value;try{localStorage.setItem('kt:plmon',PLMON)}catch(e){}drawPlan()};
@@ -627,7 +639,7 @@ function ebInfo(id){var e=BL.filter(function(x){return x.id===id})[0],dl=$('plDl
  dl.innerHTML='<div class="card"><b>'+ee(e.wb?'Werkbon '+e.wb:'Werkbon')+'</b><div class="mu">'+ee(u.naam||u.email||'')+'</div>'+(e.klant?'<div style="margin-top:6px">'+ee(e.klant)+(e.plaats?'<br>'+ee(e.plaats):'')+'</div>':'')+
   '<div style="margin-top:6px">'+(e.dagen||[]).map(function(d){return ee(pdTxt({pd:d.pd}))+(d.ws?' '+ee(d.ws)+(d.we?'–'+ee(d.we):''):'')}).join('<br>')+'</div>'+
   '<p style="font-weight:700;color:'+(e.gereed==='nee'?'#b3261e':'#16693e')+'">Verstuurd '+ee(fd(e.verstuurd))+ee(plGr(e))+'</p><p class="mu">Deze werkbon heeft de monteur zelf gemaakt; hij stond niet in de planning of de agenda.</p>'+
-  '<div class="tools" style="margin:10px 0 0"><button class="btn" type="button" id="ebC">Sluiten</button></div></div>';
+  '<div class="tools" style="margin:10px 0 0">'+bonPdfKnop(e.voor,e.wb,String(e.id).slice(String(e.voor).length+1))+'<button class="btn" type="button" id="ebC">Sluiten</button></div></div>';
  dl.hidden=false;dl.onclick=function(x){if(x.target===dl)dl.hidden=true};$('ebC').onclick=function(){dl.hidden=true}}
 /* ---------- agenda-PDF inlezen (v180) ---------- */
 var AG=[],AGL=false,AGP=null;
@@ -689,7 +701,7 @@ function agInfo(id){var o=AG.filter(function(x){return x.id===id})[0],dl=$('plDl
  dl.innerHTML='<div class="card"><b>'+ee(o.wb?'Werkbon '+o.wb:String(o.oms||'Afspraak').split('\n')[0])+'</b><div class="mu">'+ee(o.voorNaam||o.voorMail)+' · '+ee(pdTxt(o))+' · '+ee(agTijd(o))+(o.duur?' ('+ee(o.duur)+' u)':'')+'</div>'+
   (o.klant?'<div style="margin-top:6px">'+ee(o.klant)+'<br>'+ee([o.adres,o.plaats].filter(Boolean).join(', '))+(o.tel?'<br>'+ee(o.tel):'')+'</div>':'')+
   (o.oms?'<div style="margin-top:6px;white-space:pre-wrap">'+ee(o.oms)+'</div>':'')+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.bezig?'<p style="font-weight:700;color:#9a5a00">Monteur is ermee bezig (sinds '+ee(fd(o.bezig))+').</p>':'')+'<p class="mu">Uit de agenda-PDF '+ee(o.bestand||'')+' ('+ee(fd(o.t))+', '+ee(o.door||'')+'). Wijzigen: pas de agenda aan en lees hem opnieuw in.</p>'+
-  '<div class="tools" style="margin:10px 0 0"><button class="btn dg" type="button" id="agDel">Verwijderen</button><button class="btn" type="button" id="agC">Sluiten</button></div></div>';
+  '<div class="tools" style="margin:10px 0 0">'+(o.verstuurd?bonPdfKnop(o.voor,o.wb,''):'')+'<button class="btn dg" type="button" id="agDel">Verwijderen</button><button class="btn" type="button" id="agC">Sluiten</button></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('agC').onclick=function(){dl.hidden=true};
  $('agDel').onclick=async function(){var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;try{await o.ref.delete();AG=AG.filter(function(x){return x!==o});dl.hidden=true;drawPlan()}catch(e){b.disabled=false;alert0(err(e))}}}
 $('agFile').onchange=function(){agFiles(this.files);this.value=''};

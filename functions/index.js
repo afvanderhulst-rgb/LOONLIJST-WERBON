@@ -136,6 +136,18 @@ exports.pushTest = onDocumentCreated({document: 'users/{uid}/pushq/{id}', secret
   await ev.data.ref.delete().catch(() => {});
 });
 
+// v197: elke nacht oude werkbon-PDF's (bonpdf, ouder dan 120 dagen) opruimen
+exports.opruimen = onSchedule({schedule: 'every day 03:17', timeZone: 'Europe/Amsterdam'}, async () => {
+  const grens = Date.now() - 120 * 864e5;
+  const q = await db.collection('bonpdf').where('t', '<', grens).limit(300).get();
+  for (const d of q.docs) {
+    const n = d.get('parts') || 0;
+    for (let i = 0; i < n; i++) await d.ref.collection('parts').doc(String(i)).delete().catch(() => {});
+    await d.ref.delete().catch(() => {});
+  }
+  logger.info('opruimen bonpdf', {weg: q.size});
+});
+
 exports.pushPlan = onSchedule({schedule: 'every 15 minutes', timeZone: 'Europe/Amsterdam', secrets: [VAPID_PRIVATE_KEY]}, async () => {
   const now = Date.now(), D = 864e5;
   const plans = await db.collectionGroup('pushplan').get();
@@ -322,6 +334,17 @@ exports.mailKantoor = onRequest({
     // 5xx/429 = tijdelijk (de app probeert later opnieuw); anders blijvend (de app meldt het de monteur)
     const tijdelijk = r.status >= 500 || r.status === 429;
     return mislukt(tijdelijk ? 503 : 422, 'De mailserver weigerde de mail (' + r.status + (j && j.message ? ': ' + tekst(j.message, 150) : '') + ').');
+  }
+  // v197: de verstuurde werkbon-PDF bewaren, zodat kantoor hem in de planning kan openen (120 dagen; zie opruimen)
+  if (soort === 'werkbon' && bijlagen[0] && grootte <= 8 * 1048576) {
+    try {
+      const bonId = tekst(b.bon, 80).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 60) || id;
+      const ref = db.doc('bonpdf/' + tok.uid + '_' + bonId), c = bijlagen[0].content, n = Math.ceil(c.length / 300000);
+      const oud = await ref.get(), oudN = (oud.exists && oud.get('parts')) || 0;
+      for (let i = 0; i < n; i++) await ref.collection('parts').doc(String(i)).set({d: c.slice(i * 300000, (i + 1) * 300000)});
+      for (let i = n; i < oudN; i++) await ref.collection('parts').doc(String(i)).delete().catch(() => {});
+      await ref.set({uid: tok.uid, bon: bonId, wb: tekst(b.wb, 12).trim(), naam, bestand: bijlagen[0].name, t: Date.now(), st: status, parts: n, kb: Math.round(c.length * 3 / 4 / 1024)});
+    } catch (e) { logger.warn('bonpdf bewaren mislukt', e && e.message); }
   }
   await uit.set({t: Date.now(), eerst: (al.exists && al.get('eerst')) || Date.now(), uid: tok.uid, van: em, naam, aan, cc: cc.map((c) => c.email), onderwerp, bestand, kb: Math.round(grootte / 1024), status: 'ok', soort, st: status, brevo: tekst(j.messageId, 200),
     fout: admin.firestore.FieldValue.delete(), code: admin.firestore.FieldValue.delete(), pogingen: admin.firestore.FieldValue.increment(1)}, {merge: true}).catch(() => {});

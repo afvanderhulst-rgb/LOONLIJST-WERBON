@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v192,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v193,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,11 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+JA/NEE OP TABBLAD WERK VERPLICHT (v193)
+- Een werkbon kan pas worden afgerond of verstuurd (naar kantoor én naar de klant) als bij LMRA gelezen, Installatie in
+  bedrijf, Werk gereed, Aanvullend rapport en Reparatiemelding Ja of Nee is gekozen. Bij Afronden staat dan in het rood
+  "Kies Ja of Nee bij: ..."; tikken gaat naar het tabblad Werk.
 
 PLANNING: KLEUREN MET STATUS, OOK VOOR DE AGENDA (v192)
 - Afspraken uit de agenda-PDF tellen als gepland: blauw, net als andere geplande bonnen (stippelrand links = uit de agenda).

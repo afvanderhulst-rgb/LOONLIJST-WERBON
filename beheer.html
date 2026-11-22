@@ -100,7 +100,7 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 .plg .m{font-weight:700;font-size:14px;background:var(--card)}.plg .m small{display:block;font-weight:400;color:var(--mu);font-size:12px}
 .plg .td{background:#fffbe6}.plg .ov{outline:2px dashed var(--ac);outline-offset:-3px;background:var(--ac2)}
 .pb{border-radius:8px;padding:5px 7px;margin-bottom:5px;font-size:12px;line-height:1.25;border-left:4px solid;cursor:pointer;background:#eef0ff;border-color:#1a147f;color:#14172e}
-.pb b{display:block;font-size:12.5px}.pb.a{border-left-style:dotted}.pb.n{background:#fdeaea;border-color:#b3261e}.pb .rp{display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#c25e00;color:#fff;font-size:10px;font-weight:700}.pb.z{background:#fff4e4;border-color:#d08700}.pb.k{background:#e7f6ec;border-color:#16693e}
+.pb b{display:block;font-size:12.5px}.pb.a{border-left-style:dotted}.pb.n{background:#fdeaea;border-color:#b3261e}.pb.e{border-left-style:double;border-left-width:5px;cursor:pointer}.pb .rp{display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#c25e00;color:#fff;font-size:10px;font-weight:700}.pb.z{background:#fff4e4;border-color:#d08700}.pb.k{background:#e7f6ec;border-color:#16693e}
 .pu{background:#fff;color:#14172e;border:1px dashed var(--ac);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px;cursor:grab}.pu b{display:block;font-size:14px}
 .pleg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mu);margin-top:10px}.pleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
 #plDlg{position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px}#plDlg[hidden]{display:none}
@@ -196,9 +196,9 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
     <div style="margin:6px 0"><button class="btn sm" type="button" id="hbNew2">+ Bon handmatig aanmaken</button></div><div class="mu" id="plSt"></div><div id="plUn"></div>
     <div style="border-top:1px solid var(--bd);margin-top:14px;padding-top:10px"><b style="font-size:15px">Agenda inlezen (PDF)</b><p class="mu" style="margin:4px 0">De "Agenda servicemonteurs" van de planner: alle afspraken (ook Diversen, Zaak, Storingsdienst) komen in de planning van de monteur. Ook een foto/scan kan. Of mail hem naar <b>agenda@mit-werkbon.com</b>.</p>
     <div id="agDrop" class="pldrop">Sleep de agenda-PDF hierheen<br><label class="btn sm" style="display:inline-block;margin-top:8px;cursor:pointer">Agenda kiezen<input type="file" id="agFile" accept="application/pdf,.pdf" hidden></label></div><div class="mu" id="agSt"></div></div></div>
-   <div class="card"><div class="plwk"><button class="btn sm" type="button" id="plPrev">‹</button><b id="plWk"></b><button class="btn sm" type="button" id="plNext">›</button><button class="btn sm" type="button" id="plNow">Deze week</button><span class="mu" id="plOff" style="margin-left:auto"></span></div>
+   <div class="card"><div class="plwk"><button class="btn sm" type="button" id="plPrev">‹</button><b id="plWk"></b><button class="btn sm" type="button" id="plNext">›</button><button class="btn sm" type="button" id="plNow">Deze week</button><select id="plMon" style="padding:6px 8px;border:1px solid var(--bd);border-radius:8px;font:inherit;font-size:14px;background:var(--bg);color:var(--tx)"><option value="">Alle monteurs</option></select><span class="mu" id="plOff" style="margin-left:auto"></span></div>
     <div class="scroll"><div id="plGrid"></div></div>
-    <div class="pleg"><span><i style="background:#1a147f"></i>Gepland (monteur nog niet begonnen)</span><span><i style="background:#d08700"></i>Bezig (monteur heeft hem overgenomen)</span><span><i style="background:#16693e"></i>Verstuurd, werk gereed</span><span><i style="background:#b3261e"></i>Verstuurd, NIET gereed</span><span><b style="background:#c25e00;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">REP</b> reparatiemelding</span><span>Stippelrand links = uit de agenda-PDF</span><span>Klik op een bon om monteur, dag, tijd of opmerking te wijzigen.</span></div></div>
+    <div class="pleg"><span><i style="background:#1a147f"></i>Gepland (monteur nog niet begonnen)</span><span><i style="background:#d08700"></i>Bezig (monteur heeft hem overgenomen)</span><span><i style="background:#16693e"></i>Verstuurd, werk gereed</span><span><i style="background:#b3261e"></i>Verstuurd, NIET gereed</span><span><b style="background:#c25e00;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">REP</b> reparatiemelding</span><span>Stippelrand links = uit de agenda-PDF</span><span>Dubbele rand links = werkbon die de monteur zelf maakte (niet gepland)</span><span>Klik op een bon om monteur, dag, tijd of opmerking te wijzigen.</span></div></div>
   </div>
   <div id="plDlg" hidden></div>
  </div>
@@ -545,7 +545,10 @@ function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;
  $('plOff').textContent=PLANON?'':'Nog uit: alleen jij ziet de planning. Aanzetten: beheer.html > Instellingen.';
  var ma=maandagVan(PLW),dagen=[];for(var i=0;i<6;i++){var d=new Date(ma);d.setDate(ma.getDate()+i);dagen.push(d)}
  var za=dagen[5];$('plWk').textContent='Week '+weekNr(ma)+' · '+ma.getDate()+'-'+(ma.getMonth()+1)+' t/m '+za.getDate()+'-'+(za.getMonth()+1)+'-'+za.getFullYear();
- var vandaag=isoD(new Date()),ds=dagen.map(isoD),M=planMonteurs();
+ var vandaag=isoD(new Date()),ds=dagen.map(isoD),M=planMonteurs(),pm=$('plMon'),fm=PLMON;
+ if(pm){pm.innerHTML='<option value="">Alle monteurs</option>'+M.map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===fm?' selected':'')+'>'+ee(u.naam||u.email)+'</option>'}).join('');if(fm&&!M.some(function(u){return u.uid===fm}))fm=''}
+ if(fm)M=M.filter(function(u){return u.uid===fm});if(!BLL)loadBl();
+ var PWB={};SENT.forEach(function(o){if(o.voor&&o.g&&o.g.wb)PWB[o.voor+'|'+o.g.wb]=1});AG.forEach(function(a){if(a.wb)PWB[a.voor+'|'+a.wb]=1}); // al gepland: niet nog eens als eigen bon
  var gepland=SENT.filter(function(o){return o.voor&&o.pd}),un=SENT.filter(function(o){return o.status==='klaar'&&(!o.voor||!o.pd)});
  // nog in te plannen
  $('plN').textContent=un.length;
@@ -555,13 +558,16 @@ function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;
  M.forEach(function(u){var mine=gepland.filter(function(o){return o.voor===u.uid});
   h+='<div class="m">'+ee(u.naam||u.email)+'<small>'+ds.map(function(x){return mine.filter(function(o){return o.pd===x}).length||'·'}).join(' ')+'</small></div>';
   ds.forEach(function(x){var L=mine.filter(function(o){return o.pd===x}),wbs={};L.forEach(function(o){if(o.g&&o.g.wb)wbs[o.g.wb]=1});
-   AG.forEach(function(a){if(a.voor===u.uid&&a.pd===x&&!(a.wb&&wbs[a.wb]))L.push({ag:a,pt:a.pt,id:a.id})});
+   AG.forEach(function(a){if(a.voor===u.uid&&a.pd===x&&!(a.wb&&wbs[a.wb])){L.push({ag:a,pt:a.pt,id:a.id});if(a.wb)wbs[a.wb]=1}});
+   BL.forEach(function(e){if(e.voor!==u.uid||(e.wb&&(wbs[e.wb]||PWB[u.uid+'|'+e.wb])))return;(e.dagen||[]).forEach(function(dd){if(dd.pd===x)L.push({eb:e,dd:dd,pt:dd.ws,id:e.id})})});
    L.sort(function(a,b){return String(a.pt||'99').localeCompare(String(b.pt||'99'))});
-   h+='<div class="'+(x===vandaag?'td':'')+'" data-dm="'+ee(u.uid)+'" data-dd="'+x+'">'+L.map(function(o){if(o.ag){var a=o.ag;return '<div class="pb a '+plKl(a)+'" data-agi="'+ee(a.id)+'" title="Uit de agenda-PDF'+ee(plGr(a))+'"><b>'+ee(agTijd(a))+(a.repm?'<span class="rp">REP</span>':'')+'</b>'+ee(agKort(a))+'</div>'}var g=o.g||{};
+   h+='<div class="'+(x===vandaag?'td':'')+'" data-dm="'+ee(u.uid)+'" data-dd="'+x+'">'+L.map(function(o){if(o.eb){var e=o.eb;return '<div class="pb e '+(e.gereed==='nee'?'n':'k')+'" data-ebi="'+ee(e.id)+'" title="Werkbon van de monteur zelf (niet gepland)'+ee(plGr(e))+'"><b>'+ee((o.dd.ws||'')+(o.dd.we?'–'+o.dd.we:''))+(e.repm?'<span class="rp">REP</span>':'')+'</b>'+ee((e.wb?e.wb+' · ':'')+(e.klant||'')+(e.plaats?', '+String(e.plaats).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):''))+'</div>'}
+    if(o.ag){var a=o.ag;return '<div class="pb a '+plKl(a)+'" data-agi="'+ee(a.id)+'" title="Uit de agenda-PDF'+ee(plGr(a))+'"><b>'+ee(agTijd(a))+(a.repm?'<span class="rp">REP</span>':'')+'</b>'+ee(agKort(a))+'</div>'}var g=o.g||{};
     return '<div class="pb '+plKl(o)+'" draggable="true" data-pid="'+ee(o.id)+'" title="'+ee(String(g.storing||'').split(NL)[0])+'"><b>'+ee(o.pt||'––:––')+' '+ee(g.wb||'')+(o.repm?'<span class="rp">REP</span>':'')+'</b>'+ee(plKort(o))+'</div>'}).join('')+'</div>'})});
  h+='</div>';gr.innerHTML=h;
  [].forEach.call(document.querySelectorAll('#plist [data-pid]'),function(c){c.ondragstart=function(e){e.dataTransfer.setData('text/plain',c.dataset.pid);e.dataTransfer.effectAllowed='move'};c.onclick=function(){plDlg(c.dataset.pid)}});
  gr.querySelectorAll('[data-agi]').forEach(function(c){c.onclick=function(){agInfo(c.dataset.agi)}});
+ gr.querySelectorAll('[data-ebi]').forEach(function(c){c.onclick=function(){ebInfo(c.dataset.ebi)}});
  if(!AGL)loadAg();
  gr.querySelectorAll('[data-dd]').forEach(function(c){c.ondragover=function(e){if([].indexOf.call(e.dataTransfer.types,'text/plain')<0)return;e.preventDefault();c.classList.add('ov')};c.ondragleave=function(){c.classList.remove('ov')};
   c.ondrop=function(e){e.preventDefault();c.classList.remove('ov');var id=e.dataTransfer.getData('text/plain');if(id)plZet(id,{voor:c.dataset.dm,pd:c.dataset.dd})}})}
@@ -609,6 +615,16 @@ $('brf').onclick=loadSent;
  ['dragleave','drop'].forEach(function(n){d.addEventListener(n,function(){d.style.borderColor='';d.style.background=''})});
  d.addEventListener('drop',function(e){e.preventDefault();addBonFiles(e.dataTransfer&&e.dataTransfer.files)});
  window.addEventListener('dragover',function(e){if(TAB==='b')e.preventDefault()});window.addEventListener('drop',function(e){if(TAB==='b'&&!d.contains(e.target)){e.preventDefault();addBonFiles(e.dataTransfer&&e.dataTransfer.files)}})})();
+/* ---------- monteursfilter + verstuurde werkbonnen van de monteur zelf (v194) ---------- */
+var PLMON='',BL=[],BLL=false;try{PLMON=localStorage.getItem('kt:plmon')||''}catch(e){}
+$('plMon').onchange=function(){PLMON=this.value;try{localStorage.setItem('kt:plmon',PLMON)}catch(e){}drawPlan()};
+async function loadBl(){BLL=true;try{var d=new Date();d.setDate(d.getDate()-70);var q=await db.collection('bonlog').where('van','>=',isoD(d)).get();BL=q.docs.map(function(x){var o=x.data()||{};o.id=x.id;return o});drawPlan()}catch(e){}}
+function ebInfo(id){var e=BL.filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!e)return;var u=USERS.filter(function(x){return x.uid===e.voor})[0]||{};
+ dl.innerHTML='<div class="card"><b>'+ee(e.wb?'Werkbon '+e.wb:'Werkbon')+'</b><div class="mu">'+ee(u.naam||u.email||'')+'</div>'+(e.klant?'<div style="margin-top:6px">'+ee(e.klant)+(e.plaats?'<br>'+ee(e.plaats):'')+'</div>':'')+
+  '<div style="margin-top:6px">'+(e.dagen||[]).map(function(d){return ee(pdTxt({pd:d.pd}))+(d.ws?' '+ee(d.ws)+(d.we?'–'+ee(d.we):''):'')}).join('<br>')+'</div>'+
+  '<p style="font-weight:700;color:'+(e.gereed==='nee'?'#b3261e':'#16693e')+'">Verstuurd '+ee(fd(e.verstuurd))+ee(plGr(e))+'</p><p class="mu">Deze werkbon heeft de monteur zelf gemaakt; hij stond niet in de planning of de agenda.</p>'+
+  '<div class="tools" style="margin:10px 0 0"><button class="btn" type="button" id="ebC">Sluiten</button></div></div>';
+ dl.hidden=false;dl.onclick=function(x){if(x.target===dl)dl.hidden=true};$('ebC').onclick=function(){dl.hidden=true}}
 /* ---------- agenda-PDF inlezen (v180) ---------- */
 var AG=[],AGL=false,AGP=null;
 async function loadAg(){try{var d=new Date();d.setDate(d.getDate()-60);var q=await db.collection('agenda').where('pd','>=',isoD(d)).get();AG=q.docs.map(function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o});AGL=true;drawPlan()}catch(e){AGL=true}}

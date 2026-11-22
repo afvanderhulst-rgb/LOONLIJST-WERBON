@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v193,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v194,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,15 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+EIGEN WERKBONNEN IN HET ROOSTER + FILTER OP MONTEUR (v194)
+- Een werkbon die de monteur zelf heeft gemaakt (niet klaargezet, niet in de agenda) komt na het versturen ook in het
+  weekrooster van kantoor, op elke dag met uren op die bon: groen (gereed) of rood (niet gereed), REP bij een
+  reparatiemelding, dubbele rand links. Klik = klant, dagen/tijden, wanneer verstuurd.
+  Staat dezelfde werkbon (zelfde bonnummer) al in de planning of agenda, dan verschijnt hij niet nog een keer.
+- De app meldt dit zelf (collectie bonlog: bonnummer, klant, plaats, datums/tijden, gereed); alleen bonnen die de
+  laatste 60 dagen zijn verstuurd. Firestore-regels: de monteur schrijft alleen zijn eigen, kantoor en beheerder lezen.
+- Planning (kantoor.html): keuzelijst "Alle monteurs" naast "Deze week": toon één monteur. Wordt onthouden.
 
 JA/NEE OP TABBLAD WERK VERPLICHT (v193)
 - Een werkbon kan pas worden afgerond of verstuurd (naar kantoor én naar de klant) als bij LMRA gelezen, Installatie in

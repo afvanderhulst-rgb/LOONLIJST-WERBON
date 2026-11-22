@@ -285,6 +285,7 @@ $('q').oninput=function(){render()};
 auth.onAuthStateChanged(async function(u){
  $('kset').hidden=true;try{$('ksDlg').hidden=true}catch(x){}
  try{if(UNSUB){UNSUB();UNSUB=null}}catch(x){}
+ try{if(typeof AGU==='function'){AGU();}AGU=null;AGL=false;AG=[]}catch(x){}try{if(typeof BLU==='function'){BLU();}BLU=null;BLL=false;BL=[]}catch(x){}
  $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('rlist').hidden=true;$('blist').hidden=true;$('tabs').hidden=true;show('');ROLE='';
  if(!u){$('who').textContent=KP?'Bonnen klaarzetten en storingsrooster':'Gebruikers en back-ups';if(ADMIN&&!KP)$('lm').value=ADMIN;return}
  $('who').textContent='Ingelogd als '+u.email;
@@ -618,7 +619,10 @@ $('brf').onclick=loadSent;
 /* ---------- monteursfilter + verstuurde werkbonnen van de monteur zelf (v194) ---------- */
 var PLMON='',BL=[],BLL=false;try{PLMON=localStorage.getItem('kt:plmon')||''}catch(e){}
 $('plMon').onchange=function(){PLMON=this.value;try{localStorage.setItem('kt:plmon',PLMON)}catch(e){}drawPlan()};
-async function loadBl(){BLL=true;try{var d=new Date();d.setDate(d.getDate()-70);var q=await db.collection('bonlog').where('van','>=',isoD(d)).get();BL=q.docs.map(function(x){var o=x.data()||{};o.id=x.id;return o});drawPlan()}catch(e){}}
+var BLU=null;
+async function loadBl(){BLL=true;var d=new Date();d.setDate(d.getDate()-70);var q0=db.collection('bonlog').where('van','>=',isoD(d)),mp=function(x){var o=x.data()||{};o.id=x.id;return o};
+ if(!BLU&&q0.onSnapshot){try{BLU=q0.onSnapshot(function(q){BL=q.docs.map(mp);drawPlan()},function(){BLU=null});return}catch(e){BLU=null}}
+ try{var q=await q0.get();BL=q.docs.map(mp);drawPlan()}catch(e){}}
 function ebInfo(id){var e=BL.filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!e)return;var u=USERS.filter(function(x){return x.uid===e.voor})[0]||{};
  dl.innerHTML='<div class="card"><b>'+ee(e.wb?'Werkbon '+e.wb:'Werkbon')+'</b><div class="mu">'+ee(u.naam||u.email||'')+'</div>'+(e.klant?'<div style="margin-top:6px">'+ee(e.klant)+(e.plaats?'<br>'+ee(e.plaats):'')+'</div>':'')+
   '<div style="margin-top:6px">'+(e.dagen||[]).map(function(d){return ee(pdTxt({pd:d.pd}))+(d.ws?' '+ee(d.ws)+(d.we?'–'+ee(d.we):''):'')}).join('<br>')+'</div>'+
@@ -627,7 +631,12 @@ function ebInfo(id){var e=BL.filter(function(x){return x.id===id})[0],dl=$('plDl
  dl.hidden=false;dl.onclick=function(x){if(x.target===dl)dl.hidden=true};$('ebC').onclick=function(){dl.hidden=true}}
 /* ---------- agenda-PDF inlezen (v180) ---------- */
 var AG=[],AGL=false,AGP=null;
-async function loadAg(){try{var d=new Date();d.setDate(d.getDate()-60);var q=await db.collection('agenda').where('pd','>=',isoD(d)).get();AG=q.docs.map(function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;var p=String(o.pd||'').split('-'),st=p.length===3?new Date(+p[0],+p[1]-1,+p[2]).getTime():0;if(o.verstuurd&&o.verstuurd<st){o.verstuurd=0;o.gereed='';o.repm=false}return o});/* v195: eerder verstuurd = vorige keer, telt niet */AGL=true;drawPlan()}catch(e){AGL=true}}
+// v196: agenda live (onSnapshot): nieuwe status van de monteur (bezig/verstuurd/gereed) verschijnt vanzelf
+var AGU=null;
+function agMap(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;var p=String(o.pd||'').split('-'),st=p.length===3?new Date(+p[0],+p[1]-1,+p[2]).getTime():0;if(o.verstuurd&&o.verstuurd<st){o.verstuurd=0;o.gereed='';o.repm=false}return o}
+async function loadAg(){var d=new Date();d.setDate(d.getDate()-60);var q0=db.collection('agenda').where('pd','>=',isoD(d));
+ if(!AGU&&q0.onSnapshot){try{AGU=q0.onSnapshot(function(q){AG=q.docs.map(agMap);AGL=true;drawPlan()},function(){AGU=null});AGL=true;return}catch(e){AGU=null}}
+ try{var q=await q0.get();AG=q.docs.map(agMap);AGL=true;drawPlan()}catch(e){AGL=true}}
 function agTijd(o){if(!o.pt)return '––:––';if(!o.min)return o.pt;var p=o.pt.split(':'),m=(+p[0])*60+(+p[1])+o.min;return o.pt+'–'+p2(Math.floor(m/60)%24)+':'+p2(m%60)}
 function agKort(o){var e=String(o.oms||'').split('\n')[0];return o.wb?(o.wb+' · '+(o.klant||'')+(o.plaats?', '+String(o.plaats).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):'')):e}
 // pagina's met woorden + positie: tekst uit de PDF, of (foto/scan zonder tekst) via tekstherkenning

@@ -93,8 +93,16 @@ exports.pushAgenda = onDocumentCreated({document: 'agendaimport/{id}', secrets: 
   const d = (ev.data && ev.data.data()) || {};
   if (!d.voor || !(await planAan())) return;
   const dt = (iso) => { const p = String(iso || '').split('-'); if (p.length !== 3) return ''; const x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); return DGN[x.getUTCDay()] + ' ' + (+p[2]) + '-' + (+p[1]); };
+  const per = d.van ? ' (' + dt(d.van) + (d.tot && d.tot !== d.van ? ' t/m ' + dt(d.tot) : '') + ')' : '';
+  const w = Array.isArray(d.wijz) ? d.wijz : [];
+  if (d.eerste === false && !(d.bij || d.weg || d.gew)) return; // zelfde agenda opnieuw: geen melding
+  if (d.eerste === false) {
+    await sendTo(d.voor, {title: 'Planning gewijzigd' + per, body: w.slice(0, 3).join('\n') + (w.length > 3 ? '\n+ ' + (w.length - 3) + ' andere wijziging' + (w.length - 3 === 1 ? '' : 'en') : ''),
+      url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id)});
+    return;
+  }
   await sendTo(d.voor, {title: 'Nieuwe planning van kantoor',
-    body: (d.n || 0) + ((d.n === 1) ? ' afspraak' : ' afspraken') + (d.van ? ' (' + dt(d.van) + (d.tot && d.tot !== d.van ? ' t/m ' + dt(d.tot) : '') + ')' : '') + '. Tik om je planning te zien.',
+    body: (d.n || 0) + ((d.n === 1) ? ' afspraak' : ' afspraken') + per + '. Tik om je planning te zien.',
     url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id)});
 });
 
@@ -381,23 +389,29 @@ async function pdfWoorden(buf) {
   await doc.destroy();
   return P;
 }
-// agenda-regels opslaan voor één monteur; bestaande regels van die monteur in dezelfde periode worden vervangen
-async function zetAgenda(mt, regels, door, bestand, via) {
-  const van = regels.reduce((a, r) => (!a || r.pd < a ? r.pd : a), ''), tot = regels.reduce((a, r) => (r.pd > a ? r.pd : a), '');
-  const oud = await db.collection('agenda').where('voor', '==', mt.uid).get();
-  let weg = 0;
-  for (const d of oud.docs) { const pd = d.get('pd') || ''; if (pd >= van && pd <= tot) { await d.ref.delete(); weg++; } }
+// agenda-regels opslaan voor één monteur (v181): vergelijken met wat er al stond in dezelfde periode (van..tot van de hele PDF),
+// alleen echt gewijzigde afspraken aanpassen, vervallen afspraken weghalen; de wijzigingen gaan mee voor de pushmelding
+async function zetAgenda(mt, regels, door, bestand, via, van, tot) {
+  const A = require('./agenda-parse.js');
+  van = van || regels.reduce((a, r) => (!a || r.pd < a ? r.pd : a), ''); tot = tot || regels.reduce((a, r) => (r.pd > a ? r.pd : a), '');
+  const oudQ = await db.collection('agenda').where('voor', '==', mt.uid).get();
+  const oud = oudQ.docs.filter((d) => { const pd = d.get('pd') || ''; return pd >= van && pd <= tot; });
+  const vg = A.vergelijk(oud.map((d) => d.data() || {}), regels), ids = A.docIds(mt.uid, regels), houd = new Set(ids);
   const imp = db.collection('agendaimport').doc(), t = Date.now();
   let b = db.batch(), n = 0;
-  for (const r of regels) {
-    b.set(db.collection('agenda').doc(), {voor: mt.uid, voorMail: String(mt.email || '').toLowerCase(), voorNaam: mt.naam || '', pd: r.pd, pt: r.pt || '', duur: r.duur || '', min: r.min || 0,
+  const tel = async () => { if (++n % 400 === 0) { await b.commit(); b = db.batch(); } };
+  for (const d of oud) if (!houd.has(d.id)) { b.delete(d.ref); await tel(); }
+  for (let i = 0; i < regels.length; i++) {
+    const r = regels[i];
+    b.set(db.collection('agenda').doc(ids[i]), {voor: mt.uid, voorMail: String(mt.email || '').toLowerCase(), voorNaam: mt.naam || '', pd: r.pd, pt: r.pt || '', duur: r.duur || '', min: r.min || 0,
       wb: tekst(r.wb, 12), inst: tekst(r.inst, 40), klant: tekst(r.klant, 120), adres: tekst(r.adres, 160), plaats: tekst(r.plaats, 80), tel: tekst(r.tel, 40), oms: tekst(r.oms, 800),
       imp: imp.id, t, door, bestand: tekst(bestand, 120)});
-    if (++n % 400 === 0) { await b.commit(); b = db.batch(); }
+    await tel();
   }
   await b.commit();
-  await imp.set({voor: mt.uid, voorNaam: mt.naam || '', voorMail: String(mt.email || '').toLowerCase(), door, t, n: regels.length, van, tot, weg, bestand: tekst(bestand, 120), via});
-  return {van, tot, weg};
+  await imp.set({voor: mt.uid, voorNaam: mt.naam || '', voorMail: String(mt.email || '').toLowerCase(), door, t, n: regels.length, van, tot,
+    bij: vg.bij, weg: vg.weg, gew: vg.gew, eerste: vg.eerste, wijz: vg.regels.slice(0, 20).map((x) => tekst(x, 160)), bestand: tekst(bestand, 120), via});
+  return {van, tot, vg};
 }
 async function verwerkAgendaMail(m, van, logRef, cache) {
   const A = require('./agenda-parse.js');
@@ -414,10 +428,13 @@ async function verwerkAgendaMail(m, van, logRef, cache) {
     r.fouten.forEach((f) => fouten.push((b.naam || 'agenda') + ': ' + f));
     if (!r.regels.length) { fouten.push((b.naam || 'agenda') + ': geen afspraken gevonden. Is dit de "Agenda servicemonteurs"?'); continue; }
     const V = A.verdeel(r.regels, cache.lijst);
+    const pvan = r.regels.reduce((a, x) => (!a || x.pd < a ? x.pd : a), ''), ptot = r.regels.reduce((a, x) => (x.pd > a ? x.pd : a), '');
     V.los.forEach((x) => fouten.push('Monteur "' + (x.monteur || '?') + '" (' + x.pd + ' ' + x.pt + ') niet gevonden in de app; die regel is overgeslagen.'));
     for (const g of V.groepen) {
-      const z = await zetAgenda(g.mt, g.regels, van, b.naam || 'agenda.pdf', 'mail');
-      goed.push('- ' + (g.mt.naam || g.mt.email) + ': ' + g.regels.length + (g.regels.length === 1 ? ' afspraak' : ' afspraken') + ' (' + z.van + ' t/m ' + z.tot + ')' + (z.weg ? ', ' + z.weg + ' oude vervangen' : ''));
+      const z = await zetAgenda(g.mt, g.regels, van, b.naam || 'agenda.pdf', 'mail', pvan, ptot), v = z.vg;
+      goed.push('- ' + (g.mt.naam || g.mt.email) + ': ' + g.regels.length + (g.regels.length === 1 ? ' afspraak' : ' afspraken') +
+        (v.eerste ? ' (nieuw)' : (v.bij + v.weg + v.gew ? ' (' + [v.gew ? v.gew + ' gewijzigd' : '', v.bij ? v.bij + ' nieuw' : '', v.weg ? v.weg + ' vervallen' : ''].filter(Boolean).join(', ') + ')' : ' (ongewijzigd, geen melding)')) +
+        (!v.eerste && v.regels.length ? '\n    ' + v.regels.slice(0, 8).join('\n    ') : ''));
     }
   }
   const aan = await planAan();

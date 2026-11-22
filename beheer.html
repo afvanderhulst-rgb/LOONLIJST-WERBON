@@ -426,6 +426,9 @@ async function loadBlog(){var el=$('blogl');el.innerHTML='<p class="mu">Laden…
   el.innerHTML=a.length?a.map(function(o){return '<div style="padding:6px 0;border-top:1px solid var(--bd)"><span class="mu">'+ee(fd(o.t))+' · '+ee(o.door)+'</span><br><b>'+ee(o.actie)+'</b> '+ee((/^\d+$/.test(o.wb)?'werkbon ':'')+o.wb)+(o.klant?' · '+ee(o.klant):'')+(o.voor?' · voor '+ee(o.voor):'')+(o.naar?' → '+ee(o.naar):'')+'</div>'}).join(''):'<p class="mu">Nog niets vastgelegd.</p>'}
  catch(e){el.innerHTML='<div class="er">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</div>'}}
 $('blog').onclick=loadBlog;
+// v188: deze accounts (test/beheer) komen niet in de planning en de agenda
+var PLAN_NIET=['a.f.vanderhulst@gmail.com'];
+function planMonteurs(){return monteurs().filter(function(u){return PLAN_NIET.indexOf(String(u.email||'').toLowerCase())<0})}
 function monteurs(){return USERS.filter(function(u){return u.email}).slice().sort(function(a,b){return uLabel(a).localeCompare(uLabel(b))})}
 function opts(sel){return '<option value="">Kies monteur…</option>'+monteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===sel?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')}
 function gTitle(g,name){var a=String((g&&g.wadres)||'').split(NL);return (g&&g.wb?'Werkbon '+g.wb:name)+(a[0]?' · '+a[0]:'')}
@@ -531,7 +534,7 @@ function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;
  $('plOff').textContent=PLANON?'':'Nog uit: alleen jij ziet de planning. Aanzetten: beheer.html > Instellingen.';
  var ma=maandagVan(PLW),dagen=[];for(var i=0;i<6;i++){var d=new Date(ma);d.setDate(ma.getDate()+i);dagen.push(d)}
  var za=dagen[5];$('plWk').textContent='Week '+weekNr(ma)+' · '+ma.getDate()+'-'+(ma.getMonth()+1)+' t/m '+za.getDate()+'-'+(za.getMonth()+1)+'-'+za.getFullYear();
- var vandaag=isoD(new Date()),ds=dagen.map(isoD),M=monteurs();
+ var vandaag=isoD(new Date()),ds=dagen.map(isoD),M=planMonteurs();
  var gepland=SENT.filter(function(o){return o.voor&&o.pd}),un=SENT.filter(function(o){return o.status==='klaar'&&(!o.voor||!o.pd)});
  // nog in te plannen
  $('plN').textContent=un.length;
@@ -562,7 +565,7 @@ async function plZet(id,w,stil){var o=plO(id);if(!o)return false;var d={pv:Date.
 function plDlg(id){var o=plO(id),dl=$('plDlg');if(!o)return;var g=o.g||{},a=String(g.wadres||'').split(NL);
  dl.innerHTML='<div class="card"><b>'+ee(g.wb?'Werkbon '+g.wb:o.bestand)+'</b><div class="mu">'+ee(a.filter(Boolean).join(', '))+'</div>'+(g.storing?'<div style="margin-top:4px">'+ee(String(g.storing).split(NL).join(' '))+'</div>':'')+
   (o.status==='opgehaald'?'<p class="mu" style="color:#9a5a00">De monteur heeft deze bon al overgenomen'+(o.verstuurd?' en verstuurd':'')+'.</p>':'')+
-  '<label>Monteur</label><select id="pdM"><option value="">— nog geen monteur —</option>'+monteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===o.voor?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
+  '<label>Monteur</label><select id="pdM"><option value="">— nog geen monteur —</option>'+planMonteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===o.voor?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
   '<div style="display:flex;gap:8px"><div style="flex:1"><label>Dag</label><input type="date" id="pdD" value="'+ee(o.pd||daIso(g.da)||'')+'"></div><div style="flex:1"><label>Tijd</label><input type="time" id="pdT" value="'+ee(o.pt||g.tijd||'')+'"></div></div>'+
   '<label>Opmerking voor de monteur</label><input id="pdO" maxlength="300" value="'+ee(o.opm||'')+'">'+
   '<div class="tools" style="margin:14px 0 0;flex-wrap:wrap"><button class="btn pr" type="button" id="pdS">Opslaan</button>'+(o.pd?'<button class="btn" type="button" id="pdU">Uit de planning</button>':'')+''+(o.parts?'<button class="btn" type="button" id="pdP">PDF</button>':'')+'<button class="btn" type="button" id="pdX">Sluiten</button></div><div class="mu" id="pdR"></div></div>';
@@ -616,7 +619,7 @@ async function agFiles(list){var f=[].slice.call(list||[]).filter(function(x){re
  var st=function(t){$('agSt').textContent=t};st('Agenda lezen…');
  try{var P=await agWoorden(await f.arrayBuffer(),st),r=window.mitAgenda.leesAgenda(P);
   if(!r.regels.length){st('');$('agSt').innerHTML='<span class="er">Geen afspraken gevonden. Is dit de "Agenda servicemonteurs"? '+ee(r.fouten.join(' '))+'</span>';return}
-  var V=window.mitAgenda.verdeel(r.regels,monteurs()),gr=V.groepen.map(function(g){return {uid:g.mt.uid,naam:g.regels[0].monteur,regels:g.regels}});
+  var V=window.mitAgenda.verdeel(r.regels,planMonteurs()),gr=V.groepen.map(function(g){return {uid:g.mt.uid,naam:g.regels[0].monteur,regels:g.regels}});
   if(V.los.length){var L2={};V.los.forEach(function(x){var k=x.monteur||'?';(L2[k]=L2[k]||[]).push(x)});Object.keys(L2).forEach(function(k){gr.push({uid:'',naam:k,regels:L2[k]})})}
   AGP={bestand:f.name,groepen:gr,fouten:r.fouten,van:r.regels.reduce(function(a,x){return !a||x.pd<a?x.pd:a},''),tot:r.regels.reduce(function(a,x){return x.pd>a?x.pd:a},'')};st('');if(!AGL)await loadAg();agDlg()}
  catch(e){st('');$('agSt').innerHTML='<span class="er">De PDF kon niet gelezen worden: '+ee((e&&e.message)||e)+'</span>'}}
@@ -625,7 +628,7 @@ function agDlg(){var dl=$('plDlg'),D=AGP;if(!D)return;
   (D.fouten.length?'<p class="er">'+ee(D.fouten.join(' '))+'</p>':'')+D.groepen.map(function(g,gi){var van=g.regels[0].pd,tot=g.regels[g.regels.length-1].pd;
    var uidK=g.uidK!=null?g.uidK:g.uid,vg=uidK?window.mitAgenda.vergelijk(AG.filter(function(a){return a.voor===uidK&&a.pd>=D.van&&a.pd<=D.tot}),g.regels):null;
    var wz=vg?(vg.eerste?'<div class="ok" style="font-size:14px">Nieuwe planning voor deze monteur.</div>':(vg.regels.length?'<div style="font-size:14px;color:#9a5a00"><b>Wijzigingen t.o.v. de vorige agenda:</b><br>'+vg.regels.slice(0,12).map(ee).join('<br>')+(vg.regels.length>12?'<br>…':'')+'</div>':'<div class="mu">Gelijk aan de vorige agenda: de monteur krijgt geen melding.</div>')):'';
-   return '<div style="border-top:1px solid var(--bd);padding-top:8px;margin-top:8px"><label>Monteur (op de agenda: '+ee(g.naam||'?')+')</label><select data-agm="'+gi+'"><option value="">— niet inlezen —</option>'+monteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===g.uid?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
+   return '<div style="border-top:1px solid var(--bd);padding-top:8px;margin-top:8px"><label>Monteur (op de agenda: '+ee(g.naam||'?')+')</label><select data-agm="'+gi+'"><option value="">— niet inlezen —</option>'+planMonteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===g.uid?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
     '<div class="mu" style="margin:6px 0">'+g.regels.length+' afspraken, '+ee(pdTxt({pd:van}))+' t/m '+ee(pdTxt({pd:tot}))+'</div>'+wz+'<div class="scroll"><table class="st"><tr><th>Dag</th><th>Tijd</th><th>Bon</th><th>Klant / plaats</th><th>Omschrijving</th></tr>'+
     g.regels.map(function(x){return '<tr><td>'+ee(pdTxt({pd:x.pd}))+'</td><td>'+ee(agTijd(x))+(x.duur?'<div class="mu">'+ee(x.duur)+' u</div>':'')+'</td><td>'+ee(x.wb||'')+'</td><td>'+ee(x.klant||'')+(x.plaats?'<div class="mu">'+ee(x.adres?x.adres+', ':'')+ee(x.plaats)+'</div>':'')+'</td><td>'+ee(x.oms||'').replace(/\n/g,'<br>')+'</td></tr>'}).join('')+'</table></div></div>'}).join('')+
   '<p class="mu" style="margin-top:10px">Periode van deze agenda: '+ee(pdTxt({pd:D.van}))+' t/m '+ee(pdTxt({pd:D.tot}))+'. Afspraken van deze monteur(s) in die periode die niet meer op de agenda staan, worden weggehaald.</p>'+

@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v182,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v183,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,14 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+ONLINE BACK-UPS: 7 IN PLAATS VAN 30 (v183)
+- Per monteur blijven nu de laatste 7 dagelijkse online back-ups bewaard (was 30). Scheelt opslag in Firebase.
+  Oudere back-ups worden bij de eerstvolgende back-up van die monteur vanzelf opgeruimd (app v183 nodig).
+- Het archief (users/<uid>/archief: elke werkbon en weeklijst los, met foto's/bijlagen) blijft ALTIJD bewaard;
+  daar verandert niets aan. Terughalen: tandwieltje > Account en online back-up > Archief.
+- De back-upbestanden op de computer (map MIT-BACKUP_) blijven 30 stuks.
+- Teksten in de app (Info/Privacy) en handleiding.pdf zijn aangepast.
 
 NIEUWE ICONEN (v182)
 - Werkbonnen: klembord met monteur met helm. Weeklijsten: lijst met persoon en euroteken. Mijn planning: agenda.
@@ -763,7 +771,7 @@ BON SCANNEN VAN EEN FOTO (v125)
 - Tips voor de monteur blijven: bon plat, hele bon in beeld, genoeg licht, scherp. Altijd even controleren.
 
 ONLINE BACK-UP: FOTO'S EN BIJLAGEN MAAR ÉÉN KEER (v124)
-- Per monteur blijven de laatste 30 back-ups bewaard (één per dag; later die dag overschrijft de back-up van die dag).
+- Per monteur blijven de laatste 30 back-ups bewaard (vanaf v183: 7) (één per dag; later die dag overschrijft de back-up van die dag).
 - Foto's en bijlagen staan nu één keer in Firebase (users/<uid>/att), niet meer in elke dag-back-up opnieuw.
   Een back-up (versie 2) bevat de bonnen en weeklijsten en verwijst naar de bijlagen. Dat scheelt tot 30x opslag.
 - Een bijlage wordt pas uit Firebase verwijderd als geen enkele van de bewaarde back-ups er nog naar verwijst

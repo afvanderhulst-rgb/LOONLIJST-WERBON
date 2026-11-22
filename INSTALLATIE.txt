@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v184,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v187,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,17 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+BON HANDMATIG AANMAKEN OP KANTOOR (v187)
+- kantoor.html > Bonnen klaarzetten > "+ Bon handmatig aanmaken (zonder PDF)", of in Planning > "Nog in te plannen" >
+  "+ Bon handmatig aanmaken". Voor bijv. een telefonische melding.
+- Velden: werkbonnummer (mag leeg), klant/naam*, adres, postcode en plaats, contactpersoon/telefoon,
+  storing/werkzaamheden*, monteur (mag leeg), dag + tijd (planning, mag leeg), opmerking voor de monteur.
+  * = verplicht. Een dag kan alleen met een monteur.
+- Zonder monteur: de bon staat in Planning bij "Nog in te plannen" en kan naar een monteur en dag worden gesleept.
+  Met monteur: hij krijgt de bon (met melding) bij "Klaargezet door kantoor"; met dag ook in "Mijn planning".
+- Overnemen in de app maakt een werkbon met alle ingevulde gegevens (ook datum als die is ingevuld). Er is geen PDF:
+  de knoppen "PDF bekijken"/"PDF" verdwijnen dan; op kantoor staat "handmatig" bij de bon.
 
 APP CHECK: WIE IS NOG NIET KLAAR? (v186)
 - beheer.html > Systeem > bovenaan "App Check: klaar voor Enforce?": hoeveel gebruikers klaar zijn en wie nog niet,

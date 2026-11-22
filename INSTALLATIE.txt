@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v194,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v195,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,12 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+GEREED ALLEEN BIJ VERSTUREN OP/NA DE GEPLANDE DAG (v195)
+- Een agenda-afspraak wordt pas groen/rood als de werkbon met dat bonnummer OP of NA de geplande dag is verstuurd.
+  Een werkbon met hetzelfde nummer die eerder al eens verstuurd was (vorig bezoek) telt niet meer.
+- Foute groene/rode afspraken van v192-v194 worden vanzelf weer blauw (kantoor ziet het direct; de app van de
+  monteur herstelt het ook in Firestore).
 
 EIGEN WERKBONNEN IN HET ROOSTER + FILTER OP MONTEUR (v194)
 - Een werkbon die de monteur zelf heeft gemaakt (niet klaargezet, niet in de agenda) komt na het versturen ook in het

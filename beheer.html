@@ -627,7 +627,7 @@ function ebInfo(id){var e=BL.filter(function(x){return x.id===id})[0],dl=$('plDl
  dl.hidden=false;dl.onclick=function(x){if(x.target===dl)dl.hidden=true};$('ebC').onclick=function(){dl.hidden=true}}
 /* ---------- agenda-PDF inlezen (v180) ---------- */
 var AG=[],AGL=false,AGP=null;
-async function loadAg(){try{var d=new Date();d.setDate(d.getDate()-60);var q=await db.collection('agenda').where('pd','>=',isoD(d)).get();AG=q.docs.map(function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o});AGL=true;drawPlan()}catch(e){AGL=true}}
+async function loadAg(){try{var d=new Date();d.setDate(d.getDate()-60);var q=await db.collection('agenda').where('pd','>=',isoD(d)).get();AG=q.docs.map(function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;var p=String(o.pd||'').split('-'),st=p.length===3?new Date(+p[0],+p[1]-1,+p[2]).getTime():0;if(o.verstuurd&&o.verstuurd<st){o.verstuurd=0;o.gereed='';o.repm=false}return o});/* v195: eerder verstuurd = vorige keer, telt niet */AGL=true;drawPlan()}catch(e){AGL=true}}
 function agTijd(o){if(!o.pt)return '––:––';if(!o.min)return o.pt;var p=o.pt.split(':'),m=(+p[0])*60+(+p[1])+o.min;return o.pt+'–'+p2(Math.floor(m/60)%24)+':'+p2(m%60)}
 function agKort(o){var e=String(o.oms||'').split('\n')[0];return o.wb?(o.wb+' · '+(o.klant||'')+(o.plaats?', '+String(o.plaats).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):'')):e}
 // pagina's met woorden + positie: tekst uit de PDF, of (foto/scan zonder tekst) via tekstherkenning

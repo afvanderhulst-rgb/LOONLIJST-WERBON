@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v183,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v184,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,10 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+STORINGSROOSTER MET JAARTAL (v184)
+- Alle datums van het storingsrooster in de app hebben nu het jaartal: kaart op het startscherm, overzicht
+  (wie heeft dienst, mijn diensten, hele rooster) en de herinneringen. Bijv. "vr 27 nov 2026 08:00".
 
 ONLINE BACK-UPS: 7 IN PLAATS VAN 30 (v183)
 - Per monteur blijven nu de laatste 7 dagelijkse online back-ups bewaard (was 30). Scheelt opslag in Firebase.

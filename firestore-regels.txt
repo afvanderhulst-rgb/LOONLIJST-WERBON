@@ -128,6 +128,13 @@ service cloud.firestore {
         && request.resource.data.dagen is list && request.resource.data.dagen.size() <= 14;
       allow delete: if isBeheerder();
     }
+    // v197: verstuurde werkbon-PDF's (schrijft alleen de server); kantoor en beheerder mogen ze openen
+    match /bonpdf/{id} {
+      allow read: if isBeheerder() || isKantoor();
+      match /parts/{p} {
+        allow read: if isBeheerder() || isKantoor();
+      }
+    }
     match /agendaimport/{id} {
       allow read: if isBeheerder() || isKantoor();
       allow create: if (isBeheerder() || isKantoor())

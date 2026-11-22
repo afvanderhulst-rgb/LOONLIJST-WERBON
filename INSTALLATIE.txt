@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v195,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v197,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,15 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+VERSTUURDE WERKBON (PDF) OPENEN OP KANTOOR (v197)
+- Klik in de planning op een verstuurde bon (groen/rood/REP), of in "Klaargezet" op "Verstuurde bon":
+  knop "Verstuurde werkbon (PDF)" opent precies de PDF die naar kantoor is gemaild (met uren, werkzaamheden,
+  materialen, handtekeningen en Werk gereed / Reparatiemelding).
+- Werkt voor werkbonnen die direct via de app naar kantoor zijn gemaild met app-versie 197 of nieuwer. Niet voor
+  "Via mijn mail-app" en niet voor bonnen van vóór v197.
+- De server bewaart de PDF (tot 8 MB) in Firestore (bonpdf/) bij het mailen; de functie "opruimen" haalt ze elke nacht
+  na 120 dagen weg. Firestore-regels: alleen kantoor en beheerder mogen ze lezen.
 
 PLANNING OP KANTOOR WERKT LIVE BIJ (v196)
 - Ook agenda-afspraken en werkbonnen die de monteur zelf maakte werken nu vanzelf bij in het weekrooster

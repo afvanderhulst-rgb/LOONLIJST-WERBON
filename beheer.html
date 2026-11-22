@@ -163,10 +163,10 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="card"><b>Planning (agenda)</b><p class="mu">Kantoor plant werkbonnen per monteur en per dag in (kantoor.html &gt; Planning); de monteur ziet ze in de app bij "Mijn planning". Zolang dit uit staat, ziet alleen de beheerder de planning (om te testen); kantoor en monteurs zien niets.</p>
    <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="plChk" style="width:20px;height:20px"> Planning tonen voor kantoor en monteurs</label>
    <div id="plRes" class="mu" style="margin-top:8px"></div></div>
-  <div class="card"><b>Verlof, ADV en ziek (saldo per jaar)</b><p class="mu">In de app bij tandwieltje &gt; "Verlof, ADV en ziek": per jaar hoeveel verlof- en ADV-uren de monteur heeft opgenomen en nog over heeft, en hoeveel hij ziek was. Geteld uit de regels Verlof, ADV en Ziek op zijn weeklijsten. Zolang dit uit staat, ziet alleen de beheerder het (om te testen).</p>
+  <div class="card"><b>Verlof, ADV en ziek (saldo per jaar)</b><p class="mu">In de app bij tandwieltje &gt; "Verlof, ADV en ziek": per jaar hoeveel vrije dagen (verlof + ADV samen) de monteur heeft opgenomen en nog over heeft, en hoeveel hij ziek was. Wat over is gaat mee naar het volgende jaar. Geteld uit de regels Verlof, ADV en Ziek op zijn weeklijsten. Zolang dit uit staat, ziet alleen de beheerder het (om te testen).</p>
    <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="slChk" style="width:20px;height:20px"> Tonen voor alle medewerkers</label>
-   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"><div style="flex:1;min-width:160px"><label for="slVrij">Standaard verlof per jaar (uren)</label><input id="slVrij" inputmode="decimal" placeholder="bijv. 200"></div><div style="flex:1;min-width:160px"><label for="slAdv">Standaard ADV per jaar (uren)</label><input id="slAdv" inputmode="decimal" placeholder="bijv. 104"></div></div>
-   <p class="mu" style="margin-top:6px">De monteur kan zijn eigen tegoed per jaar zelf aanpassen (bijv. parttime of meegenomen uren); leeg laten = deze standaard.</p>
+   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"><div style="flex:1;min-width:160px"><label for="slVrij">Vrije dagen per jaar</label><input id="slVrij" inputmode="decimal" placeholder="25"></div><div style="flex:1;min-width:160px"><label for="slAdv">ADV-dagen per jaar</label><input id="slAdv" inputmode="decimal" placeholder="13"></div></div>
+   <p class="mu" style="margin-top:6px">De monteur kan zijn eigen tegoed per jaar zelf aanpassen (bijv. parttime of meegenomen uren); leeg laten = deze standaard. 1 dag = 8 uur.</p>
    <div class="tools" style="margin:0"><button class="btn pr" id="slSave" type="button">Opslaan</button></div>
    <div id="slRes" class="mu" style="margin-top:8px"></div></div>
   <div class="card"><b>Afzendercontrole bij klaarzetten per mail</b><p class="mu">Een bon die naar &lt;monteur&gt;@mit-werkbon.com wordt gemaild, wordt alleen klaargezet als de server kan controleren dat de mail echt van de afzender komt (DMARC, DKIM of SPF van het eigen domein). Komt een echte mail van kantoor toch niet door? De afzender krijgt dan een mail met de reden; je ziet hem ook in Firestore bij <code>inboundlog</code>. Zet dit dan tijdelijk uit en vraag de ICT van kantoor om DKIM en DMARC in te stellen.</p>
@@ -583,7 +583,7 @@ async function loadKeep(){try{var d=await db.collection('instellingen').doc('app
  if(!$('kpSel').querySelector('option[value="'+v+'"]')){var op=document.createElement('option');op.value=v;op.textContent=v+' dagen';$('kpSel').appendChild(op)}
  $('kvChk').checked=o.kantoorVast===true;$('kvAdr').value=o.kantoorAdres||'storingen@mit-installatietechniek.com';$('kvRes').textContent=o.kantoorVast===true?'Nu: alle werkbonnen gaan naar '+(o.kantoorAdres||'storingen@mit-installatietechniek.com')+'.':'Nu: uit (monteur kan het adres zelf aanpassen).';
  $('plChk').checked=!!o.planAan;PLANON=!!o.planAan;$('plRes').textContent=o.planAan?'Nu: aan. Kantoor en monteurs zien de planning.':'Nu: uit. Alleen jij (beheerder) ziet de planning.';
- $('slChk').checked=!!o.saldoAan;$('slVrij').value=o.saldoVrij?String(o.saldoVrij).replace('.',','):'';$('slAdv').value=o.saldoAdv?String(o.saldoAdv).replace('.',','):'';
+ $('slChk').checked=!!o.saldoAan;$('slVrij').value=String(o.saldoVrijDag!=null?o.saldoVrijDag:25).replace('.',',');$('slAdv').value=String(o.saldoAdvDag!=null?o.saldoAdvDag:13).replace('.',',');
  $('slRes').textContent=o.saldoAan?'Nu: aan voor alle medewerkers.':'Nu: uit. Alleen de beheerder ziet het in de app.';
  $('afChk').checked=o.afzenderStreng!==false;$('afRes').textContent=o.afzenderStreng!==false?'Nu: streng (standaard).':'Nu: uit. Alleen aantoonbaar vervalste mail wordt geweigerd.';
  $('kmChk').checked=!!o.klantMat;$('kmRes').textContent=o.klantMat?'Nu: klant ziet de materialen.':'Nu: klant ziet géén materialen (standaard).';
@@ -600,9 +600,9 @@ $('kvSave').onclick=async function(){var b=this,on=$('kvChk').checked,a=String($
 $('plChk').onchange=async function(){var c=this,v=!!c.checked;c.disabled=true;
  try{await db.collection('instellingen').doc('app').set({planAan:v,t:Date.now(),door:auth.currentUser.email},{merge:true});PLANON=v;$('plRes').textContent=v?'Opgeslagen: aan. Kantoor ziet het tabblad Planning; monteurs zien "Mijn planning" in de app (na openen of binnen 2 minuten).':'Opgeslagen: uit. Alleen jij (beheerder) ziet de planning.'}
  catch(e){c.checked=!v;$('plRes').textContent='Opslaan mislukt: '+err(e)}c.disabled=false};
-$('slSave').onclick=async function(){var b=this,num=function(v){v=String(v||'').trim().replace(',','.');return v===''?0:parseFloat(v)},vr=num($('slVrij').value),ad=num($('slAdv').value),on=$('slChk').checked;
- if(isNaN(vr)||isNaN(ad)||vr<0||ad<0||vr>2000||ad>2000){$('slRes').innerHTML='<span class="er">Vul de uren in als getal (bijv. 200 of 104,5).</span>';return}
- b.disabled=true;try{await db.collection('instellingen').doc('app').set({saldoAan:on,saldoVrij:vr,saldoAdv:ad,t:Date.now(),door:auth.currentUser.email},{merge:true});
+$('slSave').onclick=async function(){var b=this,num=function(v){v=String(v||'').trim().replace(',','.');return v===''?0:parseFloat(v)},vr=String($('slVrij').value).trim()===''?25:num($('slVrij').value),ad=String($('slAdv').value).trim()===''?13:num($('slAdv').value),on=$('slChk').checked;
+ if(isNaN(vr)||isNaN(ad)||vr<0||ad<0||vr>366||ad>366){$('slRes').innerHTML='<span class="er">Vul het aantal dagen in als getal (bijv. 25 of 12,5).</span>';return}
+ b.disabled=true;try{await db.collection('instellingen').doc('app').set({saldoAan:on,saldoVrijDag:vr,saldoAdvDag:ad,t:Date.now(),door:auth.currentUser.email},{merge:true});
   $('slRes').textContent=(on?'Opgeslagen: aan voor alle medewerkers.':'Opgeslagen: uit (alleen de beheerder ziet het).')+' De telefoons nemen dit over bij het openen van de app.'}
  catch(e){$('slRes').textContent='Opslaan mislukt: '+err(e)}b.disabled=false};
 $('slChk').onchange=function(){$('slSave').click()};

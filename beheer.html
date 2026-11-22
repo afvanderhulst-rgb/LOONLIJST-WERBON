@@ -190,7 +190,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="plw">
    <div class="card"><b>Nog in te plannen (<span id="plN">0</span>)</b><p class="mu">Sleep een bon naar een monteur en een dag, of klik erop. Nieuwe PDF's kun je hier ook in slepen; ze staan dan klaar om in te plannen.</p>
     <div id="plDrop" class="pldrop">Sleep PDF's hierheen<br><label class="btn sm" style="display:inline-block;margin-top:8px;cursor:pointer">Bestanden kiezen<input type="file" id="plFile" accept="application/pdf,.pdf" multiple hidden></label></div>
-    <div class="mu" id="plSt"></div><div id="plUn"></div>
+    <div style="margin:6px 0"><button class="btn sm" type="button" id="hbNew2">+ Bon handmatig aanmaken</button></div><div class="mu" id="plSt"></div><div id="plUn"></div>
     <div style="border-top:1px solid var(--bd);margin-top:14px;padding-top:10px"><b style="font-size:15px">Agenda inlezen (PDF)</b><p class="mu" style="margin:4px 0">De "Agenda servicemonteurs" van de planner: alle afspraken (ook Diversen, Zaak, Storingsdienst) komen in de planning van de monteur. Ook een foto/scan kan. Of mail hem naar <b>agenda@mit-werkbon.com</b>.</p>
     <div id="agDrop" class="pldrop">Sleep de agenda-PDF hierheen<br><label class="btn sm" style="display:inline-block;margin-top:8px;cursor:pointer">Agenda kiezen<input type="file" id="agFile" accept="application/pdf,.pdf" hidden></label></div><div class="mu" id="agSt"></div></div></div>
    <div class="card"><div class="plwk"><button class="btn sm" type="button" id="plPrev">‹</button><b id="plWk"></b><button class="btn sm" type="button" id="plNext">›</button><button class="btn sm" type="button" id="plNow">Deze week</button><span class="mu" id="plOff" style="margin-left:auto"></span></div>
@@ -209,6 +209,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="card"><b>Werkbon klaarzetten voor een monteur</b>
    <p class="mu">Sleep een of meer werkbon-PDF's hierheen (of kies ze). Kies per bon de monteur en zet eventueel een opmerking erbij. De bon verschijnt op het startscherm van zijn app; hij tikt op Overnemen en de gegevens staan in een nieuwe bon.</p>
    <div id="bdrop" style="border:2px dashed var(--bd);border-radius:12px;padding:22px 12px;text-align:center;color:var(--mu)">Sleep PDF's hierheen<br><label class="btn" style="display:inline-block;margin-top:10px;cursor:pointer">Bestanden kiezen<input id="bfile" type="file" accept="application/pdf,.pdf" multiple hidden></label></div>
+   <div style="margin-top:10px"><button class="btn" type="button" id="hbNew">+ Bon handmatig aanmaken (zonder PDF)</button></div>
    <div id="bnew"></div></div>
   <div class="card" id="mailAdrC" hidden><b>Klaarzetten per mail</b><p class="mu">Je kunt een werkbon ook klaarzetten door de PDF vanuit Outlook te mailen naar het adres van de monteur hieronder. Onderwerp mag van alles zijn; de tekst van de mail wordt de opmerking bij de bon. Meerdere PDF's in één mail = meerdere bonnen. Alleen mails van kantoor-collega's en de beheerder worden aangenomen; je krijgt altijd een mail terug of het gelukt is. Tip: zet de adressen in Outlook als contactpersoon (bijv. "Werkbon - Jan Jansen").</p>
    <div id="mailAdrL"></div>
@@ -230,6 +231,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
    <button class="btn" id="klog" type="button">Wijzigingen tonen</button><div id="klogl" style="margin-top:10px"></div></div>
  </div>
 </main>
+<div id="hbDlg" hidden style="position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px"></div>
 <div id="ksDlg" hidden style="position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px"><div class="card" style="width:100%;max-width:520px;max-height:92vh;overflow:auto;margin:0">
  <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Instellingen kantoor</b><button class="btn sm" type="button" id="ksX">Sluiten</button></div>
  <h2 class="sh">Toegang tot kantoor.html</h2>
@@ -500,7 +502,7 @@ function drawSent(){var el=$('bsent');if(!el)return;if(el.contains(document.acti
  if(!SENT.length){el.innerHTML='<p class="mu">Nog niets klaargezet.</p>';return}
  if(!L.length){el.innerHTML='<p class="mu">Niets gevonden met deze filters.</p>';return}
  var tag=function(o){var klaar=o.status==='klaar';return '<span class="tag'+(klaar?'':' ok')+'" style="margin:0">'+(klaar?'klaargezet':'opgehaald '+ee(fd(o.opgehaald)))+'</span>'};
- var acties=function(o,i){var klaar=o.status==='klaar';return '<button class="btn sm" type="button" data-sp="'+i+'">PDF</button>'+
+ var acties=function(o,i){var klaar=o.status==='klaar';return (o.parts?'<button class="btn sm" type="button" data-sp="'+i+'">PDF</button>':'<span class="tag" style="margin:0">handmatig</span>')+
   (klaar?'<select data-sm="'+i+'"><option value="">Verplaatsen naar…</option>'+monteurs().filter(function(u){return u.uid!==o.voor}).map(function(u){return '<option value="'+ee(u.uid)+'">'+ee(uLabel(u))+'</option>'}).join('')+'</select><button class="btn sm dg" type="button" data-sx="'+i+'">Intrekken</button>':'')};
  if(KP&&WIDE&&WIDE.matches){
   el.innerHTML='<table class="st"><thead><tr><th>Werkbon</th><th>Monteur</th><th>Klaargezet</th><th>Status</th><th></th></tr></thead><tbody>'+L.map(function(i){var o=SENT[i];
@@ -563,12 +565,12 @@ function plDlg(id){var o=plO(id),dl=$('plDlg');if(!o)return;var g=o.g||{},a=Stri
   '<label>Monteur</label><select id="pdM"><option value="">— nog geen monteur —</option>'+monteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===o.voor?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
   '<div style="display:flex;gap:8px"><div style="flex:1"><label>Dag</label><input type="date" id="pdD" value="'+ee(o.pd||daIso(g.da)||'')+'"></div><div style="flex:1"><label>Tijd</label><input type="time" id="pdT" value="'+ee(o.pt||g.tijd||'')+'"></div></div>'+
   '<label>Opmerking voor de monteur</label><input id="pdO" maxlength="300" value="'+ee(o.opm||'')+'">'+
-  '<div class="tools" style="margin:14px 0 0;flex-wrap:wrap"><button class="btn pr" type="button" id="pdS">Opslaan</button>'+(o.pd?'<button class="btn" type="button" id="pdU">Uit de planning</button>':'')+'<button class="btn" type="button" id="pdP">PDF</button><button class="btn" type="button" id="pdX">Sluiten</button></div><div class="mu" id="pdR"></div></div>';
+  '<div class="tools" style="margin:14px 0 0;flex-wrap:wrap"><button class="btn pr" type="button" id="pdS">Opslaan</button>'+(o.pd?'<button class="btn" type="button" id="pdU">Uit de planning</button>':'')+''+(o.parts?'<button class="btn" type="button" id="pdP">PDF</button>':'')+'<button class="btn" type="button" id="pdX">Sluiten</button></div><div class="mu" id="pdR"></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('pdX').onclick=function(){dl.hidden=true};
  $('pdS').onclick=async function(){var b=this,m=$('pdM').value,dd=$('pdD').value;if(dd&&!m){$('pdR').innerHTML='<span class="er">Kies een monteur, of maak de dag leeg.</span>';return}
   b.disabled=true;if(await plZet(id,{voor:m,pd:dd,pt:$('pdT').value,opm:$('pdO').value.trim()}))dl.hidden=true;else b.disabled=false};
  if($('pdU'))$('pdU').onclick=async function(){this.disabled=true;if(await plZet(id,{pd:'',pt:''}))dl.hidden=true};
- $('pdP').onclick=async function(){var b=this,w=window.open('','_blank');b.disabled=true;try{var url=URL.createObjectURL(await pdfOf(o.ref,o.parts));if(w)w.location.href=url;else location.href=url}catch(e){if(w)w.close();alert0('PDF openen mislukt: '+err(e))}b.disabled=false}}
+ if($('pdP'))$('pdP').onclick=async function(){var b=this,w=window.open('','_blank');b.disabled=true;try{var url=URL.createObjectURL(await pdfOf(o.ref,o.parts));if(w)w.location.href=url;else location.href=url}catch(e){if(w)w.close();alert0('PDF openen mislukt: '+err(e))}b.disabled=false}}
 // PDF's direct in de planning: klaarzetten zonder monteur (komt bij "Nog in te plannen")
 async function plFiles(list){var fs=[].slice.call(list||[]).filter(function(f){return /pdf/i.test(f.type)||/\.pdf$/i.test(f.name)});if(!fs.length){alert0('Alleen PDF-bestanden.');return}
  var ok=0;for(var i=0;i<fs.length;i++){$('plSt').textContent='Bezig: '+(i+1)+' van '+fs.length+'…';var o=await readBon(fs[i]);if(!o.b64){continue}
@@ -654,6 +656,35 @@ function agInfo(id){var o=AG.filter(function(x){return x.id===id})[0],dl=$('plDl
 $('agFile').onchange=function(){agFiles(this.files);this.value=''};
 (function(){var d=$('agDrop');d.addEventListener('dragover',function(e){if([].indexOf.call(e.dataTransfer.types,'Files')>=0){e.preventDefault();e.stopPropagation();d.style.borderColor='var(--ac)'}});d.addEventListener('dragleave',function(){d.style.borderColor=''});
  d.addEventListener('drop',function(e){d.style.borderColor='';if(e.dataTransfer.files&&e.dataTransfer.files.length){e.preventDefault();e.stopPropagation();agFiles(e.dataTransfer.files)}})})();
+/* ---------- bon handmatig aanmaken, zonder PDF (v187) ---------- */
+function hbOpen(voor,pd){var M=monteurs(),dl=$('hbDlg');
+ dl.innerHTML='<div class="card" style="width:100%;max-width:560px;max-height:92vh;overflow:auto;margin:0"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Bon handmatig aanmaken</b><button class="btn sm" type="button" id="hbX">Sluiten</button></div>'+
+  '<p class="mu">Voor een bon zonder PDF (bijv. telefonische melding). De monteur krijgt hem bij "Klaargezet door kantoor" en/of in zijn planning, en maakt er met Overnemen een werkbon van.</p>'+
+  '<label for="hbWb">Werkbonnummer (mag leeg)</label><input id="hbWb" inputmode="numeric" maxlength="12">'+
+  '<label for="hbN">Klant / naam *</label><input id="hbN" maxlength="120">'+
+  '<label for="hbA">Adres</label><input id="hbA" maxlength="160" placeholder="Straat en huisnummer">'+
+  '<label for="hbP">Postcode en plaats</label><input id="hbP" maxlength="80" placeholder="1234 AB Plaats">'+
+  '<label for="hbC">Contactpersoon / telefoon</label><input id="hbC" maxlength="120" placeholder="Mevr. Bakker 06 12345678">'+
+  '<label for="hbS">Storing / werkzaamheden volgens klant *</label><textarea id="hbS" rows="3" maxlength="1500" style="width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)"></textarea>'+
+  '<label for="hbM">Monteur (mag leeg: komt dan bij "Nog in te plannen")</label><select id="hbM" style="width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)"><option value="">— nog geen monteur —</option>'+M.map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===voor?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
+  '<div style="display:flex;gap:8px"><div style="flex:1"><label for="hbD">Dag (planning, mag leeg)</label><input type="date" id="hbD" value="'+ee(pd||'')+'"></div><div style="flex:1"><label for="hbT">Tijd</label><input type="time" id="hbT"></div></div>'+
+  '<label for="hbO">Opmerking voor de monteur</label><input id="hbO" maxlength="300" placeholder="bijv. sleutel bij de buren">'+
+  '<div class="tools" style="margin:14px 0 0"><button class="btn pr" type="button" id="hbOk">Bon aanmaken</button></div><div id="hbR" class="mu"></div></div>';
+ dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('hbX').onclick=function(){dl.hidden=true};setTimeout(function(){try{$('hbN').focus()}catch(e){}},50);
+ $('hbOk').onclick=async function(){var b=this,v=function(i){return String($(i).value||'').replace(/\s+$/,'').trim()},n=v('hbN'),st=String($('hbS').value||'').trim(),wb=v('hbWb').replace(/\s/g,''),m=$('hbM').value,d=$('hbD').value,t=$('hbT').value;
+  if(!n){$('hbR').innerHTML='<span class="er">Vul de klant / naam in.</span>';return}
+  if(!st){$('hbR').innerHTML='<span class="er">Vul de storing of de werkzaamheden in.</span>';return}
+  if(wb&&!/^\d{3,12}$/.test(wb)){$('hbR').innerHTML='<span class="er">Het werkbonnummer mag alleen cijfers bevatten.</span>';return}
+  if(d&&!m){$('hbR').innerHTML='<span class="er">Kies een monteur, of maak de dag leeg.</span>';return}
+  b.disabled=true;
+  try{var u=USERS.filter(function(x){return x.uid===m})[0]||{},p=d?d.split('-'):null,g={wb:wb,wadres:[n,v('hbA'),v('hbP'),v('hbC')].join(NL).replace(/\n+$/,''),storing:st};
+   if(p){g.da=(+p[2])+'-'+(+p[1])+'-'+p[0];if(t)g.tijd=t}
+   var id=Date.now()+'_'+Math.random().toString(36).slice(2,8),o={voor:m||'',voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||'',door:String(auth.currentUser.email||'').toLowerCase(),t:Date.now(),status:'klaar',bestand:'',size:0,parts:0,g:g,opm:v('hbO'),handmatig:true};
+   if(d){o.pd=d;o.pt=t||'';o.pv=Date.now()}
+   await db.collection('inbox').doc(id).set(o);blog('handmatig aangemaakt'+(d?' en ingepland':''),{g:g,voorNaam:u.naam,voorMail:u.email});
+   dl.hidden=true;kToast((wb?'Werkbon '+wb:'Bon')+' aangemaakt'+(m?' voor '+(u.naam||u.email):'')+(d?' op '+pdTxt({pd:d,pt:t}):'')+'.',5000);loadSent()}
+  catch(e){b.disabled=false;$('hbR').innerHTML='<span class="er">Niet gelukt: '+ee(err(e))+'</span>'}}}
+$('hbNew').onclick=function(){hbOpen(lastMon(),'')};$('hbNew2').onclick=function(){hbOpen('','')};
 /* ---------- kantoor: tandwiel > toegang tot kantoor.html (v185) ---------- */
 var KDOM='@mit-installatietechniek.com',KSL={};
 async function ksLoad(){var el=$('ksL');el.innerHTML='<p class="mu">Laden…</p>';

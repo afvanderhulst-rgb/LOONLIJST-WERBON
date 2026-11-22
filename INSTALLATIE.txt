@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v197,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v199,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,16 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+ZOEKEN IN DE PLANNING (v199)
+- Kantoor-app > Planning: zoekvak boven het weekrooster. Zoek op bonnummer, klant, adres, plaats, telefoon, omschrijving
+  of monteur (meerdere woorden mogen, bijv. "kerkstraat huizen"). Zoekt in klaargezette bonnen, agenda-afspraken en
+  verstuurde werkbonnen van de monteurs, nieuwste bovenaan, met status (gepland / bezig / gereed / niet gereed / REP).
+- Standaard de laatste 2 maanden. Vinkje "ook ouder (tot 1 jaar)" haalt eenmalig de oudere agenda en verstuurde bonnen op.
+- Klik op een resultaat: het rooster springt naar die week en de bon opent (met "Verstuurde werkbon (PDF)" als die er is).
+- Hersteld: sinds v195 meldde de app verstuurde eigen werkbonnen niet meer aan kantoor (dubbele rand in het rooster).
+  Werkt weer; bij het openen van de app (v199) worden de verstuurde bonnen van de laatste 60 dagen alsnog gemeld,
+  nu ook met adres en telefoon. Firestore-regels (bonlog) aangepast; gaat vanzelf via GitHub.
 
 BEHEER ZONDER KANTOORWERK (v198)
 - Beheer (beheer.html) toont alleen nog Gebruikers, Klanten, Instellingen en Systeem. Planning, Rooster en

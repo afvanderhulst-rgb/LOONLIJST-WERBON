@@ -103,6 +103,8 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 .pb b{display:block;font-size:12.5px}.pb.a{border-left-style:dotted}.pb.n{background:#fdeaea;border-color:#b3261e}.pb.e{border-left-style:double;border-left-width:5px;cursor:pointer}.pb .rp{display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#c25e00;color:#fff;font-size:10px;font-weight:700}.pb.z{background:#fff4e4;border-color:#d08700}.pb.k{background:#e7f6ec;border-color:#16693e}
 .pu{background:#fff;color:#14172e;border:1px dashed var(--ac);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px;cursor:grab}.pu b{display:block;font-size:14px}
 .pleg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mu);margin-top:10px}.pleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.plz{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.plz input[type=search]{flex:1;min-width:220px;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}.plz label{display:flex;gap:6px;align-items:center;margin:0;white-space:nowrap}
+#plZR{margin:0 0 12px}#plZR .zr{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--bd);border-left:4px solid #1a147f;border-radius:8px;margin-bottom:6px;cursor:pointer;background:var(--card)}#plZR .zr:hover{border-color:var(--ac)}#plZR .zr.k{border-left-color:#16693e}#plZR .zr.n{border-left-color:#b3261e}#plZR .zr.z{border-left-color:#d08700}#plZR .zd{flex:0 0 120px;font-weight:700;font-size:14px}#plZR .zt{flex:1;min-width:0;font-size:14px}
 #plDlg{position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px}#plDlg[hidden]{display:none}
 #plDlg .card{width:100%;max-width:460px;max-height:92vh;overflow:auto;margin:0}#plDlg select,#plDlg input{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}
 /* ---- kantoor op de computer (v169) ---- */
@@ -198,6 +200,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
     <div style="border-top:1px solid var(--bd);margin-top:14px;padding-top:10px"><b style="font-size:15px">Agenda inlezen (PDF)</b><p class="mu" style="margin:4px 0">De "Agenda servicemonteurs" van de planner: alle afspraken (ook Diversen, Zaak, Storingsdienst) komen in de planning van de monteur. Ook een foto/scan kan. Of mail hem naar <b>agenda@mit-werkbon.com</b>.</p>
     <div id="agDrop" class="pldrop">Sleep de agenda-PDF hierheen<br><label class="btn sm" style="display:inline-block;margin-top:8px;cursor:pointer">Agenda kiezen<input type="file" id="agFile" accept="application/pdf,.pdf" hidden></label></div><div class="mu" id="agSt"></div></div></div>
    <div class="card"><div class="plwk"><button class="btn sm" type="button" id="plPrev">‹</button><b id="plWk"></b><button class="btn sm" type="button" id="plNext">›</button><button class="btn sm" type="button" id="plNow">Deze week</button><select id="plMon" style="padding:6px 8px;border:1px solid var(--bd);border-radius:8px;font:inherit;font-size:14px;background:var(--bg);color:var(--tx)"><option value="">Alle monteurs</option></select><span class="mu" id="plOff" style="margin-left:auto"></span></div>
+    <div class="plz"><input id="plQ" type="search" placeholder="Zoek bon: bonnummer, klant, adres, plaats of telefoon…" autocomplete="off"><label class="mu"><input type="checkbox" id="plQo"> ook ouder (tot 1 jaar)</label></div><div id="plZR"></div>
     <div class="scroll"><div id="plGrid"></div></div>
     <div class="pleg"><span><i style="background:#1a147f"></i>Gepland (monteur nog niet begonnen)</span><span><i style="background:#d08700"></i>Bezig (monteur heeft hem overgenomen)</span><span><i style="background:#16693e"></i>Verstuurd, werk gereed</span><span><i style="background:#b3261e"></i>Verstuurd, NIET gereed</span><span><b style="background:#c25e00;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">REP</b> reparatiemelding</span><span>Stippelrand links = uit de agenda-PDF</span><span>Dubbele rand links = werkbon die de monteur zelf maakte (niet gepland)</span><span>Klik op een bon om monteur, dag, tijd of opmerking te wijzigen.</span></div></div>
   </div>
@@ -543,7 +546,7 @@ function daIso(da){var m=/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/.exec(String(da||'').t
 function plKl(o){return o.verstuurd?(o.gereed==='nee'?'n':'k'):(o.status==='opgehaald'||o.bezig?'z':'')}
 function plGr(o){return o.verstuurd?(o.gereed==='nee'?' · NIET GEREED':o.gereed==='ja'?' · GEREED':'')+(o.repm?' · REPARATIEMELDING':''):''}
 function plKort(o){var g=o.g||{},a=String(g.wadres||'').split(NL);return (a[0]||o.bestand||'')+(a[2]?', '+String(a[2]).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):'')}
-function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;
+function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;try{if(String($('plQ').value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT);ZT=setTimeout(zoek,300)}}catch(e){}
  $('plOff').textContent=PLANON?'':'Nog uit: alleen jij ziet de planning. Aanzetten: beheer.html > Instellingen.';
  var ma=maandagVan(PLW),dagen=[];for(var i=0;i<6;i++){var d=new Date(ma);d.setDate(ma.getDate()+i);dagen.push(d)}
  var za=dagen[5];$('plWk').textContent='Week '+weekNr(ma)+' · '+ma.getDate()+'-'+(ma.getMonth()+1)+' t/m '+za.getDate()+'-'+(za.getMonth()+1)+'-'+za.getFullYear();
@@ -617,6 +620,35 @@ $('brf').onclick=loadSent;
  ['dragleave','drop'].forEach(function(n){d.addEventListener(n,function(){d.style.borderColor='';d.style.background=''})});
  d.addEventListener('drop',function(e){e.preventDefault();addBonFiles(e.dataTransfer&&e.dataTransfer.files)});
  window.addEventListener('dragover',function(e){if(TAB==='b')e.preventDefault()});window.addEventListener('drop',function(e){if(TAB==='b'&&!d.contains(e.target)){e.preventDefault();addBonFiles(e.dataTransfer&&e.dataTransfer.files)}})})();
+/* ---------- zoeken in de planning (v199): klaargezette bonnen, agenda en verstuurde werkbonnen ---------- */
+var ZA=null,ZB=null,ZL=false,ZT=null;
+function zNorm(v){return normK(v)}
+async function zOud(){if(ZL)return;ZL=true;var d=new Date();d.setFullYear(d.getFullYear()-1);var mp=function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o};
+ try{var qa=await db.collection('agenda').where('pd','>=',isoD(d)).get();ZA=qa.docs.map(agMap)}catch(e){ZA=[]}
+ try{var qb=await db.collection('bonlog').where('van','>=',isoD(d)).get();ZB=qb.docs.map(mp)}catch(e){ZB=[]}}
+function zItems(){var R=[],gez={},wbs={},nm=function(uid,o){var u=USERS.filter(function(x){return x.uid===uid})[0]||{};return u.naam||u.email||(o&&(o.voorNaam||o.voorMail))||''};
+ SENT.forEach(function(o){var g=o.g||{},a=String(g.wadres||'').split(NL),pd=o.pd||(o.verstuurd?isoD(new Date(o.verstuurd)):isoD(new Date(o.t||Date.now())));
+  if(o.voor&&g.wb)wbs[o.voor+'|'+g.wb]=1;
+  R.push({src:'k',id:o.id,voor:o.voor,mon:o.voor?nm(o.voor,o):'nog geen monteur',pd:pd,pt:o.pt||'',wb:g.wb||'',klant:a[0]||o.bestand||'',adres:a[1]||'',plaats:a[2]||'',kl:plKl(o),st:o.verstuurd?'verstuurd'+plGr(o):o.status==='opgehaald'?'bezig':o.pd?'gepland':'nog in te plannen',
+   z:[g.wb,g.wadres,g.storing,g.opdr,o.opm,o.bestand,nm(o.voor,o)].join(' ')})});
+ [].concat(AG,ZA||[]).forEach(function(o){if(gez['a'+o.id])return;gez['a'+o.id]=1;if(o.wb)wbs[o.voor+'|'+o.wb]=1;
+  R.push({src:'a',id:o.id,voor:o.voor,mon:nm(o.voor,o),pd:o.pd,pt:o.pt||'',wb:o.wb||'',klant:o.klant||String(o.oms||'').split('\n')[0],adres:o.adres||'',plaats:o.plaats||'',kl:plKl(o),st:o.verstuurd?'verstuurd'+plGr(o):o.bezig?'bezig':'gepland (agenda)',
+   z:[o.wb,o.klant,o.adres,o.plaats,o.tel,o.oms,o.inst,nm(o.voor,o)].join(' ')})});
+ [].concat(BL,ZB||[]).forEach(function(e){if(gez['e'+e.id])return;gez['e'+e.id]=1;if(e.wb&&wbs[e.voor+'|'+e.wb])return;
+  R.push({src:'e',id:e.id,voor:e.voor,mon:nm(e.voor),pd:e.tot||e.van,pt:((e.dagen||[])[0]||{}).ws||'',wb:e.wb||'',klant:e.klant||'',adres:e.adres||'',plaats:e.plaats||'',kl:e.gereed==='nee'?'n':'k',st:'eigen werkbon, verstuurd'+plGr(e),
+   z:[e.wb,e.klant,e.adres,e.plaats,e.tel,nm(e.voor)].join(' ')})});
+ return R}
+async function zoek(){var q=String($('plQ').value||'').trim(),el=$('plZR');if(q.length<2){el.innerHTML='';return}
+ if($('plQo').checked&&!ZL){el.innerHTML='<p class="mu">Oudere bonnen ophalen…</p>';await zOud()}
+ if(!BLL)loadBl();var W=q.split(/\s+/).map(zNorm).filter(Boolean),L=zItems().filter(function(x){var t=zNorm(x.z);return W.every(function(w){return t.indexOf(w)>=0})});
+ L.sort(function(a,b){return String(b.pd||'').localeCompare(String(a.pd||''))||String(b.pt||'').localeCompare(String(a.pt||''))});
+ var n=L.length;L=L.slice(0,60);
+ el.innerHTML=n?'<div class="mu" style="margin:0 2px 6px">'+n+(n===1?' bon gevonden':' bonnen gevonden')+(n>60?' (de nieuwste 60)':'')+(!$('plQo').checked?' · de laatste 2 maanden; vink "ook ouder" aan voor meer':'')+' · klik om te openen</div>'+L.map(function(x,i){var p=String(x.pd||'').split('-'),dt=p.length===3?pdTxt({pd:x.pd})+'-'+p[0]:'';
+   return '<div class="zr '+x.kl+'" data-zi="'+i+'"><div class="zd">'+ee(dt)+(x.pt?'<div class="mu" style="font-weight:400">'+ee(x.pt)+'</div>':'')+'</div><div class="zt"><b>'+ee((x.wb?x.wb+' · ':'')+x.klant)+'</b><div>'+ee([x.adres,x.plaats].filter(Boolean).join(', '))+'</div><div class="mu">'+(x.mon?ee(x.mon)+' · ':'')+ee(x.st)+'</div></div></div>'}).join(''):'<p class="mu">Niets gevonden'+(!$('plQo').checked?' in de laatste 2 maanden. Vink "ook ouder" aan om verder terug te zoeken.':'.')+'</p>';
+ el.querySelectorAll('[data-zi]').forEach(function(c){c.onclick=function(){var x=L[+c.dataset.zi],p=String(x.pd||'').split('-');
+  if(p.length===3){var d0=new Date(+p[0],+p[1]-1,+p[2],12);d0.setDate(d0.getDate()-(d0.getDay()+6)%7);PLW=Math.round((d0-maandagVan(0))/(7*864e5))}
+  drawPlan();if(x.src==='k')plDlg(x.id);else if(x.src==='a')agInfo(x.id);else ebInfo(x.id)}})}
+$('plQ').oninput=function(){clearTimeout(ZT);ZT=setTimeout(zoek,200)};$('plQo').onchange=zoek;
 /* ---------- verstuurde werkbon-PDF openen (v197) ---------- */
 async function bonPdf(uid,wb,bonId,btn){var w=window.open('','_blank'),t=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='Ophalen…'}
  try{var d=null;if(bonId){var x=await db.collection('bonpdf').doc(uid+'_'+String(bonId).replace(/[^A-Za-z0-9_-]/g,'').slice(0,60)).get();if(x.exists)d=x}
@@ -636,8 +668,8 @@ var BLU=null;
 async function loadBl(){BLL=true;var d=new Date();d.setDate(d.getDate()-70);var q0=db.collection('bonlog').where('van','>=',isoD(d)),mp=function(x){var o=x.data()||{};o.id=x.id;return o};
  if(!BLU&&q0.onSnapshot){try{BLU=q0.onSnapshot(function(q){BL=q.docs.map(mp);drawPlan()},function(){BLU=null});return}catch(e){BLU=null}}
  try{var q=await q0.get();BL=q.docs.map(mp);drawPlan()}catch(e){}}
-function ebInfo(id){var e=BL.filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!e)return;var u=USERS.filter(function(x){return x.uid===e.voor})[0]||{};
- dl.innerHTML='<div class="card"><b>'+ee(e.wb?'Werkbon '+e.wb:'Werkbon')+'</b><div class="mu">'+ee(u.naam||u.email||'')+'</div>'+(e.klant?'<div style="margin-top:6px">'+ee(e.klant)+(e.plaats?'<br>'+ee(e.plaats):'')+'</div>':'')+
+function ebInfo(id){var e=[].concat(BL,ZB||[]).filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!e)return;var u=USERS.filter(function(x){return x.uid===e.voor})[0]||{};
+ dl.innerHTML='<div class="card"><b>'+ee(e.wb?'Werkbon '+e.wb:'Werkbon')+'</b><div class="mu">'+ee(u.naam||u.email||'')+'</div>'+(e.klant?'<div style="margin-top:6px">'+ee(e.klant)+(e.adres?'<br>'+ee(e.adres):'')+(e.plaats?'<br>'+ee(e.plaats):'')+(e.tel?'<br>'+ee(e.tel):'')+'</div>':'')+
   '<div style="margin-top:6px">'+(e.dagen||[]).map(function(d){return ee(pdTxt({pd:d.pd}))+(d.ws?' '+ee(d.ws)+(d.we?'–'+ee(d.we):''):'')}).join('<br>')+'</div>'+
   '<p style="font-weight:700;color:'+(e.gereed==='nee'?'#b3261e':'#16693e')+'">Verstuurd '+ee(fd(e.verstuurd))+ee(plGr(e))+'</p><p class="mu">Deze werkbon heeft de monteur zelf gemaakt; hij stond niet in de planning of de agenda.</p>'+
   '<div class="tools" style="margin:10px 0 0">'+bonPdfKnop(e.voor,e.wb,String(e.id).slice(String(e.voor).length+1))+'<button class="btn" type="button" id="ebC">Sluiten</button></div></div>';
@@ -698,7 +730,7 @@ function agDlg(){var dl=$('plDlg'),D=AGP;if(!D)return;
    if(tot){var p0=D.groepen[0].regels[0].pd.split('-'),d0=new Date(+p0[0],+p0[1]-1,+p0[2],12);d0.setDate(d0.getDate()-(d0.getDay()+6)%7);PLW=Math.round((d0-maandagVan(0))/(7*864e5))}
    loadAg()}
   catch(e){b.disabled=false;$('agR').innerHTML='<span class="er">Opslaan mislukt: '+ee(err(e))+'</span>'}}}
-function agInfo(id){var o=AG.filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!o)return;
+function agInfo(id){var o=[].concat(AG,ZA||[]).filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!o)return;
  dl.innerHTML='<div class="card"><b>'+ee(o.wb?'Werkbon '+o.wb:String(o.oms||'Afspraak').split('\n')[0])+'</b><div class="mu">'+ee(o.voorNaam||o.voorMail)+' · '+ee(pdTxt(o))+' · '+ee(agTijd(o))+(o.duur?' ('+ee(o.duur)+' u)':'')+'</div>'+
   (o.klant?'<div style="margin-top:6px">'+ee(o.klant)+'<br>'+ee([o.adres,o.plaats].filter(Boolean).join(', '))+(o.tel?'<br>'+ee(o.tel):'')+'</div>':'')+
   (o.oms?'<div style="margin-top:6px;white-space:pre-wrap">'+ee(o.oms)+'</div>':'')+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.bezig?'<p style="font-weight:700;color:#9a5a00">Monteur is ermee bezig (sinds '+ee(fd(o.bezig))+').</p>':'')+'<p class="mu">Uit de agenda-PDF '+ee(o.bestand||'')+' ('+ee(fd(o.t))+', '+ee(o.door||'')+'). Wijzigen: pas de agenda aan en lees hem opnieuw in.</p>'+

@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v181,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v182,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,10 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+NIEUWE ICONEN (v182)
+- Werkbonnen: klembord met monteur met helm. Weeklijsten: lijst met persoon en euroteken. Mijn planning: agenda.
+  In de kleur van de app (ook donkere modus). Getekend in index.html, geen losse plaatjes.
 
 AGENDA: ÉÉN PDF VOOR ALLE MONTEURS + MELDING BIJ WIJZIGING (v181)
 - Eén agenda-PDF met alle monteurs kan gewoon: elke regel gaat naar de monteur die erop staat (per naam).

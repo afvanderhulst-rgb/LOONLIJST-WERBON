@@ -415,7 +415,8 @@ async function zetAgenda(mt, regels, door, bestand, via, van, tot) {
 }
 async function verwerkAgendaMail(m, van, logRef, cache) {
   const A = require('./agenda-parse.js');
-  if (!cache.lijst) cache.lijst = (await db.collection('monteurs').get()).docs.map((d) => Object.assign({uid: d.id}, d.data() || {}));
+  // v188: test/beheer-accounts (zelfde lijst als PLAN_NIET in beheer.html) niet in de agenda
+  const lijst = (await db.collection('monteurs').get()).docs.map((d) => Object.assign({uid: d.id}, d.data() || {})).filter((m) => !['a.f.vanderhulst@gmail.com'].includes(String(m.email || '').toLowerCase()));
   const pdfs = (m.bijlagen || []).filter((b) => /pdf/i.test(b.type || '') || /\.pdf$/i.test(b.naam || '')).slice(0, 10);
   const goed = [], fouten = [];
   if (!pdfs.length) fouten.push('Er zat geen PDF bij de mail.');
@@ -427,7 +428,7 @@ async function verwerkAgendaMail(m, van, logRef, cache) {
     const r = A.leesAgenda(P);
     r.fouten.forEach((f) => fouten.push((b.naam || 'agenda') + ': ' + f));
     if (!r.regels.length) { fouten.push((b.naam || 'agenda') + ': geen afspraken gevonden. Is dit de "Agenda servicemonteurs"?'); continue; }
-    const V = A.verdeel(r.regels, cache.lijst);
+    const V = A.verdeel(r.regels, lijst);
     const pvan = r.regels.reduce((a, x) => (!a || x.pd < a ? x.pd : a), ''), ptot = r.regels.reduce((a, x) => (x.pd > a ? x.pd : a), '');
     V.los.forEach((x) => fouten.push('Monteur "' + (x.monteur || '?') + '" (' + x.pd + ' ' + x.pt + ') niet gevonden in de app; die regel is overgeslagen.'));
     for (const g of V.groepen) {

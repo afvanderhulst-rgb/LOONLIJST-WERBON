@@ -275,6 +275,12 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+TESTACCOUNT NIET IN DE PLANNING (v188)
+- a.f.vanderhulst@gmail.com staat niet meer in de planning op kantoor (geen rij in het weekrooster, niet te kiezen bij
+  een bon in de planning) en de agenda (kantoor.html en agenda@) koppelt "Arjan van der Hulst" altijd aan het
+  @mit-installatietechniek.com-account. Klaarzetten naar dat account kan nog wel (om te testen).
+- Lijst aanpassen: PLAN_NIET in beheer.html en dezelfde lijst in functions/index.js (verwerkAgendaMail).
+
 BON HANDMATIG AANMAKEN OP KANTOOR (v187)
 - kantoor.html > Bonnen klaarzetten > "+ Bon handmatig aanmaken (zonder PDF)", of in Planning > "Nog in te plannen" >
   "+ Bon handmatig aanmaken". Voor bijv. een telefonische melding.

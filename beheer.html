@@ -123,7 +123,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
 </style>
 </head>
 <body>
-<header><div class="hw"><div class="brand"><img src="icon-192.png" alt="" width="40" height="40"><div><b>MIT Werkbon beheer</b><small id="who">Gebruikers en back-ups</small></div></div><span style="display:flex;gap:8px"><button class="btn" id="inst" type="button" hidden>Installeren als programma</button><button class="btn" id="out" hidden>Uitloggen</button></span></div></header>
+<header><div class="hw"><div class="brand"><img src="icon-192.png" alt="" width="40" height="40"><div><b>MIT Werkbon beheer</b><small id="who">Gebruikers en back-ups</small></div></div><span style="display:flex;gap:8px"><button class="btn" id="inst" type="button" hidden>Installeren als programma</button><button class="btn" id="kset" type="button" hidden title="Instellingen" aria-label="Instellingen" style="padding:6px 10px;display:inline-flex;align-items:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button><button class="btn" id="out" hidden>Uitloggen</button></span></div></header>
 <main>
  <div class="card" id="login" hidden>
   <b>Inloggen als beheerder</b>
@@ -229,6 +229,13 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
    <button class="btn" id="klog" type="button">Wijzigingen tonen</button><div id="klogl" style="margin-top:10px"></div></div>
  </div>
 </main>
+<div id="ksDlg" hidden style="position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px"><div class="card" style="width:100%;max-width:520px;max-height:92vh;overflow:auto;margin:0">
+ <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Instellingen kantoor</b><button class="btn sm" type="button" id="ksX">Sluiten</button></div>
+ <h2 class="sh">Toegang tot kantoor.html</h2>
+ <p class="mu">Collega's die hier bonnen mogen klaarzetten, de planning en de agenda mogen bijwerken en het storingsrooster mogen publiceren. Alleen adressen op <b>@mit-installatietechniek.com</b>. De collega logt in met zijn eigen account uit de app (e-mailadres bevestigd).</p>
+ <div class="tools" style="margin:0"><input id="ksM" type="email" placeholder="naam@mit-installatietechniek.com" autocomplete="off"><button class="btn pr" id="ksAdd" type="button">Toegang geven</button></div>
+ <div id="ksR" class="mu" style="margin-top:6px"></div><div id="ksL" style="margin-top:8px"></div>
+</div></div>
 <script src="firebase-config.js"></script>
 <script src="libs.js"></script>
 <script src="fb.js"></script>
@@ -263,6 +270,7 @@ $('rf').onclick=function(){load()};
 $('q').oninput=function(){render()};
 
 auth.onAuthStateChanged(async function(u){
+ $('kset').hidden=true;try{$('ksDlg').hidden=true}catch(x){}
  try{if(UNSUB){UNSUB();UNSUB=null}}catch(x){}
  $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('rlist').hidden=true;$('blist').hidden=true;$('tabs').hidden=true;show('');ROLE='';
  if(!u){$('who').textContent=KP?'Bonnen klaarzetten en storingsrooster':'Gebruikers en back-ups';if(ADMIN&&!KP)$('lm').value=ADMIN;return}
@@ -270,7 +278,7 @@ auth.onAuthStateChanged(async function(u){
  ROLE='admin';
  var isK=false;if(KP||(ADMIN&&!isAdm(u.email))){try{isK=(await db.collection('kantoor').doc(String(u.email).toLowerCase()).get()).exists}catch(x){}}
  if(KP){if(!isK&&!isAdm(u.email)){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') staat niet in de lijst met kantoor-collega\'s. Vraag de beheerder ('+ee(ADMIN)+') om je toe te voegen.</p>');return}
-  ROLE='kantoor';if(!/^[br]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email}
+  ROLE='kantoor';if(!/^[brp]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email;$('kset').hidden=false}
  else if(ADMIN&&!isAdm(u.email)){
   show(isK?'<b>Gebruik de kantoorpagina</b><p class="mu">Bonnen klaarzetten en het storingsrooster staan op een eigen pagina.</p><p><a class="btn pr" href="kantoor.html" style="text-decoration:none;display:inline-block">Naar kantoor.html</a></p>':'<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina.</p>');return}
  try{await u.reload()}catch(x){}
@@ -645,6 +653,24 @@ function agInfo(id){var o=AG.filter(function(x){return x.id===id})[0],dl=$('plDl
 $('agFile').onchange=function(){agFiles(this.files);this.value=''};
 (function(){var d=$('agDrop');d.addEventListener('dragover',function(e){if([].indexOf.call(e.dataTransfer.types,'Files')>=0){e.preventDefault();e.stopPropagation();d.style.borderColor='var(--ac)'}});d.addEventListener('dragleave',function(){d.style.borderColor=''});
  d.addEventListener('drop',function(e){d.style.borderColor='';if(e.dataTransfer.files&&e.dataTransfer.files.length){e.preventDefault();e.stopPropagation();agFiles(e.dataTransfer.files)}})})();
+/* ---------- kantoor: tandwiel > toegang tot kantoor.html (v185) ---------- */
+var KDOM='@mit-installatietechniek.com',KSL={};
+async function ksLoad(){var el=$('ksL');el.innerHTML='<p class="mu">Laden…</p>';
+ try{var q=await db.collection('kantoor').get(),me=String(auth.currentUser.email||'').toLowerCase(),L=q.docs.map(function(d){var o=d.data()||{};o.id=d.id;return o}).sort(function(a,b){return a.id.localeCompare(b.id)});KSL={};L.forEach(function(o){KSL[o.id]=1});
+  el.innerHTML=L.length?L.map(function(o){var mag=o.id!==me&&o.id.slice(-KDOM.length)===KDOM;return '<div class="br"><span><b>'+ee(o.id)+'</b>'+(o.id===me?' <span class="tag">jij</span>':'')+'<br><span class="mu" style="font-size:13px">sinds '+ee(fd(o.t))+(o.door?' · door '+ee(o.door):'')+'</span></span>'+(mag?'<button class="btn sm dg" type="button" data-ksd="'+ee(o.id)+'">Toegang intrekken</button>':'')+'</div>'}).join(''):'<p class="mu">Nog niemand.</p>';
+  el.querySelectorAll('[data-ksd]').forEach(function(b){b.onclick=async function(){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;
+   try{await db.collection('kantoor').doc(b.dataset.ksd).delete();blog('kantoor-toegang ingetrokken',{bestand:b.dataset.ksd});ksLoad()}catch(e){b.disabled=false;$('ksR').innerHTML='<span class="er">'+ee(err(e))+'</span>'}}})}
+ catch(e){el.innerHTML='<div class="er">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</div>'}}
+$('kset').onclick=function(){$('ksDlg').hidden=false;$('ksR').textContent='';ksLoad()};
+$('ksX').onclick=function(){$('ksDlg').hidden=true};$('ksDlg').onclick=function(e){if(e.target===this)this.hidden=true};
+$('ksM').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();$('ksAdd').click()}};
+$('ksAdd').onclick=async function(){var b=this,em=String($('ksM').value||'').trim().toLowerCase();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){$('ksR').innerHTML='<span class="er">Dit e-mailadres klopt niet.</span>';return}
+ if(em.slice(-KDOM.length)!==KDOM){$('ksR').innerHTML='<span class="er">Alleen adressen op '+KDOM+'.</span>';return}
+ if(KSL[em]){$('ksR').innerHTML='<span class="ok">'+ee(em)+' heeft al toegang.</span>';return}
+ b.disabled=true;try{await db.collection('kantoor').doc(em).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()});blog('kantoor-toegang gegeven',{bestand:em});$('ksM').value='';
+  $('ksR').innerHTML='<span class="ok">'+ee(em)+' heeft nu toegang. Hij logt in op kantoor.html met zijn account uit de app (e-mailadres bevestigd).</span>';ksLoad()}
+ catch(e){$('ksR').innerHTML='<span class="er">Niet gelukt: '+ee(err(e))+'</span>'}b.disabled=false};
 /* ---------- bewaartermijn ---------- */
 function kpName(d){var o=$('kpSel').querySelector('option[value="'+d+'"]');return o?o.textContent:d+' dagen'}
 async function loadKeep(){try{var d=await db.collection('instellingen').doc('app').get(),o=d.exists?(d.data()||{}):{},v=o.bewaar==null?0:+o.bewaar;

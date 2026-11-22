@@ -101,7 +101,7 @@ service cloud.firestore {
       allow create, delete: if isBeheerder() || isKantoor();
       allow update: if isBeheerder() || isKantoor()
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald','verstuurd'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald','verstuurd','gereed','repm'])
             && request.resource.data.status == 'opgehaald');
       match /parts/{p} {
         allow read: if isBeheerder() || isKantoor()
@@ -115,6 +115,9 @@ service cloud.firestore {
       allow read: if isBeheerder() || isKantoor()
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd());
       allow write: if isBeheerder() || isKantoor();
+      // v192: de monteur meldt terug: bezig / verstuurd / werk gereed / reparatiemelding
+      allow update: if request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bezig','verstuurd','gereed','repm']);
     }
     match /agendaimport/{id} {
       allow read: if isBeheerder() || isKantoor();

@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v187,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v192,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,17 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+PLANNING: KLEUREN MET STATUS, OOK VOOR DE AGENDA (v192)
+- Afspraken uit de agenda-PDF tellen als gepland: blauw, net als andere geplande bonnen (stippelrand links = uit de agenda).
+- Kleuren in het weekrooster (kantoor.html > Planning), voor klaargezette bonnen én agenda-afspraken:
+  blauw = gepland, oranje = bezig (monteur heeft de werkbon overgenomen/gemaakt), groen = verstuurd en werk gereed,
+  rood = verstuurd maar NIET gereed, label REP = reparatiemelding. Klik voor details (wanneer verstuurd).
+- "Klaargezet": een verstuurde bon toont "verstuurd <datum> · GEREED / NIET GEREED · REPARATIEMELDING".
+- Werking: de app van de monteur meldt het zelf terug (bij openen en elke paar minuten): agenda-afspraak met
+  hetzelfde bonnummer als een werkbon in zijn app = bezig; die werkbon verstuurd = verstuurd + "Werk gereed" (Ja/Nee)
+  en "Reparatiemelding". Agenda-regels zonder bonnummer (Diversen, Zaak) blijven blauw.
+- Opnieuw inlezen van de agenda laat deze status staan. Firestore-regels: monteur mag alleen deze velden bijwerken.
 
 EIGEN ICOON VOOR MIT KANTOOR (v191)
 - De kantoor-app heeft een oranje icoon met "MIT" en een blauw blokje "KANTOOR" (kantoor-192.png, kantoor-512.png,

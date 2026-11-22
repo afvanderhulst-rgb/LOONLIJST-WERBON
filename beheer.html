@@ -100,7 +100,7 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 .plg .m{font-weight:700;font-size:14px;background:var(--card)}.plg .m small{display:block;font-weight:400;color:var(--mu);font-size:12px}
 .plg .td{background:#fffbe6}.plg .ov{outline:2px dashed var(--ac);outline-offset:-3px;background:var(--ac2)}
 .pb{border-radius:8px;padding:5px 7px;margin-bottom:5px;font-size:12px;line-height:1.25;border-left:4px solid;cursor:pointer;background:#eef0ff;border-color:#1a147f;color:#14172e}
-.pb b{display:block;font-size:12.5px}.pb.a{background:#eceef5;border-color:#7a7f9a;color:#14172e;border-left-style:dotted}.pb.z{background:#fff4e4;border-color:#d08700}.pb.k{background:#e7f6ec;border-color:#16693e}
+.pb b{display:block;font-size:12.5px}.pb.a{border-left-style:dotted}.pb.n{background:#fdeaea;border-color:#b3261e}.pb .rp{display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:#c25e00;color:#fff;font-size:10px;font-weight:700}.pb.z{background:#fff4e4;border-color:#d08700}.pb.k{background:#e7f6ec;border-color:#16693e}
 .pu{background:#fff;color:#14172e;border:1px dashed var(--ac);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px;cursor:grab}.pu b{display:block;font-size:14px}
 .pleg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mu);margin-top:10px}.pleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
 #plDlg{position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px}#plDlg[hidden]{display:none}
@@ -198,7 +198,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
     <div id="agDrop" class="pldrop">Sleep de agenda-PDF hierheen<br><label class="btn sm" style="display:inline-block;margin-top:8px;cursor:pointer">Agenda kiezen<input type="file" id="agFile" accept="application/pdf,.pdf" hidden></label></div><div class="mu" id="agSt"></div></div></div>
    <div class="card"><div class="plwk"><button class="btn sm" type="button" id="plPrev">‹</button><b id="plWk"></b><button class="btn sm" type="button" id="plNext">›</button><button class="btn sm" type="button" id="plNow">Deze week</button><span class="mu" id="plOff" style="margin-left:auto"></span></div>
     <div class="scroll"><div id="plGrid"></div></div>
-    <div class="pleg"><span><i style="background:#1a147f"></i>Gepland (nog niet overgenomen)</span><span><i style="background:#d08700"></i>Bezig (monteur heeft hem overgenomen)</span><span><i style="background:#16693e"></i>Afgerond en verstuurd</span><span><i style="background:#7a7f9a"></i>Uit de agenda-PDF</span><span>Klik op een bon om monteur, dag, tijd of opmerking te wijzigen.</span></div></div>
+    <div class="pleg"><span><i style="background:#1a147f"></i>Gepland (monteur nog niet begonnen)</span><span><i style="background:#d08700"></i>Bezig (monteur heeft hem overgenomen)</span><span><i style="background:#16693e"></i>Verstuurd, werk gereed</span><span><i style="background:#b3261e"></i>Verstuurd, NIET gereed</span><span><b style="background:#c25e00;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">REP</b> reparatiemelding</span><span>Stippelrand links = uit de agenda-PDF</span><span>Klik op een bon om monteur, dag, tijd of opmerking te wijzigen.</span></div></div>
   </div>
   <div id="plDlg" hidden></div>
  </div>
@@ -514,7 +514,7 @@ function drawSent(){var el=$('bsent');if(!el)return;if(el.contains(document.acti
   if(zq&&normK([gTitle(o.g,o.bestand),gSub(o.g),o.voorNaam,o.voorMail,o.opm,o.door].join(' ')).indexOf(zq)<0)return;L.push(i)});
  if(!SENT.length){el.innerHTML='<p class="mu">Nog niets klaargezet.</p>';return}
  if(!L.length){el.innerHTML='<p class="mu">Niets gevonden met deze filters.</p>';return}
- var tag=function(o){var klaar=o.status==='klaar';return '<span class="tag'+(klaar?'':' ok')+'" style="margin:0">'+(klaar?'klaargezet':'opgehaald '+ee(fd(o.opgehaald)))+'</span>'};
+ var tag=function(o){var klaar=o.status==='klaar';if(o.verstuurd)return '<span class="tag" style="margin:0;border:1px solid;'+(o.gereed==='nee'?'background:#fdeaea;color:#b3261e':'background:#e3f5e8;color:#16693e')+'">verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</span>';return '<span class="tag'+(klaar?'':' ok')+'" style="margin:0">'+(klaar?'klaargezet':'opgehaald '+ee(fd(o.opgehaald)))+'</span>'};
  var acties=function(o,i){var klaar=o.status==='klaar';return (o.parts?'<button class="btn sm" type="button" data-sp="'+i+'">PDF</button>':'<span class="tag" style="margin:0">handmatig</span>')+
   (klaar?'<select data-sm="'+i+'"><option value="">Verplaatsen naar…</option>'+monteurs().filter(function(u){return u.uid!==o.voor}).map(function(u){return '<option value="'+ee(u.uid)+'">'+ee(uLabel(u))+'</option>'}).join('')+'</select><button class="btn sm dg" type="button" data-sx="'+i+'">Intrekken</button>':'')};
  if(KP&&WIDE&&WIDE.matches){
@@ -538,7 +538,8 @@ function maandagVan(off){var d=new Date();d.setHours(12,0,0,0);var w=d.getDay()=
 function weekNr(d){var t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));var dn=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-dn);var y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y0)/864e5+1)/7)}
 function pdTxt(o){if(!o.pd)return '';var p=o.pd.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);return DG[d.getDay()]+' '+(+p[2])+'-'+(+p[1])+(o.pt?' '+o.pt:'')}
 function daIso(da){var m=/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/.exec(String(da||'').trim());if(!m)return '';var y=+m[3];if(y<100)y+=2000;return y+'-'+p2(+m[2])+'-'+p2(+m[1])}
-function plKl(o){return o.verstuurd?'k':(o.status==='opgehaald'?'z':'')}
+function plKl(o){return o.verstuurd?(o.gereed==='nee'?'n':'k'):(o.status==='opgehaald'||o.bezig?'z':'')}
+function plGr(o){return o.verstuurd?(o.gereed==='nee'?' · NIET GEREED':o.gereed==='ja'?' · GEREED':'')+(o.repm?' · REPARATIEMELDING':''):''}
 function plKort(o){var g=o.g||{},a=String(g.wadres||'').split(NL);return (a[0]||o.bestand||'')+(a[2]?', '+String(a[2]).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):'')}
 function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;
  $('plOff').textContent=PLANON?'':'Nog uit: alleen jij ziet de planning. Aanzetten: beheer.html > Instellingen.';
@@ -556,8 +557,8 @@ function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;
   ds.forEach(function(x){var L=mine.filter(function(o){return o.pd===x}),wbs={};L.forEach(function(o){if(o.g&&o.g.wb)wbs[o.g.wb]=1});
    AG.forEach(function(a){if(a.voor===u.uid&&a.pd===x&&!(a.wb&&wbs[a.wb]))L.push({ag:a,pt:a.pt,id:a.id})});
    L.sort(function(a,b){return String(a.pt||'99').localeCompare(String(b.pt||'99'))});
-   h+='<div class="'+(x===vandaag?'td':'')+'" data-dm="'+ee(u.uid)+'" data-dd="'+x+'">'+L.map(function(o){if(o.ag){var a=o.ag;return '<div class="pb a" data-agi="'+ee(a.id)+'" title="Uit de agenda-PDF"><b>'+ee(agTijd(a))+'</b>'+ee(agKort(a))+'</div>'}var g=o.g||{};
-    return '<div class="pb '+plKl(o)+'" draggable="true" data-pid="'+ee(o.id)+'" title="'+ee(String(g.storing||'').split(NL)[0])+'"><b>'+ee(o.pt||'––:––')+' '+ee(g.wb||'')+'</b>'+ee(plKort(o))+'</div>'}).join('')+'</div>'})});
+   h+='<div class="'+(x===vandaag?'td':'')+'" data-dm="'+ee(u.uid)+'" data-dd="'+x+'">'+L.map(function(o){if(o.ag){var a=o.ag;return '<div class="pb a '+plKl(a)+'" data-agi="'+ee(a.id)+'" title="Uit de agenda-PDF'+ee(plGr(a))+'"><b>'+ee(agTijd(a))+(a.repm?'<span class="rp">REP</span>':'')+'</b>'+ee(agKort(a))+'</div>'}var g=o.g||{};
+    return '<div class="pb '+plKl(o)+'" draggable="true" data-pid="'+ee(o.id)+'" title="'+ee(String(g.storing||'').split(NL)[0])+'"><b>'+ee(o.pt||'––:––')+' '+ee(g.wb||'')+(o.repm?'<span class="rp">REP</span>':'')+'</b>'+ee(plKort(o))+'</div>'}).join('')+'</div>'})});
  h+='</div>';gr.innerHTML=h;
  [].forEach.call(document.querySelectorAll('#plist [data-pid]'),function(c){c.ondragstart=function(e){e.dataTransfer.setData('text/plain',c.dataset.pid);e.dataTransfer.effectAllowed='move'};c.onclick=function(){plDlg(c.dataset.pid)}});
  gr.querySelectorAll('[data-agi]').forEach(function(c){c.onclick=function(){agInfo(c.dataset.agi)}});
@@ -652,7 +653,7 @@ function agDlg(){var dl=$('plDlg'),D=AGP;if(!D)return;
     var vg=window.mitAgenda.vergelijk(oud.map(function(d){return d.data()||{}}),R),ids=window.mitAgenda.docIds(uid,R),houd={};ids.forEach(function(i){houd[i]=1});
     for(var k=0;k<oud.length;k++)if(!houd[oud[k].id])await oud[k].ref.delete();
     var imp=Date.now()+'_'+Math.random().toString(36).slice(2,8),me=String(auth.currentUser.email||'').toLowerCase(),t=Date.now();
-    for(var j=0;j<R.length;j++){var x=R[j];await db.collection('agenda').doc(ids[j]).set({voor:uid,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||'',pd:x.pd,pt:x.pt||'',duur:x.duur||'',min:x.min||0,wb:String(x.wb||'').slice(0,12),inst:String(x.inst||'').slice(0,40),klant:String(x.klant||'').slice(0,120),adres:String(x.adres||'').slice(0,160),plaats:String(x.plaats||'').slice(0,80),tel:String(x.tel||'').slice(0,40),oms:String(x.oms||'').slice(0,800),imp:imp,t:t,door:me,bestand:String(D.bestand||'').slice(0,120)})}
+    for(var j=0;j<R.length;j++){var x=R[j];await db.collection('agenda').doc(ids[j]).set({voor:uid,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||'',pd:x.pd,pt:x.pt||'',duur:x.duur||'',min:x.min||0,wb:String(x.wb||'').slice(0,12),inst:String(x.inst||'').slice(0,40),klant:String(x.klant||'').slice(0,120),adres:String(x.adres||'').slice(0,160),plaats:String(x.plaats||'').slice(0,80),tel:String(x.tel||'').slice(0,40),oms:String(x.oms||'').slice(0,800),imp:imp,t:t,door:me,bestand:String(D.bestand||'').slice(0,120)},{merge:true})}
     await db.collection('agendaimport').doc(imp).set({voor:uid,voorNaam:u.naam||'',voorMail:String(u.email||'').toLowerCase(),door:me,t:t,n:R.length,van:van,tot:tt,bij:vg.bij,weg:vg.weg,gew:vg.gew,eerste:vg.eerste,wijz:vg.regels.slice(0,20).map(function(x){return String(x).slice(0,160)}),bestand:String(D.bestand||'').slice(0,120),via:'kantoor'});
     blog('agenda ingelezen ('+R.length+')',{bestand:D.bestand,voorNaam:u.naam,voorMail:u.email});tot+=R.length}
    dl.hidden=true;AGP=null;kToast(tot?tot+' afspraken in de planning gezet.':'Niets ingelezen (geen monteur gekozen).',5000);
@@ -662,7 +663,7 @@ function agDlg(){var dl=$('plDlg'),D=AGP;if(!D)return;
 function agInfo(id){var o=AG.filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!o)return;
  dl.innerHTML='<div class="card"><b>'+ee(o.wb?'Werkbon '+o.wb:String(o.oms||'Afspraak').split('\n')[0])+'</b><div class="mu">'+ee(o.voorNaam||o.voorMail)+' · '+ee(pdTxt(o))+' · '+ee(agTijd(o))+(o.duur?' ('+ee(o.duur)+' u)':'')+'</div>'+
   (o.klant?'<div style="margin-top:6px">'+ee(o.klant)+'<br>'+ee([o.adres,o.plaats].filter(Boolean).join(', '))+(o.tel?'<br>'+ee(o.tel):'')+'</div>':'')+
-  (o.oms?'<div style="margin-top:6px;white-space:pre-wrap">'+ee(o.oms)+'</div>':'')+'<p class="mu">Uit de agenda-PDF '+ee(o.bestand||'')+' ('+ee(fd(o.t))+', '+ee(o.door||'')+'). Wijzigen: pas de agenda aan en lees hem opnieuw in.</p>'+
+  (o.oms?'<div style="margin-top:6px;white-space:pre-wrap">'+ee(o.oms)+'</div>':'')+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.bezig?'<p style="font-weight:700;color:#9a5a00">Monteur is ermee bezig (sinds '+ee(fd(o.bezig))+').</p>':'')+'<p class="mu">Uit de agenda-PDF '+ee(o.bestand||'')+' ('+ee(fd(o.t))+', '+ee(o.door||'')+'). Wijzigen: pas de agenda aan en lees hem opnieuw in.</p>'+
   '<div class="tools" style="margin:10px 0 0"><button class="btn dg" type="button" id="agDel">Verwijderen</button><button class="btn" type="button" id="agC">Sluiten</button></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('agC').onclick=function(){dl.hidden=true};
  $('agDel').onclick=async function(){var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;try{await o.ref.delete();AG=AG.filter(function(x){return x!==o});dl.hidden=true;drawPlan()}catch(e){b.disabled=false;alert0(err(e))}}}

@@ -405,7 +405,7 @@ async function zetAgenda(mt, regels, door, bestand, via, van, tot) {
     const r = regels[i];
     b.set(db.collection('agenda').doc(ids[i]), {voor: mt.uid, voorMail: String(mt.email || '').toLowerCase(), voorNaam: mt.naam || '', pd: r.pd, pt: r.pt || '', duur: r.duur || '', min: r.min || 0,
       wb: tekst(r.wb, 12), inst: tekst(r.inst, 40), klant: tekst(r.klant, 120), adres: tekst(r.adres, 160), plaats: tekst(r.plaats, 80), tel: tekst(r.tel, 40), oms: tekst(r.oms, 800),
-      imp: imp.id, t, door, bestand: tekst(bestand, 120)});
+      imp: imp.id, t, door, bestand: tekst(bestand, 120)}, {merge: true}); // merge: status van de monteur (bezig/verstuurd/gereed) blijft staan
     await tel();
   }
   await b.commit();

@@ -30,5 +30,7 @@ jobs:
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - name: Site voor de kantoor-app (eenmalig aanmaken)
+        run: npx --yes firebase-tools@latest hosting:sites:create mit-kantoor --project backup-loonlijst-werkbon-mit --non-interactive || echo "Site bestaat al (of naam bezet: zie de melding hierboven)"
       - name: Publiceren
         run: npx --yes firebase-tools@latest deploy --only hosting --project backup-loonlijst-werkbon-mit --non-interactive

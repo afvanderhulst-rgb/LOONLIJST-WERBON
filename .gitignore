@@ -4,3 +4,4 @@ functions/node_modules/
 dist/
 *.log
 .firebase/
+dist-kantoor/

@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v173,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v174,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -275,6 +275,17 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+VERLOF/ADV/ZIEK, KLAARGEZET-KAART EN SALDO (v174)
+- Weeklijst: de knoppen "+ Verlof", "+ Ziek" en "+ ADV" zetten de uren nu bij GEWONE UREN (was diversen).
+- Startscherm: "Klaargezet door kantoor" is ingeklapt: alleen het aantal bonnen. Tik erop om de bonnen te zien
+  (Overnemen, PDF bekijken); nog een keer tikken klapt hem weer in.
+- Tandwieltje > "Verlof, ADV en ziek": per jaar het tegoed, opgenomen en nog over (uren en dagen) voor verlof en ADV,
+  en hoeveel uur/dagen ziek. Geteld uit de regels Verlof, ADV en Ziek op de weeklijsten op de telefoon
+  (opdrachtgever begint met Verlof/Vakantie/Vrij, ADV of Ziek; gewone uren + diversen). Met de lijst van alle dagen.
+- Aan/uit: beheer.html > Instellingen > "Verlof, ADV en ziek (saldo per jaar)". Uit (standaard) = alleen de beheerder
+  ziet het in de app. Daar ook het standaard tegoed per jaar (uren verlof en ADV). De monteur kan zijn eigen tegoed per
+  jaar aanpassen; dat wordt in zijn account bewaard (users/<uid>/instel/saldo). Geen nieuwe Firestore-regels nodig.
+
 BEVEILIGING (v173)
 - Beveiligingskoppen op de website (Content-Security-Policy, nosniff, Referrer-Policy, X-Frame-Options,
   Permissions-Policy) in firebase.json en vercel.json. Daardoor mag de pagina alleen scripts laden van het eigen adres,
@@ -437,7 +448,7 @@ WACHTRIJ ZICHTBAAR (v167)
 
 VERLOF/ZIEK-KNOPPEN EN NAVIGEREN/BELLEN (v166)
 - Weeklijst: onder elke werkdag (ma t/m vr) de knoppen "+ Verlof", "+ Ziek" en "+ ADV". Op een feestdag staat er ook
-  "+ Koningsdag" enz. Een tik zet een regel met die naam en vult de dag aan tot 8 uur (bij diversen). Staat er al 6 uur,
+  "+ Koningsdag" enz. Een tik zet een regel met die naam en vult de dag aan tot 8 uur (bij diversen; vanaf v174 bij gewone uren). Staat er al 6 uur,
   dan komt er 2 uur bij. Heeft de dag al 8 uur, dan gebeurt er niets. Weghalen met het kruisje; uren zijn aan te passen.
 - Het uurtotaal naast de dag en de regel "Totaal" in het verzendvenster tellen nu ook diversen mee.
 - Werkbon > Opdracht: zijn adres en postcode/plaats ingevuld, dan staan eronder de knoppen "Route (Google Maps)" en "Waze".

@@ -275,6 +275,14 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+KANTOOR: TANDWIEL MET TOEGANG (v185)
+- kantoor.html heeft rechtsboven een tandwiel > "Instellingen kantoor" > "Toegang tot kantoor.html".
+  Kantoor kan daar zelf een collega toegang geven (alleen adressen op @mit-installatietechniek.com) of intrekken.
+  Zichzelf intrekken kan niet. Wie het gaf en wanneer staat erbij; het komt ook in het logboek klaarzetten.
+- De collega logt in met zijn eigen account uit de app (e-mailadres bevestigd).
+- Andere adressen (bijv. gmail) toevoegen kan alleen de beheerder (beheer.html > Instellingen > Kantoor-collega's).
+- Firestore-regels: kantoor mag de lijst lezen en MIT-adressen toevoegen/verwijderen (gaat vanzelf via GitHub).
+
 STORINGSROOSTER MET JAARTAL (v184)
 - Alle datums van het storingsrooster in de app hebben nu het jaartal: kaart op het startscherm, overzicht
   (wie heeft dienst, mijn diensten, hele rooster) en de herinneringen. Bijv. "vr 27 nov 2026 08:00".

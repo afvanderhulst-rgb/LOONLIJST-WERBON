@@ -88,6 +88,12 @@ service cloud.firestore {
     match /kantoor/{email} {
       allow get: if request.auth != null && em() == email;
       allow read, write: if isBeheerder();
+      // v185: kantoor mag zelf collega's met een MIT-adres toegang geven of intrekken (niet zichzelf intrekken)
+      allow list: if isKantoor();
+      allow create: if isKantoor() && email.matches('.*@mit-installatietechniek[.]com$')
+        && request.resource.data.keys().hasOnly(['t','door'])
+        && request.resource.data.door is string && request.resource.data.door.lower() == em();
+      allow delete: if isKantoor() && email.matches('.*@mit-installatietechniek[.]com$') && email != em();
     }
     match /inbox/{id} {
       allow read: if isBeheerder() || isKantoor()

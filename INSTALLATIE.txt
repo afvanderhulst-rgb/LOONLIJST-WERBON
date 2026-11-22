@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v179,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v180,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,31 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+AGENDA VAN DE PLANNER IN DE PLANNING (v180)
+- De "Agenda servicemonteurs" (PDF) komt in "Mijn planning" van de monteur: elke regel met dag, tijd, duur
+  (bijv. 07:00-13:00), bonnummer, klant, adres, telefoon en omschrijving. Ook Diversen, Zaak en Storingsdienst.
+- Twee manieren:
+  1. Mailen naar agenda@mit-werkbon.com (alleen kantoor-collega's en de beheerder; zelfde afzendercontrole als bij
+     klaarzetten per mail). Kantoor krijgt een mail terug met wat er is ingelezen en wat niet.
+     Werkt met een digitale PDF of een scan MET tekstherkenning (zoals Microsoft Lens). Een foto/scan zonder tekst:
+     de antwoordmail zegt dan dat hij in kantoor.html moet worden ingesleept.
+  2. kantoor.html > Planning > "Agenda inlezen (PDF)": slepen of kiezen. Daar wordt ook een foto zonder tekst herkend
+     (duurt even). Je ziet eerst alle regels en de monteur; pas na "In de planning zetten" staat het in de app.
+- Monteur: de naam op de agenda wordt gekoppeld aan de monteurs in de app (kleine leesfouten mogen: "Arian" = Arjan).
+  Staat er maar één monteur op de agenda, dan hoort een onleesbare naam ook bij hem. Een onbekende naam wordt
+  overgeslagen en gemeld.
+- Opnieuw inlezen vervangt de agenda-afspraken van die monteur in dezelfde periode (dus een gewijzigde agenda gewoon
+  opnieuw sturen).
+- In de app: tijd van-tot, duur, klant, Route en Bel. Met bonnummer: "Overnemen" (als kantoor de bon-PDF heeft
+  klaargezet), "Werkbon openen" (staat al in de app) of "Werkbon maken" (nieuwe bon met bonnummer, klant, adres,
+  telefoon en omschrijving uit de agenda).
+- Kantoor ziet de afspraken grijs (stippelrand) in het weekrooster; klik = details en Verwijderen.
+- De monteur krijgt een pushmelding "Nieuwe planning van kantoor" (servercode pushAgenda), alleen als de planning aan staat
+  (beheer.html > Instellingen). Staat hij uit, dan ziet alleen de beheerder het (om te testen).
+- Zondag toont de planning (app en kantoor) de komende week.
+- Nieuwe bestanden: agenda-parse.js (in de app-map én in functions/; ze moeten gelijk zijn).
+  Nieuwe Firestore-regels: match /agenda en /agendaimport (gaat vanzelf via GitHub).
 
 STARTSCHERM OPGERUIMD (v179)
 - "Kies wat je wilt invullen." is weg.

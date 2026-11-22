@@ -275,6 +275,11 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+KANTOOR: UITLEG ACHTER EEN VRAAGTEKEN (v189)
+- Bij "Werkbon klaarzetten voor een monteur", "Klaarzetten per mail" en "Klaargezet" staat de uitleg niet meer
+  onder de titel, maar in een venster achter het rondje met het vraagteken.
+- Op een breed scherm is de kolom "Klaargezet" daardoor breder (verhouding 4:9, pagina tot 1600 px).
+
 TESTACCOUNT NIET IN DE PLANNING (v188)
 - a.f.vanderhulst@gmail.com staat niet meer in de planning op kantoor (geen rij in het weekrooster, niet te kiezen bij
   een bon in de planning) en de agenda (kantoor.html en agenda@) koppelt "Arjan van der Hulst" altijd aan het

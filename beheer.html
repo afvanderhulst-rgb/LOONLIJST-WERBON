@@ -106,12 +106,12 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 #plDlg{position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px}#plDlg[hidden]{display:none}
 #plDlg .card{width:100%;max-width:460px;max-height:92vh;overflow:auto;margin:0}#plDlg select,#plDlg input{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}
 /* ---- kantoor op de computer (v169) ---- */
-body.kp main,body.kp .hw,body.wide main,body.wide .hw{max-width:1500px}
+body.kp main,body.kp .hw,body.wide main,body.wide .hw{max-width:1600px}
 @media (min-width:1000px){
- body.kp #blist{display:grid;grid-template-columns:minmax(380px,5fr) 8fr;gap:14px;align-items:start}
+ body.kp #blist{display:grid;grid-template-columns:minmax(330px,4fr) 9fr;gap:14px;align-items:start}
  body.kp #blist>.card{margin:0}
  body.kp #bsentC{grid-column:2;grid-row:1/span 6}
- body.kp #bdrop{padding:56px 16px;font-size:18px}
+ body.kp #bdrop{padding:40px 16px;font-size:18px}
 }
 .bsf{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px}.bsf input,.bsf select{flex:1;min-width:140px;padding:8px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}
 table.st{width:100%;border-collapse:collapse;font-size:14px}table.st th{text-align:left;font-size:12px;color:var(--mu);font-weight:600;padding:6px;border-bottom:1px solid var(--bd)}
@@ -120,6 +120,9 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
 #kToast{position:fixed;right:16px;bottom:16px;z-index:50;max-width:380px;background:var(--ac);color:#fff;padding:12px 16px;border-radius:12px;box-shadow:0 6px 24px #0004;font-size:15px}
 .ball{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;padding:10px;border:1.5px solid var(--ac);border-radius:12px;background:var(--ac2)}
 .ball select{flex:1;min-width:200px;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit}
+.hlp{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:8px;border-radius:50%;border:1.5px solid var(--ac);background:var(--card);color:var(--ac);font:700 13px/1 system-ui,sans-serif;cursor:pointer;padding:0;vertical-align:middle}
+.hlp:hover{background:var(--ac);color:#fff}
+#hlpDlg{position:fixed;inset:0;background:#0008;z-index:70;display:flex;align-items:center;justify-content:center;padding:12px}#hlpDlg[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -206,19 +209,19 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div id="rprev"></div>
  </div>
  <div id="blist" hidden>
-  <div class="card"><b>Werkbon klaarzetten voor een monteur</b>
-   <p class="mu">Sleep een of meer werkbon-PDF's hierheen (of kies ze). Kies per bon de monteur en zet eventueel een opmerking erbij. De bon verschijnt op het startscherm van zijn app; hij tikt op Overnemen en de gegevens staan in een nieuwe bon.</p>
-   <div id="bdrop" style="border:2px dashed var(--bd);border-radius:12px;padding:22px 12px;text-align:center;color:var(--mu)">Sleep PDF's hierheen<br><label class="btn" style="display:inline-block;margin-top:10px;cursor:pointer">Bestanden kiezen<input id="bfile" type="file" accept="application/pdf,.pdf" multiple hidden></label></div>
+  <div class="card"><b>Werkbon klaarzetten voor een monteur<button class="hlp" type="button" data-hlp="Werkbon klaarzetten voor een monteur" aria-label="Uitleg" title="Uitleg">?</button></b>
+   <p class="mu hlpt" hidden>Sleep een of meer werkbon-PDF's hierheen (of kies ze). Kies per bon de monteur en zet eventueel een opmerking erbij. De bon verschijnt op het startscherm van zijn app; hij tikt op Overnemen en de gegevens staan in een nieuwe bon.</p>
+   <div id="bdrop" style="margin-top:10px;border:2px dashed var(--bd);border-radius:12px;padding:22px 12px;text-align:center;color:var(--mu)">Sleep PDF's hierheen<br><label class="btn" style="display:inline-block;margin-top:10px;cursor:pointer">Bestanden kiezen<input id="bfile" type="file" accept="application/pdf,.pdf" multiple hidden></label></div>
    <div style="margin-top:10px"><button class="btn" type="button" id="hbNew">+ Bon handmatig aanmaken (zonder PDF)</button></div>
    <div id="bnew"></div></div>
-  <div class="card" id="mailAdrC" hidden><b>Klaarzetten per mail</b><p class="mu">Je kunt een werkbon ook klaarzetten door de PDF vanuit Outlook te mailen naar het adres van de monteur hieronder. Onderwerp mag van alles zijn; de tekst van de mail wordt de opmerking bij de bon. Meerdere PDF's in één mail = meerdere bonnen. Alleen mails van kantoor-collega's en de beheerder worden aangenomen; je krijgt altijd een mail terug of het gelukt is. Tip: zet de adressen in Outlook als contactpersoon (bijv. "Werkbon - Jan Jansen").</p>
+  <div class="card" id="mailAdrC" hidden><b>Klaarzetten per mail<button class="hlp" type="button" data-hlp="Klaarzetten per mail" aria-label="Uitleg" title="Uitleg">?</button></b><p class="mu hlpt" hidden>Je kunt een werkbon ook klaarzetten door de PDF vanuit Outlook te mailen naar het adres van de monteur hieronder. Onderwerp mag van alles zijn; de tekst van de mail wordt de opmerking bij de bon. Meerdere PDF's in één mail = meerdere bonnen. Alleen mails van kantoor-collega's en de beheerder worden aangenomen; je krijgt altijd een mail terug of het gelukt is. Tip: zet de adressen in Outlook als contactpersoon (bijv. "Werkbon - Jan Jansen").</p>
    <div id="mailAdrL"></div>
    <div id="mailAdrS" hidden style="margin-top:12px;border-top:1px solid var(--bd);padding-top:10px"><b style="font-size:15px">Koppeling met Cloudflare (alleen beheerder, eenmalig)</b>
     <p class="mu">1. Cloudflare &gt; mit-werkbon.com &gt; Email &gt; Email Routing: aanzetten (Cloudflare zet de MX-records zelf).<br>2. Klik hieronder op de knop en kopieer het script.<br>3. Cloudflare &gt; Workers &amp; Pages &gt; Create &gt; Worker, naam <b>mit-werkbon-mail</b> &gt; Deploy &gt; Edit code: alles vervangen door het script &gt; Deploy.<br>4. Email Routing &gt; Routing rules &gt; Catch-all address &gt; Edit: actie <b>Send to a Worker</b>, Worker <b>mit-werkbon-mail</b> &gt; Save, en zet hem aan.<br>Opnieuw op de knop klikken maakt een nieuwe sleutel: plak dan ook het nieuwe script in Cloudflare.</p>
     <button class="btn" id="mailAdrB" type="button">Script voor Cloudflare maken</button><div id="mailAdrR" class="mu" style="margin-top:8px"></div>
     <div id="mailAdrW" hidden style="margin-top:8px"><textarea id="mailAdrT" readonly rows="12" style="width:100%;font:12px/1.4 ui-monospace,Consolas,monospace;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)"></textarea><button class="btn sm" id="mailAdrK" type="button" style="margin-top:6px">Script kopiëren</button></div></div></div>
-  <div class="card" id="bsentC"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b id="bsT">Klaargezet</b><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" id="bnot" type="button" hidden>Meldingen op deze computer aan</button><button class="btn sm" id="brf" type="button">Vernieuwen</button></span></div>
-   <p class="mu" style="margin-top:4px">Werkt vanzelf bij: overneemt een monteur een bon, dan zie je dat meteen (met een melding). Opgehaalde bonnen worden na 30 dagen opgeruimd, bonnen die niet zijn opgehaald na 60 dagen. Een bon die nog niet is opgehaald kun je naar een andere monteur verplaatsen of intrekken.</p>
+  <div class="card" id="bsentC"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center"><b id="bsT">Klaargezet</b><button class="hlp" type="button" data-hlp="Klaargezet" aria-label="Uitleg" title="Uitleg">?</button></span><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" id="bnot" type="button" hidden>Meldingen op deze computer aan</button><button class="btn sm" id="brf" type="button">Vernieuwen</button></span></div>
+   <p class="mu hlpt" hidden style="margin-top:4px">Werkt vanzelf bij: overneemt een monteur een bon, dan zie je dat meteen (met een melding). Opgehaalde bonnen worden na 30 dagen opgeruimd, bonnen die niet zijn opgehaald na 60 dagen. Een bon die nog niet is opgehaald kun je naar een andere monteur verplaatsen of intrekken.</p>
    <div class="bsf"><input id="bsq" type="search" placeholder="Zoek op werkbon, klant of monteur…"><select id="bsm"><option value="">Alle monteurs</option></select><select id="bss"><option value="">Alle</option><option value="klaar">Nog niet opgehaald</option><option value="opgehaald">Opgehaald</option></select></div>
    <div id="bsent"></div></div>
   <div class="card" id="blogc" hidden><b>Logboek klaarzetten</b><p class="mu">Wie heeft welke bon klaargezet, verplaatst of ingetrokken. Alleen zichtbaar voor de beheerder. Ouder dan een jaar wordt opgeruimd.</p><button class="btn" id="blog" type="button">Logboek tonen</button><div id="blogl" style="margin-top:10px"></div></div>
@@ -231,6 +234,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
    <button class="btn" id="klog" type="button">Wijzigingen tonen</button><div id="klogl" style="margin-top:10px"></div></div>
  </div>
 </main>
+<div id="hlpDlg" hidden><div class="card" style="width:100%;max-width:480px;margin:0"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b id="hlpT" style="font-size:17px"></b><button class="btn sm" type="button" id="hlpX">Sluiten</button></div><div id="hlpB" style="margin-top:8px;font-size:15px;line-height:1.5"></div></div></div>
 <div id="hbDlg" hidden style="position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px"></div>
 <div id="ksDlg" hidden style="position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px"><div class="card" style="width:100%;max-width:520px;max-height:92vh;overflow:auto;margin:0">
  <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Instellingen kantoor</b><button class="btn sm" type="button" id="ksX">Sluiten</button></div>
@@ -659,6 +663,11 @@ function agInfo(id){var o=AG.filter(function(x){return x.id===id})[0],dl=$('plDl
 $('agFile').onchange=function(){agFiles(this.files);this.value=''};
 (function(){var d=$('agDrop');d.addEventListener('dragover',function(e){if([].indexOf.call(e.dataTransfer.types,'Files')>=0){e.preventDefault();e.stopPropagation();d.style.borderColor='var(--ac)'}});d.addEventListener('dragleave',function(){d.style.borderColor=''});
  d.addEventListener('drop',function(e){d.style.borderColor='';if(e.dataTransfer.files&&e.dataTransfer.files.length){e.preventDefault();e.stopPropagation();agFiles(e.dataTransfer.files)}})})();
+/* ---------- uitleg achter een vraagteken (v189) ---------- */
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.hlp');if(!b)return;e.preventDefault();e.stopPropagation();
+ var c=b.closest('.card'),p=c&&c.querySelector('.hlpt');$('hlpT').textContent=b.dataset.hlp||'Uitleg';$('hlpB').innerHTML=p?p.innerHTML:'';$('hlpDlg').hidden=false;$('hlpX').focus()},true);
+$('hlpX').onclick=function(){$('hlpDlg').hidden=true};$('hlpDlg').onclick=function(e){if(e.target===this)this.hidden=true};
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('hlpDlg').hidden)$('hlpDlg').hidden=true});
 /* ---------- bon handmatig aanmaken, zonder PDF (v187) ---------- */
 function hbOpen(voor,pd){var M=monteurs(),dl=$('hbDlg');
  dl.innerHTML='<div class="card" style="width:100%;max-width:560px;max-height:92vh;overflow:auto;margin:0"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Bon handmatig aanmaken</b><button class="btn sm" type="button" id="hbX">Sluiten</button></div>'+

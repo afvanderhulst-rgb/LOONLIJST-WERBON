@@ -123,6 +123,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
 .hlp{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:8px;border-radius:50%;border:1.5px solid var(--ac);background:var(--card);color:var(--ac);font:700 13px/1 system-ui,sans-serif;cursor:pointer;padding:0;vertical-align:middle}
 .hlp:hover{background:var(--ac);color:#fff}
 #hlpDlg{position:fixed;inset:0;background:#0008;z-index:70;display:flex;align-items:center;justify-content:center;padding:12px}#hlpDlg[hidden]{display:none}
+.tabs .kpl{align-self:center;margin-left:auto;padding:6px 10px;font-size:14px;font-weight:600;color:var(--ac);text-decoration:none;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -137,7 +138,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="er" id="le" role="alert"></div>
  </div>
  <div class="card" id="msg" hidden></div>
- <nav class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="b">Bonnen klaarzetten</button><button type="button" data-tab="k">Klanten</button><button type="button" data-tab="p">Planning</button><button type="button" data-tab="r">Rooster</button><button type="button" data-tab="i">Instellingen</button><button type="button" data-tab="s">Systeem<span class="dot" id="sdot" hidden></span></button></nav>
+ <nav class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="b">Bonnen klaarzetten</button><button type="button" data-tab="k">Klanten</button><button type="button" data-tab="p">Planning</button><button type="button" data-tab="r">Rooster</button><button type="button" data-tab="i">Instellingen</button><button type="button" data-tab="s">Systeem<span class="dot" id="sdot" hidden></span></button><a class="kpl" href="https://mit-kantoor.web.app/" target="_blank" rel="noopener">Kantoor-app ↗</a></nav>
  <div id="list" hidden>
   <div class="tiles" id="tiles"></div>
   <div class="tools"><input id="q" type="search" placeholder="Zoek op naam of e-mailadres…"><button class="btn" id="rf" type="button">Vernieuwen</button></div>
@@ -294,7 +295,7 @@ auth.onAuthStateChanged(async function(u){
  if(KP){if(!isK&&!isAdm(u.email)){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') staat niet in de lijst met kantoor-collega\'s. Vraag de beheerder ('+ee(ADMIN)+') om je toe te voegen.</p>');return}
   ROLE='kantoor';if(!/^[brp]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email;$('kset').hidden=false}
  else if(ADMIN&&!isAdm(u.email)){
-  show(isK?'<b>Gebruik de kantoorpagina</b><p class="mu">Bonnen klaarzetten en het storingsrooster staan op een eigen pagina.</p><p><a class="btn pr" href="kantoor.html" style="text-decoration:none;display:inline-block">Naar kantoor.html</a></p>':'<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina.</p>');return}
+  show(isK?'<b>Gebruik de kantoorpagina</b><p class="mu">Bonnen klaarzetten en het storingsrooster staan op een eigen pagina.</p><p><a class="btn pr" href="https://mit-kantoor.web.app/" style="text-decoration:none;display:inline-block">Naar de kantoor-app</a></p>':'<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina.</p>');return}
  try{await u.reload()}catch(x){}
  if(!auth.currentUser.emailVerified){
   show('<b>Bevestig eerst je e-mailadres</b><p class="mu">Ter beveiliging werkt het beheer pas als bevestigd is dat '+ee(u.email)+' echt van jou is. Klik op de knop, open de mail en klik op de link. Kom daarna hier terug en klik op "Ik heb bevestigd".</p><div class="tools"><button class="btn pr" id="vf" type="button">Bevestigingsmail sturen</button><button class="btn" id="vd" type="button">Ik heb bevestigd</button></div><div class="mu" id="vs"></div>');
@@ -303,10 +304,10 @@ auth.onAuthStateChanged(async function(u){
   return}
  load()});
 
-var TAB=KP?'b':'u',TABK=KP?'kt:tab':'bh:tab',PLANON=false;try{var _t=sessionStorage.getItem(TABK);if((KP?/^[brp]$/:/^[ukrbisp]$/).test(_t||''))TAB=_t}catch(e){}
+var TAB=KP?'b':'u',TABK=KP?'kt:tab':'bh:tab',PLANON=false;try{var _t=sessionStorage.getItem(TABK);if((KP?/^[brp]$/:/^[uksi]$/).test(_t||''))TAB=_t}catch(e){}
 function planMag(){return PLANON||isAdm(auth&&auth.currentUser&&auth.currentUser.email)}
-function showTab(){[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x.dataset.tab===TAB);if(x.dataset.tab===TAB&&x.scrollIntoView)try{x.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}x.hidden=(ROLE==='kantoor'&&!/^[brp]$/.test(x.dataset.tab))||(x.dataset.tab==='p'&&!planMag())});if(TAB==='p'&&!planMag())TAB='b';$('plist').hidden=TAB!=='p';document.body.classList.toggle('wide',TAB==='p');$('list').hidden=TAB!=='u';$('ilist').hidden=TAB!=='i';$('slist').hidden=TAB!=='s';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';$('blist').hidden=TAB!=='b'}
-$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;TAB=b.dataset.tab;try{sessionStorage.setItem(TABK,TAB)}catch(e){}showTab();window.scrollTo(0,0);if(TAB==='b')loadSent();if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR();if(TAB==='p'){loadSent();drawPlan()}};
+function showTab(){[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x.dataset.tab===TAB);if(x.dataset.tab===TAB&&x.scrollIntoView)try{x.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}if(!x.dataset.tab){x.hidden=KP;return}x.hidden=(ROLE==='kantoor'&&!/^[brp]$/.test(x.dataset.tab))||(x.dataset.tab==='p'&&!planMag())||(!KP&&/^[brp]$/.test(x.dataset.tab))});if(TAB==='p'&&!planMag())TAB='b';if(!KP&&/^[brp]$/.test(TAB))TAB='u';$('plist').hidden=TAB!=='p';document.body.classList.toggle('wide',TAB==='p');$('list').hidden=TAB!=='u';$('ilist').hidden=TAB!=='i';$('slist').hidden=TAB!=='s';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';$('blist').hidden=TAB!=='b'}
+$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b||!b.dataset.tab)return;TAB=b.dataset.tab;try{sessionStorage.setItem(TABK,TAB)}catch(e){}showTab();window.scrollTo(0,0);if(TAB==='b')loadSent();if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR();if(TAB==='p'){loadSent();drawPlan()}};
 /* ---------- rooster ---------- */
 var RP=null,RFILE='';
 function fdate(iso){if(!iso)return '';var p=iso.split('-');return +p[2]+'-'+(+p[1])+'-'+p[0].slice(2)}

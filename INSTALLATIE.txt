@@ -275,6 +275,11 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+BEHEER ZONDER KANTOORWERK (v198)
+- Beheer (beheer.html) toont alleen nog Gebruikers, Klanten, Instellingen en Systeem. Planning, Rooster en
+  Bonnen klaarzetten staan alleen in de kantoor-app (mit-kantoor.web.app); rechtsboven in beheer staat een link "Kantoor-app".
+- De beheerder kan gewoon inloggen in de kantoor-app en ziet daar alles (ook het logboek klaarzetten).
+
 VERSTUURDE WERKBON (PDF) OPENEN OP KANTOOR (v197)
 - Klik in de planning op een verstuurde bon (groen/rood/REP), of in "Klaargezet" op "Verstuurde bon":
   knop "Verstuurde werkbon (PDF)" opent precies de PDF die naar kantoor is gemaild (met uren, werkzaamheden,

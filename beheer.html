@@ -257,12 +257,18 @@ function fd(t){if(!t)return '–';var d=new Date(t);return d.getDate()+'-'+(d.ge
 function ago(t){if(!t)return '';var m=(Date.now()-t)/6e4;if(m<60)return 'net';var h=m/60;if(h<24)return Math.round(h)+' uur geleden';var d=Math.round(h/24);return d+(d===1?' dag':' dagen')+' geleden'}
 function kb(n){n=(n||0)/1024;return n<1024?Math.max(1,Math.round(n))+' kB':(n/1024).toFixed(1)+' MB'}
 function show(h){var m=$('msg');m.innerHTML=h;m.hidden=!h}
-var KP=/kantoor(\.html)?$/i.test(location.pathname); // kantoor.html = zelfde code, alleen klaarzetten + rooster
+var KP=!!window.MIT_KP||/kantoor(\.html)?$/i.test(location.pathname); // kantoor.html = zelfde code, alleen klaarzetten + rooster
 if(KP){document.body.classList.add('kp');document.title='MIT Werkbon kantoor';try{document.querySelector('.brand b').textContent='MIT Werkbon kantoor'}catch(e){}try{$('login').querySelector('b').textContent='Inloggen (kantoor)';$('who').textContent='Bonnen klaarzetten en storingsrooster'}catch(e){}}
 var ERR=[],ERRN={},ROLE='',C=window.MIT_FIREBASE||{},ADMINS=String(C.adminEmail||'').toLowerCase().split(/[,;\s]+/).filter(Boolean),ADMIN=ADMINS[0]||'',isAdm=function(e){return ADMINS.indexOf(String(e||'').toLowerCase())>=0},auth,db,USERS=[],BLOCK={},TOE={},KL=[],DOM='@mit-installatietechniek.com';
 if(!C.apiKey||String(C.apiKey).indexOf('VUL')===0){show('<b>Nog niet ingesteld.</b><p class="mu">Vul eerst firebase-config.js in (zie INSTALLATIE.txt).</p>');return}
 show('<p class="mu">Firebase laden…</p>');
 try{var F=await window.mitFB();auth=F.auth;db=F.db;show('')}catch(e){show('<b>Firebase kon niet geladen worden.</b><p class="mu">Controleer je internet en laad de pagina opnieuw.</p>');return}
+/* v190: kantoor-app op een eigen adres; op mit-werkbon.web.app/kantoor.html een verwijzing ernaartoe */
+var KURL='https://mit-kantoor.web.app/';
+if(window.MIT_KP_SITE&&'serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js')}catch(e){}}
+if(KP&&!window.MIT_KP_SITE){try{var kb=document.createElement('div');kb.className='card';kb.style.cssText='border:2px solid var(--ac);background:var(--ac2)';
+ kb.innerHTML='<b>Kantoor heeft nu een eigen app</b><p class="mu" style="margin:4px 0 8px">Open <a href="'+KURL+'">mit-kantoor.web.app</a> en installeer hem daar (knop "Installeren als programma" of het installeer-icoon in de adresbalk). Hier blijft alles ook gewoon werken.</p><a class="btn pr" href="'+KURL+'" style="text-decoration:none;display:inline-block">Naar de kantoor-app</a>';
+ document.querySelector('main').insertBefore(kb,document.querySelector('main').firstChild)}catch(e){}}
 /* installeren als programma (kantoor) */
 var INSTP=null;window.addEventListener('beforeinstallprompt',function(e){if(!KP)return;e.preventDefault();INSTP=e;$('inst').hidden=false});
 $('inst').onclick=async function(){if(!INSTP)return;INSTP.prompt();try{await INSTP.userChoice}catch(e){}INSTP=null;$('inst').hidden=true};

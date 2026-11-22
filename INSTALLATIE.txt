@@ -275,6 +275,23 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+KANTOOR ALS EIGEN APP: https://mit-kantoor.web.app (v190)
+- De kantoor-app staat nu ook op een eigen adres. Daardoor is hij los van de werkbon-app te installeren (op hetzelfde
+  adres zegt de browser "al geïnstalleerd"). Zelfde gegevens, zelfde inlog, zelfde functies als kantoor.html.
+- mit-werkbon.web.app/kantoor.html blijft werken en toont bovenaan een knop "Naar de kantoor-app".
+- Techniek: build.mjs maakt de map dist-kantoor (kantoor.html als index.html, eigen manifest met scope ./,
+  kleine service worker sw-kantoor.js -> sw.js). firebase.json heeft twee sites: mit-werkbon en mit-kantoor.
+  De workflow "App naar Firebase Hosting" maakt de site mit-kantoor de eerste keer zelf aan.
+EENMALIG ZELF DOEN (anders kan inloggen of App Check op het nieuwe adres mislukken):
+ 1. Firebase console > Authentication > Settings > Authorized domains > Add domain: mit-kantoor.web.app
+ 2. Google Cloud console > Security > reCAPTCHA (Fraud Defense) > Keys > de sleutel van MIT Werkbon >
+    Edit > Domains: mit-kantoor.web.app toevoegen > Save. (Nodig voor App Check, zeker vóór Enforce.)
+ 3. Alleen als de API-sleutel websitebeperkingen heeft: Google Cloud > APIs & Services > Credentials >
+    Browser key > Website restrictions: https://mit-kantoor.web.app/* toevoegen.
+ 4. Open https://mit-kantoor.web.app , log in, en installeer: Chrome/Edge op de computer: knop "Installeren als
+    programma" of het installeer-icoon in de adresbalk. Android: Chrome > ⋮ > App installeren.
+    Had je kantoor.html eerder als snelkoppeling op het startscherm: die mag weg.
+
 KANTOOR: UITLEG ACHTER EEN VRAAGTEKEN (v189)
 - Bij "Werkbon klaarzetten voor een monteur", "Klaarzetten per mail" en "Klaargezet" staat de uitleg niet meer
   onder de titel, maar in een venster achter het rondje met het vraagteken.

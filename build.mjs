@@ -23,7 +23,7 @@ const P = n => path.join(dirOf(n), 'node_modules', n);
 
 const OUT = 'dist', LIB = path.join(OUT, 'lib');
 const APP = ['index.html', 'beheer.html', 'sw.js', 'manifest.webmanifest', 'fb.js', 'rooster.js', 'libs.js',
-  'firebase-config.js', 'handleiding.pdf', 'lmra.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'kantoor.webmanifest', 'agenda-parse.js'];
+  'firebase-config.js', 'handleiding.pdf', 'lmra.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'kantoor.webmanifest', 'agenda-parse.js', 'sw-kantoor.js'];
 const log = [], miss = [];
 
 fs.rmSync(OUT, { recursive: true, force: true });
@@ -41,6 +41,7 @@ try {
     '<title>MIT Werkbon kantoor</title>\n<link rel="manifest" href="kantoor.webmanifest">\n<link rel="icon" href="icon-192.png">\n<meta name="theme-color" content="#1a147f">');
   fs.writeFileSync(path.join(OUT, 'kantoor.html'), k); log.push('kantoor.html');
 } catch (e) { miss.push('kantoor.html'); console.warn('LET OP: kantoor.html kon niet worden gemaakt.'); }
+
 
 // losse onderdelen
 copy(`${P('pdfjs-dist')}/build/pdf.min.js`, `${LIB}/pdf.min.js`);
@@ -69,6 +70,23 @@ for (const f of ['firebase-app.js', 'firebase-auth.js', 'firebase-firestore.js',
     fs.mkdirSync(`${LIB}/firebase`, { recursive: true }); fs.writeFileSync(`${LIB}/firebase/${f}`, src); log.push(`lib/firebase/${f}`);
   } catch (e) { miss.push(`firebase/${f}`); }
 }
+
+// v190: de kantoor-app ook op een EIGEN adres (Firebase-site mit-kantoor, map dist-kantoor), zodat hij los van de
+// werkbon-app te installeren is (zelfde adres = de browser denkt dat hij al geinstalleerd is).
+const OUTK = 'dist-kantoor';
+try {
+  fs.rmSync(OUTK, { recursive: true, force: true }); fs.mkdirSync(OUTK, { recursive: true });
+  const k = fs.readFileSync(path.join(OUT, 'kantoor.html'), 'utf8')
+    .replace('<link rel="manifest" href="kantoor.webmanifest">', '<link rel="manifest" href="manifest.webmanifest">\n<script>window.MIT_KP=1;window.MIT_KP_SITE=1</script>');
+  fs.writeFileSync(path.join(OUTK, 'index.html'), k);
+  const m = JSON.parse(fs.readFileSync('kantoor.webmanifest', 'utf8'));
+  Object.assign(m, { id: './', start_url: './', scope: './' });
+  fs.writeFileSync(path.join(OUTK, 'manifest.webmanifest'), JSON.stringify(m, null, 2));
+  for (const f of ['fb.js', 'libs.js', 'rooster.js', 'agenda-parse.js', 'firebase-config.js', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png']) fs.copyFileSync(f, path.join(OUTK, f));
+  fs.copyFileSync('sw-kantoor.js', path.join(OUTK, 'sw.js'));
+  fs.cpSync(LIB, path.join(OUTK, 'lib'), { recursive: true });
+  console.log('Kantoor-app klaar in ' + OUTK + '/.');
+} catch (e) { console.warn('LET OP: dist-kantoor kon niet worden gemaakt:', e && e.message); }
 
 fs.writeFileSync(`${LIB}/manifest.json`, JSON.stringify({ gebouwd: new Date().toISOString(), bestanden: log.filter(f => f.startsWith('lib/')), ontbreekt: miss }, null, 1));
 console.log(`Klaar: ${log.length} bestanden in ${OUT}/.`);

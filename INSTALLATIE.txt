@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v177,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v178,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,10 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+ICONEN OP HET STARTSCHERM (v178)
+- Werkbonnen (klembord), Weeklijsten (agenda) en Werkbon importeren (document met pijl) hebben een icoon in een
+  blauw vlakje, in dezelfde lijnstijl als de onderbalk. Werkt ook in donkere modus. Getekend in index.html (geen extra bestanden).
 
 VRIJE DAGEN EN ADV SAMEN (v175-v176)
 - v175: startscherm zonder uitlegtekst onder Werkbonnen, Weeklijsten en Werkbon importeren.

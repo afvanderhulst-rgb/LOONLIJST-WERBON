@@ -275,6 +275,11 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+PLANNING OP KANTOOR WERKT LIVE BIJ (v196)
+- Ook agenda-afspraken en werkbonnen die de monteur zelf maakte werken nu vanzelf bij in het weekrooster
+  (zoals klaargezette bonnen al deden): wordt iets bezig/verstuurd/gereed, of leest een collega een agenda in,
+  dan verandert het rooster zonder verversen. De monteur meldt het bij het openen van zijn app en elke paar minuten.
+
 GEREED ALLEEN BIJ VERSTUREN OP/NA DE GEPLANDE DAG (v195)
 - Een agenda-afspraak wordt pas groen/rood als de werkbon met dat bonnummer OP of NA de geplande dag is verstuurd.
   Een werkbon met hetzelfde nummer die eerder al eens verstuurd was (vorig bezoek) telt niet meer.

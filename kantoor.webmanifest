@@ -7,11 +7,24 @@
   "scope": "./kantoor.html",
   "display": "standalone",
   "background_color": "#e1e3ef",
-  "theme_color": "#1a147f",
+  "theme_color": "#e8701a",
   "lang": "nl",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "kantoor-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "kantoor-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "kantoor-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

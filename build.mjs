@@ -23,7 +23,7 @@ const P = n => path.join(dirOf(n), 'node_modules', n);
 
 const OUT = 'dist', LIB = path.join(OUT, 'lib');
 const APP = ['index.html', 'beheer.html', 'sw.js', 'manifest.webmanifest', 'fb.js', 'rooster.js', 'libs.js',
-  'firebase-config.js', 'handleiding.pdf', 'lmra.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'kantoor.webmanifest', 'agenda-parse.js', 'sw-kantoor.js'];
+  'firebase-config.js', 'handleiding.pdf', 'lmra.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'kantoor.webmanifest', 'agenda-parse.js', 'sw-kantoor.js', 'kantoor-192.png', 'kantoor-512.png', 'kantoor-maskable-512.png'];
 const log = [], miss = [];
 
 fs.rmSync(OUT, { recursive: true, force: true });
@@ -38,7 +38,7 @@ for (const f of APP) if (!copy(f, path.join(OUT, f))) console.warn('LET OP: app-
 // Met een eigen manifest, zodat kantoor hem op Windows als programma kan installeren (Edge/Chrome).
 try {
   const k = fs.readFileSync('beheer.html', 'utf8').replace('<title>MIT Werkbon beheer</title>',
-    '<title>MIT Werkbon kantoor</title>\n<link rel="manifest" href="kantoor.webmanifest">\n<link rel="icon" href="icon-192.png">\n<meta name="theme-color" content="#1a147f">');
+    '<title>MIT Werkbon kantoor</title>\n<link rel="manifest" href="kantoor.webmanifest">\n<link rel="icon" href="kantoor-192.png">\n<link rel="apple-touch-icon" href="kantoor-192.png">\n<meta name="theme-color" content="#1a147f">');
   fs.writeFileSync(path.join(OUT, 'kantoor.html'), k); log.push('kantoor.html');
 } catch (e) { miss.push('kantoor.html'); console.warn('LET OP: kantoor.html kon niet worden gemaakt.'); }
 
@@ -82,7 +82,7 @@ try {
   const m = JSON.parse(fs.readFileSync('kantoor.webmanifest', 'utf8'));
   Object.assign(m, { id: './', start_url: './', scope: './' });
   fs.writeFileSync(path.join(OUTK, 'manifest.webmanifest'), JSON.stringify(m, null, 2));
-  for (const f of ['fb.js', 'libs.js', 'rooster.js', 'agenda-parse.js', 'firebase-config.js', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png']) fs.copyFileSync(f, path.join(OUTK, f));
+  for (const f of ['fb.js', 'libs.js', 'rooster.js', 'agenda-parse.js', 'firebase-config.js', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'kantoor-192.png', 'kantoor-512.png', 'kantoor-maskable-512.png']) fs.copyFileSync(f, path.join(OUTK, f));
   fs.copyFileSync('sw-kantoor.js', path.join(OUTK, 'sw.js'));
   fs.cpSync(LIB, path.join(OUTK, 'lib'), { recursive: true });
   console.log('Kantoor-app klaar in ' + OUTK + '/.');

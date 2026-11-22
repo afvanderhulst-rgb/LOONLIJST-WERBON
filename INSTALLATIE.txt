@@ -275,6 +275,14 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+APP CHECK: WIE IS NOG NIET KLAAR? (v186)
+- beheer.html > Systeem > bovenaan "App Check: klaar voor Enforce?": hoeveel gebruikers klaar zijn en wie nog niet,
+  met de reden (app-versie ouder dan 163, of de app niet meer geopend sinds de App Check-sleutel op 17-11-2026)
+  en wanneer ze laatst actief waren.
+- In de gebruikerslijst staat een te oude app-versie in het rood: "App v158 (oud)".
+- Enforce (Firebase > App Check > Cloud Firestore) pas aanzetten als hier iedereen klaar is én "outdated client" in
+  Firebase een paar dagen ~0% is. Eerst Cloud Firestore, een paar dagen later Authentication. Problemen: Unenforce.
+
 KANTOOR: TANDWIEL MET TOEGANG (v185)
 - kantoor.html heeft rechtsboven een tandwiel > "Instellingen kantoor" > "Toegang tot kantoor.html".
   Kantoor kan daar zelf een collega toegang geven (alleen adressen op @mit-installatietechniek.com) of intrekken.

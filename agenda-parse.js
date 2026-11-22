@@ -58,7 +58,9 @@
     var offs = []; ankers.forEach(function (a) { tijden.forEach(function (t) { if (Math.abs(t.y - a.y) < 5) offs.push(t.x - a.x); }); });
     offs.sort(function (a, b) { return a - b; });
     var off = offs.length ? offs[Math.floor(offs.length / 2)] : 47;
-    tijden.forEach(function (t) { if (!ankers.some(function (a) { return Math.abs(a.y - t.y) < 8; })) ankers.push({s: '', x: t.x - off, y: t.y, synth: true}); });
+    // alleen als er op dezelfde hoogte ook een duur (reparatietijd) staat; anders is het tekst als "niet voor 15.30 uur"
+    var duren = lijf.filter(function (w) { return DUUR.test(w.s) && w.x > X.dat + 60; });
+    tijden.forEach(function (t) { if (!ankers.some(function (a) { return Math.abs(a.y - t.y) < 8; }) && duren.some(function (d) { return d.x > t.x && Math.abs(d.y - t.y) < 7; })) ankers.push({s: '', x: t.x - off, y: t.y, synth: true}); });
     ankers.sort(function (a, b) { return a.y - b.y; });
     if (!ankers.length) return uit;
     var vorigePd = '';
@@ -160,6 +162,33 @@
     uids.forEach(function (u) { G[u].regels.sort(function (a, b) { return (a.pd + a.pt).localeCompare(b.pd + b.pt); }); });
     return {groepen: uids.map(function (u) { return G[u]; }), los: los};
   }
-  var api = {leesAgenda: leesAgenda, zoekMonteur: zoekMonteur, verdeel: verdeel};
+  // ---- wijzigingen t.o.v. de vorige agenda (v181) ----
+  var DGN = ['zo', 'ma', 'di', 'wo', 'do', 'vr', 'za'];
+  function hash(t) { var h = 5381; t = String(t || ''); for (var i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return h.toString(36); }
+  function eerste(r) { return String(r.oms || '').split('\n')[0].trim().toLowerCase(); }
+  function sleutel(r) { return r.pd + '_' + String(r.pt || '').replace(':', '') + '_' + (r.wb ? r.wb : 'x' + hash(eerste(r))); }
+  // vaste document-id per afspraak: opnieuw inlezen overschrijft dezelfde afspraak (geen dubbele meldingen)
+  function docIds(uid, regels) { var gez = {}; return regels.map(function (r) { var id = (uid + '_' + sleutel(r)).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 140), k = id, n = 1; while (gez[k]) k = id + '_' + (++n); gez[k] = 1; return k; }); }
+  function inhoud(r) { return [r.duur, r.wb, r.klant, r.adres, r.plaats, r.tel, r.oms].map(function (x) { return String(x || '').trim(); }).join('|'); }
+  function kort(r) { var p = String(r.pd || '').split('-'), d = p.length === 3 ? new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])) : null;
+    return (d ? DGN[d.getUTCDay()] + ' ' + (+p[2]) + '-' + (+p[1]) : r.pd) + (r.pt ? ' ' + r.pt : '') + ' ' + (r.wb ? r.wb + (r.klant ? ' ' + r.klant : '') : String(r.oms || '').split('\n')[0]); }
+  // oud = afspraken die er al stonden (zelfde monteur, zelfde periode), nieuw = de nieuwe agenda
+  function vergelijk(oud, nieuw) {
+    var O = {}, N = {}, bij = [], weg = [], gew = [];
+    oud.forEach(function (r) { O[sleutel(r)] = r; }); nieuw.forEach(function (r) { N[sleutel(r)] = r; });
+    nieuw.forEach(function (r) { var o = O[sleutel(r)]; if (!o) bij.push(r); else if (inhoud(o) !== inhoud(r)) gew.push({oud: o, nieuw: r, tekst: kort(r) + ': gegevens aangepast'}); });
+    oud.forEach(function (r) { if (!N[sleutel(r)]) weg.push(r); });
+    // verzet naar een andere tijd of dag: zelfde bon (of zelfde omschrijving) in dezelfde week
+    bij = bij.filter(function (r) {
+      var i = -1; weg.forEach(function (o, j) { if (i < 0 && (r.wb ? o.wb === r.wb : (!o.wb && eerste(o) === eerste(r) && o.pd === r.pd))) i = j; });
+      if (i < 0) return true;
+      var o = weg.splice(i, 1)[0];
+      gew.push({oud: o, nieuw: r, tekst: 'Verzet: ' + kort(o) + ' \u2192 ' + kort(r).split(' ').slice(0, r.pt ? 3 : 2).join(' ')});
+      return false;
+    });
+    var regels = [].concat(gew.map(function (g) { return g.tekst; }), bij.map(function (r) { return 'Nieuw: ' + kort(r); }), weg.map(function (r) { return 'Vervallen: ' + kort(r); }));
+    return {bij: bij.length, weg: weg.length, gew: gew.length, eerste: !oud.length, regels: regels};
+  }
+  var api = {leesAgenda: leesAgenda, zoekMonteur: zoekMonteur, verdeel: verdeel, docIds: docIds, vergelijk: vergelijk, kort: kort};
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.mitAgenda = api;
 })(typeof window !== 'undefined' ? window : this);

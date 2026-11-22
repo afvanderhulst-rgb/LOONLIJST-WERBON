@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v180,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v181,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,20 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+AGENDA: ÉÉN PDF VOOR ALLE MONTEURS + MELDING BIJ WIJZIGING (v181)
+- Eén agenda-PDF met alle monteurs kan gewoon: elke regel gaat naar de monteur die erop staat (per naam).
+  Per monteur apart sturen mag ook.
+- Periode = van de eerste tot de laatste dag in de hele PDF. Afspraken van een monteur die op deze agenda staat en
+  die in die periode niet meer voorkomen, worden weggehaald. (Een monteur die helemaal niet op de agenda staat,
+  houdt zijn afspraken.)
+- Opnieuw sturen vergelijkt met de vorige agenda: verzet (andere tijd/dag), nieuw, vervallen of gegevens aangepast.
+  * De monteur krijgt een pushmelding "Planning gewijzigd" met de wijzigingen (max. 3, "+ n andere").
+    Nieuwe planning (eerste keer voor die periode): "Nieuwe planning van kantoor". Niets gewijzigd: geen melding.
+  * In de app ook een melding bij het openen (planning gewijzigd / uit je planning gehaald).
+  * Kantoor ziet de wijzigingen vóór het opslaan (kantoor.html) of in de antwoordmail (agenda@).
+- Elke afspraak heeft nu een vaste sleutel (monteur + dag + tijd + bonnummer/omschrijving), zodat dezelfde afspraak
+  niet als nieuw wordt gezien.
 
 AGENDA VAN DE PLANNER IN DE PLANNING (v180)
 - De "Agenda servicemonteurs" (PDF) komt in "Mijn planning" van de monteur: elke regel met dag, tijd, duur

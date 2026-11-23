@@ -625,6 +625,22 @@ async function brevoMail(aan, onderwerp, inhoud, bijlagen) {
   } catch (e) { logger.warn('bevestiging niet verstuurd', e && e.message); }
 }
 
+// v212: is een bijlage wat hij zegt te zijn? Gevaarlijke soorten weigeren en de inhoud (eerste bytes) controleren.
+const GEVAARLIJK = ['exe', 'bat', 'cmd', 'com', 'scr', 'pif', 'js', 'jse', 'vbs', 'vbe', 'wsf', 'ps1', 'msi', 'msp', 'jar', 'lnk', 'hta', 'htm', 'html', 'svg', 'iso', 'img', 'dll', 'reg', 'cpl', 'apk', 'sh', 'app', 'dmg'];
+const MAGIC = {pdf: ['25504446'], jpg: ['ffd8ff'], jpeg: ['ffd8ff'], png: ['89504e47'], gif: ['47494638'], bmp: ['424d'], tif: ['49492a00', '4d4d002a'], tiff: ['49492a00', '4d4d002a'],
+  docx: ['504b0304'], xlsx: ['504b0304'], pptx: ['504b0304'], docm: ['504b0304'], ods: ['504b0304'], zip: ['504b0304'],
+  doc: ['d0cf11e0'], xls: ['d0cf11e0'], ppt: ['d0cf11e0'], msg: ['d0cf11e0'], rtf: ['7b5c727466'], heic: [], webp: ['52494646']};
+function bijlageOk(naam, buf) {
+  const ext = ((String(naam || '').toLowerCase().match(/\.([a-z0-9]+)$/) || [])[1]) || '';
+  const hex = buf.slice(0, 8).toString('hex');
+  if (GEVAARLIJK.includes(ext)) return 'dit soort bestand (.' + ext + ') wordt niet aangenomen';
+  if (hex.startsWith('4d5a') || hex.startsWith('7f454c46')) return 'dit is een programma';
+  if (MAGIC[ext] && MAGIC[ext].length && !MAGIC[ext].some((m) => hex.startsWith(m))) return 'de inhoud past niet bij .' + ext;
+  if (ext === 'heic' && buf.slice(4, 8).toString('latin1') !== 'ftyp') return 'de inhoud past niet bij .heic';
+  if (!MAGIC[ext] && buf.slice(0, 1024).includes(0)) return 'onbekend soort bestand';
+  return '';
+}
+
 // welke bijlagen mogen terug naar kantoor (Brevo accepteert alleen bekende extensies, max. 20 MB per mail)
 const TERUG_EXT = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'tif', 'tiff', 'bmp', 'doc', 'docx', 'docm', 'xls', 'xlsx', 'ods', 'csv', 'txt', 'rtf',
   'ppt', 'pptx', 'zip', 'xml', 'msg', 'ics', 'htm', 'html', 'eps'];
@@ -788,6 +804,8 @@ async function verwerkMail(m, cache) {
       for (const k of kandidaten) {
         if (extra.length >= MAX_EXTRA) { extraNiet.push(k.naam + ' (te veel bijlagen)'); continue; }
         let buf; try { buf = await k.buf(); } catch (e) { extraNiet.push(k.naam + ' (kon niet worden opgehaald)'); continue; }
+        const nee = bijlageOk(k.naam, buf);
+        if (nee) { extraNiet.push(k.naam + ' (' + nee + ')'); continue; }
         if (buf.length > MAX_EXTRA_BESTAND || totaal + buf.length > MAX_EXTRA_TOTAAL) { extraNiet.push(k.naam + ' (te groot)'); continue; }
         totaal += buf.length; extra.push({naam: k.naam, type: k.type, buf});
       }

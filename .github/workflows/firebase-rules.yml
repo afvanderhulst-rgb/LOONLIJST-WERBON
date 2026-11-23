@@ -1,7 +1,9 @@
 # MIT Werkbon: Firestore-regels automatisch naar Firebase zetten (geen plakken meer in de console).
 # Draait vanzelf als er op GitHub een nieuwe firestore-regels.txt (of firebase.json) komt,
 # of met de hand: GitHub > Actions > "Firestore-regels naar Firebase" > Run workflow.
-# Firebase controleert de regels eerst; klopt er iets niet, dan wordt de run rood en blijven de oude regels staan.
+# Eerst worden de regels automatisch getest (tests/firestore-regels.test.mjs, in een Firestore-emulator):
+# gaat een test mis, dan wordt de run rood en worden de regels NIET gepubliceerd (de oude blijven staan).
+# Daarna controleert Firebase ze nog een keer bij het publiceren.
 # Nodig: repository secret FIREBASE_SERVICE_ACCOUNT (dezelfde als voor de servercode).
 name: Firestore-regels naar Firebase
 
@@ -11,6 +13,7 @@ on:
     paths:
       - 'firestore-regels.txt'
       - 'firebase.json'
+      - 'tests/**'
       - '.github/workflows/firebase-rules.yml'
   workflow_dispatch:
 
@@ -19,7 +22,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Code ophalen
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Node.js 22
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+
+      - name: Java 21 (voor de Firestore-emulator)
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME_21_X64/bin" >> "$GITHUB_PATH"
+
+      - name: Testonderdelen installeren
+        run: npm i --no-save --no-audit --no-fund firebase-tools@14 @firebase/rules-unit-testing@4 firebase@11
+
+      - name: Regels testen in de emulator
+        run: npx firebase emulators:exec --only firestore --project demo-mit "node --test tests/*.test.mjs"
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

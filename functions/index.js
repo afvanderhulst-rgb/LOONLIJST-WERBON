@@ -107,6 +107,16 @@ exports.pushAgenda = onDocumentCreated({document: 'agendaimport/{id}', secrets: 
     url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id), ok: true});
 });
 
+// v210: kantoor vraagt een correctie op een verstuurde werkbon -> melding (met OK) naar de monteur
+exports.pushCorrectie = onDocumentCreated({document: 'correctie/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
+  const d = (ev.data && ev.data.data()) || {};
+  if (!d.voor) return;
+  const r = (Array.isArray(d.reden) ? d.reden : []).slice(0, 5).map((x) => '- ' + tekst(x, 60));
+  await sendTo(d.voor, {title: 'Correctie gevraagd' + (d.wb ? ': werkbon ' + tekst(d.wb, 12) : ''),
+    body: r.concat(d.opm ? [tekst(d.opm, 140)] : []).join('\n') || 'Kantoor vraagt je de werkbon aan te passen.',
+    url: './?go=home', tag: 'corr-' + ev.params.id, ok: true});
+});
+
 // v203: nieuw storingsrooster -> melding (met OK) alleen naar monteurs bij wie hun eigen diensten (nog niet voorbij) zijn veranderd
 exports.pushRooster = onDocumentWritten({document: 'rooster/{doc}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
   if (ev.params.doc !== 'actief') return;

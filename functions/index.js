@@ -10,7 +10,7 @@
    - (v180) agenda@mit-werkbon.com: agenda-PDF van kantoor -> planning (collectie agenda), pushAgenda meldt het de monteur
    - inboxSetup:  knop op beheer.html die het Cloudflare-script maakt
    Geheimen (Secret Manager): VAPID_PRIVATE_KEY (pushmeldingen), BREVO_API_KEY (mailen). */
-const {onDocumentCreated, onDocumentUpdated} = require('firebase-functions/v2/firestore');
+const {onDocumentCreated, onDocumentUpdated, onDocumentWritten} = require('firebase-functions/v2/firestore');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {onRequest} = require('firebase-functions/v2/https');
 const {setGlobalOptions, logger} = require('firebase-functions/v2');
@@ -84,7 +84,7 @@ exports.pushKlaar = onDocumentCreated({document: 'inbox/{id}', secrets: [VAPID_P
   await sendTo(d.voor, {
     title: 'Nieuwe werkbon klaargezet',
     body: (wie || 'Kantoor heeft een werkbon voor je klaargezet.') + (d.pd ? '\nGepland: ' + planTxt(d) : '') + (d.opm ? '\n' + String(d.opm).slice(0, 120) : ''),
-    url: d.pd ? './?go=plan' : './?go=home', tag: 'klaar-' + ev.params.id,
+    url: d.pd ? './?go=plan' : './?go=home', tag: 'klaar-' + ev.params.id, ok: true,
   });
 });
 
@@ -99,12 +99,51 @@ exports.pushAgenda = onDocumentCreated({document: 'agendaimport/{id}', secrets: 
   if (d.eerste === false && !(d.bij || d.weg || d.gew)) return; // zelfde agenda opnieuw: geen melding
   if (d.eerste === false) {
     await sendTo(d.voor, {title: 'Planning gewijzigd' + per, body: w.slice(0, 3).join('\n') + (w.length > 3 ? '\n+ ' + (w.length - 3) + ' andere wijziging' + (w.length - 3 === 1 ? '' : 'en') : ''),
-      url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id)});
+      url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id), ok: true});
     return;
   }
   await sendTo(d.voor, {title: 'Nieuwe planning van kantoor',
     body: (d.n || 0) + ((d.n === 1) ? ' afspraak' : ' afspraken') + per + '. Tik om je planning te zien.',
-    url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id)});
+    url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id), ok: true});
+});
+
+// v203: nieuw storingsrooster -> melding (met OK) alleen naar monteurs bij wie hun eigen diensten (nog niet voorbij) zijn veranderd
+exports.pushRooster = onDocumentWritten({document: 'rooster/{doc}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
+  if (ev.params.doc !== 'actief') return;
+  const voor = (ev.data && ev.data.before && ev.data.before.exists && ev.data.before.data()) || null;
+  const na = (ev.data && ev.data.after && ev.data.after.exists && ev.data.after.data()) || null;
+  if (!voor || !na) return; // eerste rooster of weggehaald: geen melding
+  const R = require('./rooster.js');
+  const vandaag = new Date().toISOString().slice(0, 10);
+  const mijn = (x, n) => (x.weken || []).filter((w) => (w.wie || []).includes(n) && String(w.e || '') >= vandaag);
+  const key = (w) => w.s + '|' + w.e + '|' + (w.b ? 1 : 0);
+  const MD = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  const dd = (iso) => { const p = String(iso || '').split('-'); if (p.length !== 3) return ''; const x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); return DGN[x.getUTCDay()] + ' ' + (+p[2]) + ' ' + MD[+p[1] - 1]; };
+  const txt = (w) => 'week ' + w.w + ': ' + dd(w.s) + ' t/m ' + dd(w.e) + (w.b ? ' (bouwvak)' : '');
+  const namen = new Set();
+  [voor, na].forEach((x) => (x.weken || []).forEach((w) => (w.wie || []).forEach((n) => namen.add(n))));
+  const toonVan = (n) => { const m = (na.monteurs || []).concat(voor.monteurs || []).find((x) => x.naam === n); return (m && m.toon) || n; };
+  const lijst = (await db.collection('monteurs').get()).docs.map((d) => Object.assign({uid: d.id}, d.data() || {}))
+    .filter((m) => !['a.f.vanderhulst@gmail.com'].includes(String(m.email || '').toLowerCase()));
+  const zoek = (n) => {
+    const vast = lijst.filter((m) => m.rooster === n);
+    if (vast.length) return vast;
+    const t = toonVan(n), sc = lijst.filter((m) => m.naam && !m.rooster).map((m) => ({m, d: Math.min(R.dist(m.naam, n), R.dist(m.naam, t))})).sort((a, b) => a.d - b.d);
+    return sc.length && sc[0].d <= 2 && (sc.length < 2 || sc[1].d > sc[0].d) ? [sc[0].m] : [];
+  };
+  let n = 0;
+  for (const naam of namen) {
+    const A = mijn(voor, naam), B = mijn(na, naam), ka = new Set(A.map(key)), kb = new Set(B.map(key));
+    const bij = B.filter((w) => !ka.has(key(w))), weg = A.filter((w) => !kb.has(key(w)));
+    if (!bij.length && !weg.length) continue;
+    const regels = bij.map((w) => 'Nieuw: ' + txt(w)).concat(weg.map((w) => 'Vervallen: ' + txt(w)));
+    for (const m of zoek(naam)) {
+      await sendTo(m.uid, {title: 'Storingsrooster gewijzigd', body: regels.slice(0, 4).join('\n') + (regels.length > 4 ? '\n+ ' + (regels.length - 4) + ' andere' : ''),
+        url: './?go=rooster', tag: 'rooster', ok: true});
+      n++;
+    }
+  }
+  logger.info('pushRooster', {meldingen: n});
 });
 
 exports.pushPlanning = onDocumentUpdated({document: 'inbox/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
@@ -117,17 +156,17 @@ exports.pushPlanning = onDocumentUpdated({document: 'inbox/{id}', secrets: [VAPI
     if (b.voor) {
       await sendTo(b.voor, {title: b.pd ? 'Werkbon voor je ingepland' : 'Nieuwe werkbon klaargezet',
         body: wie + (b.pd ? '\nGepland: ' + planTxt(b) : '') + (b.opm ? '\n' + String(b.opm).slice(0, 120) : ''),
-        url: b.pd ? './?go=plan' : './?go=home', tag: 'klaar-' + id});
+        url: b.pd ? './?go=plan' : './?go=home', tag: 'klaar-' + id, ok: true});
     }
     if (a.voor && a.status !== 'opgehaald') {
-      await sendTo(a.voor, {title: 'Werkbon verplaatst', body: wie + '\nKantoor heeft deze werkbon aan een collega gegeven.', url: './?go=plan', tag: 'weg-' + id});
+      await sendTo(a.voor, {title: 'Werkbon verplaatst', body: wie + '\nKantoor heeft deze werkbon aan een collega gegeven.', url: './?go=plan', tag: 'weg-' + id, ok: true});
     }
     return;
   }
   if (b.voor && ((a.pd || '') !== (b.pd || '') || (a.pt || '') !== (b.pt || ''))) {
     await sendTo(b.voor, {title: 'Planning gewijzigd',
       body: wie + '\n' + (b.pd ? (a.pd ? 'Was ' + planTxt(a) + ', nu ' : 'Gepland: ') + planTxt(b) : 'Niet meer ingepland (kantoor plant hem opnieuw).'),
-      url: './?go=plan', tag: 'klaar-' + id});
+      url: './?go=plan', tag: 'klaar-' + id, ok: true});
   }
 });
 

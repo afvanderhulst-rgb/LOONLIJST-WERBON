@@ -61,10 +61,12 @@ service cloud.firestore {
       allow read: if isKantoor() || isBeheerder();
       allow create, update: if isBeheerder()
         || (request.auth != null && request.auth.uid == uid && !geblokkeerd()
-            && request.resource.data.keys().hasOnly(['email','naam'])
+            && request.resource.data.keys().hasOnly(['email','naam','rooster'])
             && request.resource.data.email is string && request.resource.data.email.lower() == em()
             && (!('naam' in request.resource.data)
-                || (request.resource.data.naam is string && request.resource.data.naam.size() <= 80)));
+                || (request.resource.data.naam is string && request.resource.data.naam.size() <= 80))
+            && (!('rooster' in request.resource.data)
+                || (request.resource.data.rooster is string && request.resource.data.rooster.size() <= 80)));
       allow delete: if isBeheerder() || (request.auth != null && request.auth.uid == uid);
     }
     match /foutlog/{id} {

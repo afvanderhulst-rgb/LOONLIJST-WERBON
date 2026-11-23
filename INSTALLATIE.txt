@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v204,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v205,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,15 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+EIGEN BONNEN SNELLER IN DE PLANNING + GEWERKTE TIJDEN (v205)
+- De app meldt een werkbon nu direct na het versturen naar kantoor aan de planning (en ook bij het wegklikken van de app).
+  Eerder gebeurde dat pas bij de volgende ronde (elke 3 minuten zolang de app open stond); wie de app meteen sloot,
+  zag de bon pas in het rooster nadat hij de app weer opende.
+- Lukt het melden niet, dan probeert de app het de volgende keer opnieuw en staat de reden in beheer > Systeem > Foutenlogboek.
+- Kantoor-app > Planning: bij een geplande bon of agenda-afspraak met een verstuurde werkbon staat de GEWERKTE tijd uit de
+  werkbon (met ✓); de geplande tijd staat erbij als je erover beweegt en in het venster ("Gewerkt volgens de werkbon").
+- Heeft de monteur aan een geplande bon ook op een andere dag gewerkt, dan staat die dag als eigen werkbon (dubbele rand) in het rooster.
 
 WERKBON NAAR DE KLANT VIA DE MAILSERVER (v204)
 - Afronding > "Verzenden naar klant": venster met het e-mailadres van de klant > Verzenden. De klant krijgt de klantversie

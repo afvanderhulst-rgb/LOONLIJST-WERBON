@@ -176,9 +176,9 @@ exports.pushTest = onDocumentCreated({document: 'users/{uid}/pushq/{id}', secret
   await ev.data.ref.delete().catch(() => {});
 });
 
-// v197: elke nacht oude werkbon-PDF's (bonpdf, ouder dan 120 dagen) opruimen
+// elke nacht oude werkbon-PDF's (bonpdf) opruimen: v206 na 7 jaar (wettelijke bewaartermijn; was 120 dagen)
 exports.opruimen = onSchedule({schedule: 'every day 03:17', timeZone: 'Europe/Amsterdam'}, async () => {
-  const grens = Date.now() - 120 * 864e5;
+  const grens = Date.now() - 7 * 366 * 864e5;
   const q = await db.collection('bonpdf').where('t', '<', grens).limit(300).get();
   for (const d of q.docs) {
     const n = d.get('parts') || 0;
@@ -392,7 +392,7 @@ exports.mailKantoor = onRequest({
     const tijdelijk = r.status >= 500 || r.status === 429;
     return mislukt(tijdelijk ? 503 : 422, 'De mailserver weigerde de mail (' + r.status + (j && j.message ? ': ' + tekst(j.message, 150) : '') + ').');
   }
-  // v197: de verstuurde werkbon-PDF bewaren, zodat kantoor hem in de planning kan openen (120 dagen; zie opruimen)
+  // v197: de verstuurde werkbon-PDF bewaren, zodat kantoor hem in de planning kan openen (7 jaar; zie opruimen)
   if (soort === 'werkbon' && bijlagen[0] && grootte <= 8 * 1048576) {
     try {
       const bonId = tekst(b.bon, 80).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 60) || id;

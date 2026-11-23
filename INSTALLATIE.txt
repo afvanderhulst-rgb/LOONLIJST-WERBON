@@ -275,6 +275,13 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+BONNEN LANGER BEWAREN (v206)
+- Verstuurde werkbon-PDF's (te openen in de kantoor-app) blijven nu 7 jaar bewaard (wettelijke bewaartermijn; was 120 dagen).
+  De nachtelijke functie "opruimen" haalt pas PDF's van ouder dan 7 jaar weg. Opslag: naar schatting enkele euro's per jaar.
+- Agenda-afspraken en de gegevens van verstuurde werkbonnen (datum, klant, tijden, gereed) worden niet opgeruimd.
+- Kantoor-app > Planning > zoeken: een bonnummer (4 of meer cijfers) wordt altijd in ALLE jaren gezocht.
+  Zoeken op klant/adres/plaats: standaard 2 maanden, met "ook ouder" tot 1 jaar.
+
 EIGEN BONNEN SNELLER IN DE PLANNING + GEWERKTE TIJDEN (v205)
 - De app meldt een werkbon nu direct na het versturen naar kantoor aan de planning (en ook bij het wegklikken van de app).
   Eerder gebeurde dat pas bij de volgende ronde (elke 3 minuten zolang de app open stond); wie de app meteen sloot,
@@ -344,7 +351,7 @@ VERSTUURDE WERKBON (PDF) OPENEN OP KANTOOR (v197)
 - Werkt voor werkbonnen die direct via de app naar kantoor zijn gemaild met app-versie 197 of nieuwer. Niet voor
   "Via mijn mail-app" en niet voor bonnen van vóór v197.
 - De server bewaart de PDF (tot 8 MB) in Firestore (bonpdf/) bij het mailen; de functie "opruimen" haalt ze elke nacht
-  na 120 dagen weg. Firestore-regels: alleen kantoor en beheerder mogen ze lezen.
+  na 7 jaar weg (vanaf v206; eerst 120 dagen). Firestore-regels: alleen kantoor en beheerder mogen ze lezen.
 
 PLANNING OP KANTOOR WERKT LIVE BIJ (v196)
 - Ook agenda-afspraken en werkbonnen die de monteur zelf maakte werken nu vanzelf bij in het weekrooster

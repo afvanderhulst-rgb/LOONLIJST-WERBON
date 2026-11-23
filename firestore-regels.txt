@@ -139,8 +139,9 @@ service cloud.firestore {
       allow read: if isBeheerder() || isKantoor();
       allow create, update: if request.auth != null && !geblokkeerd()
         && request.resource.data.voor == request.auth.uid && id.matches(request.auth.uid + '_.*')
-        && request.resource.data.keys().hasOnly(['voor','wb','klant','adres','plaats','tel','pr','mis','dagen','van','tot','verstuurd','gereed','repm','t'])
-        && request.resource.data.dagen is list && request.resource.data.dagen.size() <= 14;
+        && request.resource.data.keys().hasOnly(['voor','wb','klant','adres','plaats','tel','pr','mis','hist','dagen','van','tot','verstuurd','gereed','repm','t'])
+        && request.resource.data.dagen is list && request.resource.data.dagen.size() <= 14
+        && (!('hist' in request.resource.data) || (request.resource.data.hist is list && request.resource.data.hist.size() <= 20));
       allow delete: if isBeheerder();
     }
     // v197: verstuurde werkbon-PDF's (schrijft alleen de server); kantoor en beheerder mogen ze openen

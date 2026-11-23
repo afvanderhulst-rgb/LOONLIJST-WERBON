@@ -659,13 +659,19 @@ function zItems(){var R=[],gez={},wbs={},nm=function(uid,o){var u=USERS.filter(f
   R.push({src:'e',id:e.id,voor:e.voor,mon:nm(e.voor),pd:e.tot||e.van,pt:((e.dagen||[])[0]||{}).ws||'',wb:e.wb||'',klant:e.klant||'',adres:e.adres||'',plaats:e.plaats||'',kl:e.gereed==='nee'?'n':'k',st:'eigen werkbon, verstuurd'+plGr(e),
    z:[e.wb,e.klant,e.adres,e.plaats,e.tel,nm(e.voor)].join(' ')})});
  return R}
+// v206: een bonnummer wordt in ALLE jaren gezocht (agenda en verstuurde werkbonnen), zonder alles op te halen
+var ZN={};
+async function zNummer(n){if(ZN[n])return;ZN[n]=1;var mp=function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o},has=function(L,id){return L.some(function(x){return x.id===id})};
+ try{var qa=await db.collection('agenda').where('wb','==',n).get();ZA=ZA||[];qa.docs.map(agMap).forEach(function(o){if(!has(ZA,o.id)&&!has(AG,o.id))ZA.push(o)})}catch(e){}
+ try{var qb=await db.collection('bonlog').where('wb','==',n).get();ZB=ZB||[];qb.docs.map(mp).forEach(function(o){if(!has(ZB,o.id)&&!has(BL,o.id))ZB.push(o)})}catch(e){}}
 async function zoek(){var q=String($('plQ').value||'').trim(),el=$('plZR');if(q.length<2){el.innerHTML='';return}
  if($('plQo').checked&&!ZL){el.innerHTML='<p class="mu">Oudere bonnen ophalen…</p>';await zOud()}
+ var nrs=q.split(/\s+/).filter(function(w){return /^\d{4,12}$/.test(w)});for(var ni=0;ni<nrs.length;ni++)await zNummer(nrs[ni]);
  if(!BLL)loadBl();var W=q.split(/\s+/).map(zNorm).filter(Boolean),L=zItems().filter(function(x){var t=zNorm(x.z);return W.every(function(w){return t.indexOf(w)>=0})});
  L.sort(function(a,b){return String(b.pd||'').localeCompare(String(a.pd||''))||String(b.pt||'').localeCompare(String(a.pt||''))});
  var n=L.length;L=L.slice(0,60);
- el.innerHTML=n?'<div class="mu" style="margin:0 2px 6px">'+n+(n===1?' bon gevonden':' bonnen gevonden')+(n>60?' (de nieuwste 60)':'')+(!$('plQo').checked?' · de laatste 2 maanden; vink "ook ouder" aan voor meer':'')+' · klik om te openen</div>'+L.map(function(x,i){var p=String(x.pd||'').split('-'),dt=p.length===3?pdTxt({pd:x.pd})+'-'+p[0]:'';
-   return '<div class="zr '+x.kl+'" data-zi="'+i+'"><div class="zd">'+ee(dt)+(x.pt?'<div class="mu" style="font-weight:400">'+ee(x.pt)+'</div>':'')+'</div><div class="zt"><b>'+ee((x.wb?x.wb+' · ':'')+x.klant)+'</b><div>'+ee([x.adres,x.plaats].filter(Boolean).join(', '))+'</div><div class="mu">'+(x.mon?ee(x.mon)+' · ':'')+ee(x.st)+'</div></div></div>'}).join(''):'<p class="mu">Niets gevonden'+(!$('plQo').checked?' in de laatste 2 maanden. Vink "ook ouder" aan om verder terug te zoeken.':'.')+'</p>';
+ el.innerHTML=n?'<div class="mu" style="margin:0 2px 6px">'+n+(n===1?' bon gevonden':' bonnen gevonden')+(n>60?' (de nieuwste 60)':'')+(!$('plQo').checked?' · de laatste 2 maanden (een bonnummer: alle jaren); vink "ook ouder" aan voor meer':'')+' · klik om te openen</div>'+L.map(function(x,i){var p=String(x.pd||'').split('-'),dt=p.length===3?pdTxt({pd:x.pd})+'-'+p[0]:'';
+   return '<div class="zr '+x.kl+'" data-zi="'+i+'"><div class="zd">'+ee(dt)+(x.pt?'<div class="mu" style="font-weight:400">'+ee(x.pt)+'</div>':'')+'</div><div class="zt"><b>'+ee((x.wb?x.wb+' · ':'')+x.klant)+'</b><div>'+ee([x.adres,x.plaats].filter(Boolean).join(', '))+'</div><div class="mu">'+(x.mon?ee(x.mon)+' · ':'')+ee(x.st)+'</div></div></div>'}).join(''):'<p class="mu">Niets gevonden'+(!$('plQo').checked?' in de laatste 2 maanden. Vink "ook ouder" aan om verder terug te zoeken (een bonnummer wordt altijd in alle jaren gezocht).':'.')+'</p>';
  el.querySelectorAll('[data-zi]').forEach(function(c){c.onclick=function(){var x=L[+c.dataset.zi],p=String(x.pd||'').split('-');
   if(p.length===3){var d0=new Date(+p[0],+p[1]-1,+p[2],12);d0.setDate(d0.getDate()-(d0.getDay()+6)%7);PLW=Math.round((d0-maandagVan(0))/(7*864e5))}
   drawPlan();if(x.src==='k')plDlg(x.id);else if(x.src==='a')agInfo(x.id);else ebInfo(x.id)}})}
@@ -673,8 +679,8 @@ $('plQ').oninput=function(){clearTimeout(ZT);ZT=setTimeout(zoek,200)};$('plQo').
 /* ---------- verstuurde werkbon-PDF openen (v197) ---------- */
 async function bonPdf(uid,wb,bonId,btn){var w=window.open('','_blank'),t=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='Ophalen…'}
  try{var d=null;if(bonId){var x=await db.collection('bonpdf').doc(uid+'_'+String(bonId).replace(/[^A-Za-z0-9_-]/g,'').slice(0,60)).get();if(x.exists)d=x}
-  if(!d&&wb){var q=await db.collection('bonpdf').where('uid','==',uid).get();q.docs.forEach(function(y){var o=y.data()||{};if(String(o.wb||'')===String(wb)&&(!d||(o.t||0)>((d.data()||{}).t||0)))d=y})}
-  if(!d){if(w)w.close();alert0('De PDF van deze werkbon is niet bewaard. Dat gebeurt pas bij werkbonnen die direct naar kantoor zijn gemaild met app-versie 197 of nieuwer (niet via de eigen mail-app), en ze blijven 120 dagen.');return}
+  if(!d&&wb){var q=await db.collection('bonpdf').where('uid','==',uid).where('wb','==',String(wb)).get();q.docs.forEach(function(y){var o=y.data()||{};if(String(o.wb||'')===String(wb)&&(!d||(o.t||0)>((d.data()||{}).t||0)))d=y})}
+  if(!d){if(w)w.close();alert0('De PDF van deze werkbon is niet bewaard. Dat gebeurt pas bij werkbonnen die direct naar kantoor zijn gemaild met app-versie 197 of nieuwer (niet via de eigen mail-app), en ze blijven 7 jaar bewaard.');return}
   var o=d.data()||{},s='';for(var i=0;i<(o.parts||0);i++){var p=await d.ref.collection('parts').doc(String(i)).get();s+=(p.data()||{}).d||''}
   var bin=atob(s),u=new Uint8Array(bin.length);for(var j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);var url=URL.createObjectURL(new Blob([u],{type:'application/pdf'}));
   if(w)w.location.href=url;else location.href=url}

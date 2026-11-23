@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v203,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v204,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,17 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+WERKBON NAAR DE KLANT VIA DE MAILSERVER (v204)
+- Afronding > "Verzenden naar klant": venster met het e-mailadres van de klant > Verzenden. De klant krijgt de klantversie
+  van de PDF (vast, zonder materialen tenzij aangezet, alleen bijlagen met "Ook naar klant") van
+  "MIT Installatietechniek <noreply@mit-werkbon.com>". Onderwerp: "Werkbon <nr> - MIT Installatietechniek".
+- De tekst maakt de server zelf (geen vrije tekst: tegen misbruik). Antwoordt de klant, dan gaat dat naar het kantooradres
+  (beheer > Instellingen > Werkbonnen naar kantoor; standaard storingen@mit-installatietechniek.com).
+  De monteur krijgt een stille kopie (BCC).
+- Max. 30 klantmails per monteur per dag. Zonder internet: wachtrij, gaat vanzelf later. "Via mijn mail-app" blijft mogelijk.
+- Naar de klant mailen markeert de bon NIET als verstuurd naar kantoor (dat blijft Afronden > Versturen).
+- Zichtbaar in beheer > Systeem > Verzonden mails als "Werkbon naar klant".
 
 MELDINGEN MET OK-KNOP + MELDING BIJ NIEUW STORINGSROOSTER (v203)
 - Pushmeldingen over de planning (klaargezet/ingepland, verplaatst, agenda nieuw/gewijzigd) en het storingsrooster blijven

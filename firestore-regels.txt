@@ -137,6 +137,22 @@ service cloud.firestore {
         allow read: if isBeheerder() || isKantoor();
       }
     }
+    // v210: correctie gevraagd door kantoor; de monteur leest zijn eigen en meldt terug (gezien / opnieuw verstuurd)
+    match /correctie/{id} {
+      allow read: if isBeheerder() || isKantoor()
+        || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd());
+      allow create: if (isBeheerder() || isKantoor())
+        && request.resource.data.keys().hasOnly(['voor','voorNaam','wb','bon','ib','klant','reden','opm','door','t','status'])
+        && request.resource.data.door is string && request.resource.data.door.lower() == em()
+        && request.resource.data.reden is list && request.resource.data.reden.size() <= 8
+        && request.resource.data.opm is string && request.resource.data.opm.size() <= 500
+        && request.resource.data.status == 'open';
+      allow delete: if isBeheerder() || isKantoor();
+      allow update: if isBeheerder() || isKantoor()
+        || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','gezien','opnieuw'])
+            && request.resource.data.status in ['open','opnieuw']);
+    }
     match /agendaimport/{id} {
       allow read: if isBeheerder() || isKantoor();
       allow create: if (isBeheerder() || isKantoor())

@@ -208,7 +208,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
    <div class="card"><div class="plwk"><button class="btn sm" type="button" id="plPrev">‹</button><b id="plWk"></b><button class="btn sm" type="button" id="plNext">›</button><button class="btn sm" type="button" id="plNow">Deze week</button><select id="plMon" style="padding:6px 8px;border:1px solid var(--bd);border-radius:8px;font:inherit;font-size:14px;background:var(--bg);color:var(--tx)"><option value="">Alle monteurs</option></select><span class="mu" id="plOff" style="margin-left:auto"></span></div>
     <div class="plz"><input id="plQ" type="search" placeholder="Zoek bon: bonnummer, klant, adres, plaats of telefoon…" autocomplete="off"><label class="mu"><input type="checkbox" id="plQo"> ook ouder (tot 1 jaar)</label></div><div id="plZR"></div>
     <div class="scroll"><div id="plGrid"></div></div>
-    <div class="pleg"><span><i style="background:#1a147f"></i>Gepland (monteur nog niet begonnen)</span><span><i style="background:#d08700"></i>Bezig (monteur heeft hem overgenomen)</span><span><i style="background:#16693e"></i>Verstuurd, werk gereed</span><span><i style="background:#b3261e"></i>Verstuurd, NIET gereed</span><span><b style="background:#c25e00;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">REP</b> reparatiemelding</span><span>Stippelrand links = uit de agenda-PDF</span><span>Dubbele rand links = werkbon die de monteur zelf maakte (niet gepland)</span><span>✓ achter de tijd = gewerkte tijd volgens de verstuurde werkbon; 🚗 = reistijd (heen + terug).</span><span>Klik op een bon om monteur, dag, tijd of opmerking te wijzigen.</span></div></div>
+    <div class="pleg"><span><i style="background:#1a147f"></i>Gepland (monteur nog niet begonnen)</span><span><i style="background:#d08700"></i>Bezig (monteur heeft hem overgenomen)</span><span><i style="background:#16693e"></i>Verstuurd, werk gereed</span><span><i style="background:#b3261e"></i>Verstuurd, NIET gereed</span><span><b style="background:#c25e00;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">REP</b> reparatiemelding</span><span>Stippelrand links = uit de agenda-PDF</span><span>Dubbele rand links = werkbon die de monteur zelf maakte (niet gepland)</span><span><b style="background:#b3261e;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">CORR</b> correctie gevraagd, nog niet opnieuw verstuurd</span><span>✓ achter de tijd = gewerkte tijd volgens de verstuurde werkbon; 🚗 = reistijd (heen + terug).</span><span>Klik op een bon om monteur, dag, tijd of opmerking te wijzigen.</span></div></div>
   </div>
   <div id="plDlg" hidden></div>
  </div>
@@ -561,7 +561,7 @@ function daIso(da){var m=/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/.exec(String(da||'').t
 function plKl(o){return o.verstuurd?(o.gereed==='nee'?'n':'k'):(o.status==='opgehaald'||o.bezig?'z':'')}
 function plGr(o){return o.verstuurd?(o.gereed==='nee'?' · NIET GEREED':o.gereed==='ja'?' · GEREED':'')+(o.repm?' · REPARATIEMELDING':''):''}
 function plKort(o){var g=o.g||{},a=String(g.wadres||'').split(NL);return (a[0]||o.bestand||'')+(a[2]?', '+String(a[2]).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):'')}
-function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;try{if(String($('plQ').value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT);ZT=setTimeout(zoek,300)}}catch(e){}
+function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;loadCorr();try{if(String($('plQ').value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT);ZT=setTimeout(zoek,300)}}catch(e){}
  $('plOff').textContent=PLANON?'':'Nog uit: alleen jij ziet de planning. Aanzetten: beheer.html > Instellingen.';
  var ma=maandagVan(PLW),dagen=[];for(var i=0;i<6;i++){var d=new Date(ma);d.setDate(ma.getDate()+i);dagen.push(d)}
  var za=dagen[5];$('plWk').textContent='Week '+weekNr(ma)+' · '+ma.getDate()+'-'+(ma.getMonth()+1)+' t/m '+za.getDate()+'-'+(za.getMonth()+1)+'-'+za.getFullYear();
@@ -581,9 +581,9 @@ function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;try{if(S
    AG.forEach(function(a){if(a.voor===u.uid&&a.pd===x&&!(a.wb&&wbs[a.wb])){L.push({ag:a,pt:a.pt,id:a.id});if(a.wb)wbs[a.wb]=1}});
    BL.forEach(function(e){if(e.voor!==u.uid||(e.wb&&wbs[e.wb]))return;(e.dagen||[]).forEach(function(dd){if(dd.pd===x)L.push({eb:e,dd:dd,pt:dd.ws,id:e.id})})}); // v205: per dag: staat dezelfde bon die dag al gepland, dan niet dubbel
    L.sort(function(a,b){return String(a.pt||'99').localeCompare(String(b.pt||'99'))});
-   h+='<div class="'+(x===vandaag?'td':'')+'" data-dm="'+ee(u.uid)+'" data-dd="'+x+'">'+L.map(function(o){if(o.eb){var e=o.eb;return '<div class="pb e '+(e.gereed==='nee'?'n':'k')+'" data-ebi="'+ee(e.id)+'" title="Werkbon van de monteur zelf (niet gepland)'+ee(plGr(e))+'"><b>'+ee((o.dd.ws||'')+(o.dd.we?'–'+o.dd.we:''))+(e.repm?'<span class="rp">REP</span>':'')+'</b>'+ee((e.wb?e.wb+' · ':'')+(e.klant||'')+(e.plaats?', '+String(e.plaats).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):''))+rsHtml(reisTxt(o.dd))+'</div>'}
-    if(o.ag){var a=o.ag,wt=gewTijd(u.uid,a.wb,x);return '<div class="pb a '+plKl(a)+'" data-agi="'+ee(a.id)+'" title="Uit de agenda-PDF · gepland '+ee(agTijd(a))+(wt?' · gewerkt '+ee(wt):'')+ee(plGr(a))+'"><b>'+ee(wt||agTijd(a))+(wt?' ✓':'')+(a.repm?'<span class="rp">REP</span>':'')+'</b>'+ee(agKort(a))+rsHtml(gewReis(u.uid,a.wb,x))+'</div>'}var g=o.g||{},wt2=gewTijd(u.uid,g.wb,x);
-    return '<div class="pb '+plKl(o)+'" draggable="true" data-pid="'+ee(o.id)+'" title="'+ee(String(g.storing||'').split(NL)[0])+(o.pt?' · gepland '+ee(o.pt):'')+(wt2?' · gewerkt '+ee(wt2):'')+'"><b>'+ee(wt2||o.pt||'––:––')+(wt2?' ✓':'')+' '+ee(g.wb||'')+(o.repm?'<span class="rp">REP</span>':'')+'</b>'+ee(plKort(o))+rsHtml(gewReis(u.uid,g.wb,x))+'</div>'}).join('')+'</div>'})});
+   h+='<div class="'+(x===vandaag?'td':'')+'" data-dm="'+ee(u.uid)+'" data-dd="'+x+'">'+L.map(function(o){if(o.eb){var e=o.eb;return '<div class="pb e '+(e.gereed==='nee'?'n':'k')+'" data-ebi="'+ee(e.id)+'" title="Werkbon van de monteur zelf (niet gepland)'+ee(plGr(e))+'"><b>'+ee((o.dd.ws||'')+(o.dd.we?'–'+o.dd.we:''))+(e.repm?'<span class="rp">REP</span>':'')+corrTag(e.voor,e.wb)+'</b>'+ee((e.wb?e.wb+' · ':'')+(e.klant||'')+(e.plaats?', '+String(e.plaats).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):''))+rsHtml(reisTxt(o.dd))+'</div>'}
+    if(o.ag){var a=o.ag,wt=gewTijd(u.uid,a.wb,x);return '<div class="pb a '+plKl(a)+'" data-agi="'+ee(a.id)+'" title="Uit de agenda-PDF · gepland '+ee(agTijd(a))+(wt?' · gewerkt '+ee(wt):'')+ee(plGr(a))+'"><b>'+ee(wt||agTijd(a))+(wt?' ✓':'')+(a.repm?'<span class="rp">REP</span>':'')+corrTag(u.uid,a.wb)+'</b>'+ee(agKort(a))+rsHtml(gewReis(u.uid,a.wb,x))+'</div>'}var g=o.g||{},wt2=gewTijd(u.uid,g.wb,x);
+    return '<div class="pb '+plKl(o)+'" draggable="true" data-pid="'+ee(o.id)+'" title="'+ee(String(g.storing||'').split(NL)[0])+(o.pt?' · gepland '+ee(o.pt):'')+(wt2?' · gewerkt '+ee(wt2):'')+'"><b>'+ee(wt2||o.pt||'––:––')+(wt2?' ✓':'')+' '+ee(g.wb||'')+(o.repm?'<span class="rp">REP</span>':'')+corrTag(u.uid,g.wb)+'</b>'+ee(plKort(o))+rsHtml(gewReis(u.uid,g.wb,x))+'</div>'}).join('')+'</div>'})});
  h+='</div>';gr.innerHTML=h;
  [].forEach.call(document.querySelectorAll('#plist [data-pid]'),function(c){c.ondragstart=function(e){e.dataTransfer.setData('text/plain',c.dataset.pid);e.dataTransfer.effectAllowed='move'};c.onclick=function(){plDlg(c.dataset.pid)}});
  gr.querySelectorAll('[data-agi]').forEach(function(c){c.onclick=function(){agInfo(c.dataset.agi)}});
@@ -612,11 +612,11 @@ async function plZet(id,w,stil){var o=plO(id);if(!o)return false;var d={pv:Date.
   drawPlan();try{drawSent()}catch(e){}return true}catch(e){alert0(err(e));return false}}
 function plDlg(id){var o=plO(id),dl=$('plDlg');if(!o)return;var g=o.g||{},a=String(g.wadres||'').split(NL);
  dl.innerHTML='<div class="card"><b>'+ee(g.wb?'Werkbon '+g.wb:o.bestand)+'</b><div class="mu">'+ee(a.filter(Boolean).join(', '))+'</div>'+(g.storing?'<div style="margin-top:4px">'+ee(String(g.storing).split(NL).join(' '))+'</div>':'')+
-  gewTxt(o.voor,g.wb)+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.status==='opgehaald'?'<p class="mu" style="color:#9a5a00">De monteur heeft deze bon al overgenomen.</p>':'')+
+  gewTxt(o.voor,g.wb)+corrHtml(o.voor,g.wb)+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.status==='opgehaald'?'<p class="mu" style="color:#9a5a00">De monteur heeft deze bon al overgenomen.</p>':'')+
   '<label>Monteur</label><select id="pdM"><option value="">— nog geen monteur —</option>'+planMonteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===o.voor?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
   '<div style="display:flex;gap:8px"><div style="flex:1"><label>Dag</label><input type="date" id="pdD" value="'+ee(o.pd||daIso(g.da)||'')+'"></div><div style="flex:1"><label>Tijd</label><input type="time" id="pdT" value="'+ee(o.pt||g.tijd||'')+'"></div></div>'+
   '<label>Opmerking voor de monteur</label><input id="pdO" maxlength="300" value="'+ee(o.opm||'')+'">'+
-  '<div class="tools" style="margin:14px 0 0;flex-wrap:wrap"><button class="btn pr" type="button" id="pdS">Opslaan</button>'+(o.pd?'<button class="btn" type="button" id="pdU">Uit de planning</button>':'')+''+(o.parts?'<button class="btn" type="button" id="pdP">PDF</button>':'')+(o.verstuurd?bonPdfKnop(o.voor,g.wb||'',''):'')+'<button class="btn" type="button" id="pdX">Sluiten</button></div><div class="mu" id="pdR"></div></div>';
+  '<div class="tools" style="margin:14px 0 0;flex-wrap:wrap"><button class="btn pr" type="button" id="pdS">Opslaan</button>'+(o.pd?'<button class="btn" type="button" id="pdU">Uit de planning</button>':'')+''+(o.parts?'<button class="btn" type="button" id="pdP">PDF</button>':'')+(o.verstuurd?bonPdfKnop(o.voor,g.wb||'','')+corrKnop(o.voor,g.wb||'','',o.id,String(g.wadres||'').split(NL)[0]):'')+'<button class="btn" type="button" id="pdX">Sluiten</button></div><div class="mu" id="pdR"></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('pdX').onclick=function(){dl.hidden=true};
  $('pdS').onclick=async function(){var b=this,m=$('pdM').value,dd=$('pdD').value;if(dd&&!m){$('pdR').innerHTML='<span class="er">Kies een monteur, of maak de dag leeg.</span>';return}
   b.disabled=true;if(await plZet(id,{voor:m,pd:dd,pt:$('pdT').value,opm:$('pdO').value.trim()}))dl.hidden=true;else b.disabled=false};
@@ -683,6 +683,37 @@ async function zoek(){var q=String($('plQ').value||'').trim(),el=$('plZR');if(q.
   if(p.length===3){var d0=new Date(+p[0],+p[1]-1,+p[2],12);d0.setDate(d0.getDate()-(d0.getDay()+6)%7);PLW=Math.round((d0-maandagVan(0))/(7*864e5))}
   drawPlan();if(x.src==='k')plDlg(x.id);else if(x.src==='a')agInfo(x.id);else ebInfo(x.id)}})}
 $('plQ').oninput=function(){clearTimeout(ZT);ZT=setTimeout(zoek,200)};$('plQo').onchange=zoek;
+/* ---------- correctie vragen aan de monteur (v210) ---------- */
+var CORR=[],CORRU=null,CORRL=false;
+function loadCorr(){if(CORRL||!db)return;CORRL=true;var d=Date.now()-120*864e5,q=db.collection('correctie').where('t','>=',d),mp=function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o};
+ try{CORRU=q.onSnapshot(function(s){CORR=s.docs.map(mp);try{drawPlan()}catch(e){}},function(){CORRU=null})}catch(e){q.get().then(function(s){CORR=s.docs.map(mp);try{drawPlan()}catch(e){}}).catch(function(){})}}
+function corrVan(uid,wb){if(!uid||!wb)return null;var L=CORR.filter(function(c){return c.voor===uid&&String(c.wb||'')===String(wb)});L.sort(function(a,c){return (c.t||0)-(a.t||0)});return L[0]||null}
+function corrOpen(c){return !!(c&&c.status!=='opnieuw')}
+function corrTag(uid,wb){var c=corrVan(uid,wb);return corrOpen(c)?'<span class="rp" style="background:#b3261e">CORR</span>':''}
+function corrHtml(uid,wb){var c=corrVan(uid,wb);if(!c)return '';var ok=c.status==='opnieuw';
+ return '<div style="margin-top:8px;padding:8px 10px;border-radius:8px;border:1.5px solid '+(ok?'#16693e':'#b3261e')+';background:'+(ok?'#e7f6ec':'#fdeaea')+';font-size:14px"><b>Correctie gevraagd</b> '+ee(fd(c.t))+(c.door?' door '+ee(c.door):'')+'<br>'+(c.reden||[]).map(ee).join(', ')+(c.opm?'<br>'+ee(c.opm):'')+
+  '<br><b>'+(ok?'Opnieuw aangeboden '+ee(fd(c.opnieuw)):c.gezien?'Monteur heeft het gezien ('+ee(fd(c.gezien))+'), nog niet opnieuw verstuurd':'Nog niet gezien door de monteur')+'</b>'+
+  (!ok?' <button class="btn sm dg" type="button" data-cx="'+ee(c.id)+'" style="margin-left:6px">Intrekken</button>':'')+'</div>'}
+function corrKnop(uid,wb,bon,ib,klant){if(!uid||!wb&&!bon)return '';return '<button class="btn" type="button" data-cq="1" data-cu="'+ee(uid)+'" data-cw="'+ee(wb||'')+'" data-cb="'+ee(bon||'')+'" data-ci="'+ee(ib||'')+'" data-ck="'+ee(klant||'')+'">Correctie vragen</button>'}
+var CRED=['Handtekening ontbreekt','Uren kloppen niet','Omschrijving onvolledig','Verkeerde klant gekozen','Materiaal ontbreekt of klopt niet'];
+function corrDlg(o){var dl=$('hbDlg'),u=USERS.filter(function(x){return x.uid===o.uid})[0]||{};
+ dl.innerHTML='<div class="card" style="width:100%;max-width:480px;margin:0"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Correctie vragen</b><button class="btn sm" type="button" id="cqX">Sluiten</button></div>'+
+  '<p class="mu">'+ee(o.wb?'Werkbon '+o.wb:'Werkbon')+(o.klant?' · '+ee(o.klant):'')+' · '+ee(u.naam||u.email||'monteur')+'. De monteur krijgt een melding met de reden, past de bon aan en verstuurt hem opnieuw.</p>'+
+  CRED.map(function(x,i){return '<label style="display:flex;gap:8px;align-items:center;color:var(--tx);font-size:15px;margin:6px 0"><input type="checkbox" data-cr="'+i+'" style="width:20px;height:20px"> '+ee(x)+'</label>'}).join('')+
+  '<label for="cqO">Toelichting (optioneel)</label><textarea id="cqO" rows="3" maxlength="500" style="width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)"></textarea>'+
+  '<div class="tools" style="margin:12px 0 0"><button class="btn pr" type="button" id="cqGo">Correctie vragen</button></div><div id="cqR" class="mu"></div></div>';
+ dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('cqX').onclick=function(){dl.hidden=true};
+ $('cqGo').onclick=async function(){var b=this,red=[].map.call(dl.querySelectorAll('[data-cr]:checked'),function(c){return CRED[+c.dataset.cr]}),opm=String($('cqO').value||'').trim();
+  if(!red.length&&!opm){$('cqR').innerHTML='<span class="er">Kies een reden of schrijf een toelichting.</span>';return}
+  b.disabled=true;try{var me=String(auth.currentUser.email||'').toLowerCase(),id=Date.now()+'_'+Math.random().toString(36).slice(2,8);
+   await db.collection('correctie').doc(id).set({voor:o.uid,voorNaam:String(u.naam||'').slice(0,80),wb:String(o.wb||'').slice(0,12),bon:String(o.bon||'').slice(0,60),ib:String(o.ib||'').slice(0,60),klant:String(o.klant||'').slice(0,120),reden:red,opm:opm.slice(0,500),door:me,t:Date.now(),status:'open'});
+   blog('correctie gevraagd: '+red.join(', ').slice(0,80),{g:{wb:o.wb,wadres:o.klant||''},voorNaam:u.naam,voorMail:u.email});
+   dl.hidden=true;$('plDlg').hidden=true;kToast('Correctie gevraagd. '+(u.naam||'De monteur')+' krijgt een melding.',5000)}
+  catch(e){b.disabled=false;$('cqR').innerHTML='<span class="er">Niet gelukt: '+ee(err(e))+'</span>'}}}
+document.addEventListener('click',async function(e){var b=e.target.closest&&e.target.closest('[data-cq],[data-cx]');if(!b)return;e.preventDefault();
+ if(b.dataset.cq){corrDlg({uid:b.dataset.cu,wb:b.dataset.cw,bon:b.dataset.cb,ib:b.dataset.ci,klant:b.dataset.ck});return}
+ if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;
+ try{await db.collection('correctie').doc(b.dataset.cx).delete();CORR=CORR.filter(function(c){return c.id!==b.dataset.cx});kToast('Correctie ingetrokken.',3000);$('plDlg').hidden=true;drawPlan()}catch(x){b.disabled=false;alert0(err(x))}});
 /* ---------- verstuurde werkbon-PDF openen (v197) ---------- */
 async function bonPdf(uid,wb,bonId,btn){var w=window.open('','_blank'),t=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent='Ophalen…'}
  try{var d=null;if(bonId){var x=await db.collection('bonpdf').doc(uid+'_'+String(bonId).replace(/[^A-Za-z0-9_-]/g,'').slice(0,60)).get();if(x.exists)d=x}
@@ -706,7 +737,7 @@ function ebInfo(id){var e=[].concat(BL,ZB||[]).filter(function(x){return x.id===
  dl.innerHTML='<div class="card"><b>'+ee(e.wb?'Werkbon '+e.wb:'Werkbon')+'</b><div class="mu">'+ee(u.naam||u.email||'')+'</div>'+(e.klant?'<div style="margin-top:6px">'+ee(e.klant)+(e.adres?'<br>'+ee(e.adres):'')+(e.plaats?'<br>'+ee(e.plaats):'')+(e.tel?'<br>'+ee(e.tel):'')+'</div>':'')+
   '<div style="margin-top:6px">'+(e.dagen||[]).map(function(d){var r=reisTxt(d);return ee(pdTxt({pd:d.pd}))+(d.ws?' '+ee(d.ws)+(d.we?'–'+ee(d.we):''):'')+(r?' <span class="mu">· 🚗 '+ee(r)+'</span>':'')}).join('<br>')+'</div>'+
   '<p style="font-weight:700;color:'+(e.gereed==='nee'?'#b3261e':'#16693e')+'">Verstuurd '+ee(fd(e.verstuurd))+ee(plGr(e))+'</p><p class="mu">Deze werkbon heeft de monteur zelf gemaakt; hij stond niet in de planning of de agenda.</p>'+
-  '<div class="tools" style="margin:10px 0 0">'+bonPdfKnop(e.voor,e.wb,String(e.id).slice(String(e.voor).length+1))+'<button class="btn" type="button" id="ebC">Sluiten</button></div></div>';
+  corrHtml(e.voor,e.wb)+'<div class="tools" style="margin:10px 0 0">'+bonPdfKnop(e.voor,e.wb,String(e.id).slice(String(e.voor).length+1))+corrKnop(e.voor,e.wb,String(e.id).slice(String(e.voor).length+1),'',e.klant)+'<button class="btn" type="button" id="ebC">Sluiten</button></div></div>';
  dl.hidden=false;dl.onclick=function(x){if(x.target===dl)dl.hidden=true};$('ebC').onclick=function(){dl.hidden=true}}
 /* ---------- agenda-PDF inlezen (v180) ---------- */
 var AG=[],AGL=false,AGP=null;
@@ -768,7 +799,7 @@ function agInfo(id){var o=[].concat(AG,ZA||[]).filter(function(x){return x.id===
  dl.innerHTML='<div class="card"><b>'+ee(o.wb?'Werkbon '+o.wb:String(o.oms||'Afspraak').split('\n')[0])+'</b><div class="mu">'+ee(o.voorNaam||o.voorMail)+' · '+ee(pdTxt(o))+' · '+ee(agTijd(o))+(o.duur?' ('+ee(o.duur)+' u)':'')+'</div>'+
   (o.klant?'<div style="margin-top:6px">'+ee(o.klant)+'<br>'+ee([o.adres,o.plaats].filter(Boolean).join(', '))+(o.tel?'<br>'+ee(o.tel):'')+'</div>':'')+
   (o.oms?'<div style="margin-top:6px;white-space:pre-wrap">'+ee(o.oms)+'</div>':'')+gewTxt(o.voor,o.wb)+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.bezig?'<p style="font-weight:700;color:#9a5a00">Monteur is ermee bezig (sinds '+ee(fd(o.bezig))+').</p>':'')+'<p class="mu">Uit de agenda-PDF '+ee(o.bestand||'')+' ('+ee(fd(o.t))+', '+ee(o.door||'')+'). Wijzigen: pas de agenda aan en lees hem opnieuw in.</p>'+
-  '<div class="tools" style="margin:10px 0 0">'+(o.verstuurd?bonPdfKnop(o.voor,o.wb,''):'')+'<button class="btn dg" type="button" id="agDel">Verwijderen</button><button class="btn" type="button" id="agC">Sluiten</button></div></div>';
+  corrHtml(o.voor,o.wb)+'<div class="tools" style="margin:10px 0 0">'+(o.verstuurd?bonPdfKnop(o.voor,o.wb,'')+corrKnop(o.voor,o.wb,'','',o.klant):'')+'<button class="btn dg" type="button" id="agDel">Verwijderen</button><button class="btn" type="button" id="agC">Sluiten</button></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('agC').onclick=function(){dl.hidden=true};
  $('agDel').onclick=async function(){var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;try{await o.ref.delete();AG=AG.filter(function(x){return x!==o});dl.hidden=true;drawPlan()}catch(e){b.disabled=false;alert0(err(e))}}}
 $('agFile').onchange=function(){agFiles(this.files);this.value=''};

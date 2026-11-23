@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v209,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v210,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,18 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+CORRECTIE GEVRAAGD: BON TERUG NAAR DE MONTEUR (v210)
+- Kantoor-app > Planning (of zoeken): klik op een verstuurde bon > "Correctie vragen". Kies de reden(en): handtekening
+  ontbreekt, uren kloppen niet, omschrijving onvolledig, verkeerde klant, materiaal ontbreekt/klopt niet, en/of een toelichting.
+- De monteur krijgt een pushmelding (blijft staan tot OK) en in de app een venster met de reden en "Bekijken" (opent de bon).
+  In de bon staat bovenaan een rode balk met de reden; in Mijn bonnen het label "Correctie gevraagd".
+- Hij past de bon aan en verstuurt hem opnieuw (Afronden > Versturen). Onderwerp van de mail: "GECORRIGEERD: ...".
+  Planning, agenda en klaargezette bon worden bijgewerkt (ook Werk gereed/Reparatiemelding).
+- Kantoor ziet in het rooster het rode label CORR zolang de correctie openstaat, en in het venster de status:
+  nog niet gezien / gezien / opnieuw aangeboden (met datum). "Intrekken" haalt een openstaande correctie weg.
+- Firestore: nieuwe collectie correctie/ (regels: kantoor/beheer maakt aan, monteur leest de zijne en meldt gezien/opnieuw).
+  Servercode: pushCorrectie.
 
 GEEN MATERIAAL? EERST BEVESTIGEN (v209)
 - Afronden (en Verzenden naar klant) van een werkbon zonder materiaal geeft eerst de vraag "Geen materiaal ingevuld.

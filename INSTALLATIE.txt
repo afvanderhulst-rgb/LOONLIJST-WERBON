@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v211,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v212,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,26 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+BEVEILIGING EN BEHEER (v212)
+- Logboek beheer (beheer > Systeem > Logboek beheer): wie wat deed in beheer en de kantoor-app: toegang geven/intrekken,
+  blokkeren, kantoor-collega's, alle instellingen, klant verwijderd, back-up/archief gedownload, foutenlogboek gewist,
+  rooster gepubliceerd/teruggezet, Cloudflare-script, correctie gevraagd/ingetrokken. Alleen de beheerder kan het lezen;
+  niemand kan het wijzigen. Ouder dan 2 jaar wordt opgeruimd. (Klaarzetten/verplaatsen staat in het logboek klaarzetten.)
+- Herstelbaar verwijderen:
+  * App: een verwijderde bon gaat 30 dagen naar de Prullenbak (onderaan Mijn bonnen) en is daar terug te zetten.
+    (Daarnaast blijft hij in het online archief van het account.)
+  * Kantoor: "Intrekken" van een klaargezette bon zet hem 30 dagen bij "Ingetrokken" (onderaan Klaargezet) met Terugzetten.
+    De monteur ziet een ingetrokken bon niet meer.
+- Bijlagen gecontroleerd op echte inhoud:
+  * App: een PDF moet echt met %PDF beginnen; max. 15 MB per PDF en 40 MB samen. Foto's worden altijd opnieuw opgebouwd.
+  * Kantoor (slepen): alleen echte PDF's.
+  * Klaarzetten per mail: programma's, scripts en webpagina's (.exe, .js, .html, .svg enz.) worden geweigerd, en bij bekende
+    soorten (pdf, jpg, png, docx, xlsx, doc ...) moet de inhoud bij de extensie passen. Geweigerd staat in de antwoordmail.
+- Grenzen in de Firestore-regels: opmerking bij een klaargezette bon max. 500 tekens, PDF-delen max. 400 kB, omschrijving
+  in de agenda max. 1000 tekens, niet te veel velden.
+- Firestore-regels worden automatisch getest (tests/firestore-regels.test.mjs, 24 tests in een Firestore-emulator):
+  de workflow "Firestore-regels naar Firebase" test eerst; gaat er iets mis, dan wordt er NIET gepubliceerd.
 
 ZOEKEN EN AANDACHTSPUNTEN IN DE KANTOOR-APP (v211)
 - Nieuw tabblad Zoeken: zoek op werkbonnummer, projectnummer, klant, adres, plaats, telefoon, monteur of datum

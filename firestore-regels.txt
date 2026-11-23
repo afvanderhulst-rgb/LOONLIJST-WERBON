@@ -45,6 +45,15 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/kantoor/$(em()))
         && !geblokkeerd();
     }
+    // v212: grenzen aan wat kantoor in een klaargezette bon zet (tegen te grote of rare gegevens)
+    function inboxOk() {
+      let d = request.resource.data;
+      return d.size() <= 30
+        && (!('opm' in d) || (d.opm is string && d.opm.size() <= 500))
+        && (!('bestand' in d) || (d.bestand is string && d.bestand.size() <= 200))
+        && (!('parts' in d) || (d.parts is int && d.parts <= 60))
+        && (!('g' in d) || (d.g is map && d.g.size() <= 20));
+    }
     function klantOk() {
       let d = request.resource.data;
       return d.keys().hasOnly(['naam','adres','plaats','zoek','door','t'])
@@ -100,8 +109,9 @@ service cloud.firestore {
     match /inbox/{id} {
       allow read: if isBeheerder() || isKantoor()
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd());
-      allow create, delete: if isBeheerder() || isKantoor();
-      allow update: if isBeheerder() || isKantoor()
+      allow create: if (isBeheerder() || isKantoor()) && inboxOk();
+      allow delete: if isBeheerder() || isKantoor();
+      allow update: if ((isBeheerder() || isKantoor()) && inboxOk())
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald','verstuurd','gereed','repm'])
             && request.resource.data.status == 'opgehaald');
@@ -109,14 +119,17 @@ service cloud.firestore {
         allow read: if isBeheerder() || isKantoor()
           || (request.auth != null && !geblokkeerd()
               && get(/databases/$(database)/documents/inbox/$(id)).data.voor == request.auth.uid);
-        allow write: if isBeheerder() || isKantoor();
+        allow write: if (isBeheerder() || isKantoor())
+          && (request.resource == null || (request.resource.data.d is string && request.resource.data.d.size() <= 400000));
       }
     }
     // agenda (v180): planning uit de agenda-PDF van kantoor; de monteur leest alleen zijn eigen regels
     match /agenda/{id} {
       allow read: if isBeheerder() || isKantoor()
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd());
-      allow write: if isBeheerder() || isKantoor();
+      allow write: if (isBeheerder() || isKantoor())
+        && (request.resource == null || ((!('oms' in request.resource.data) || request.resource.data.oms.size() <= 1000)
+            && request.resource.data.size() <= 30));
       // v192: de monteur meldt terug: bezig / verstuurd / werk gereed / reparatiemelding
       allow update: if request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bezig','verstuurd','gereed','repm']);
@@ -152,6 +165,15 @@ service cloud.firestore {
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','gezien','opnieuw'])
             && request.resource.data.status in ['open','opnieuw']);
+    }
+    // v212: logboek van beheer- en kantooracties (alleen toevoegen; alleen de beheerder leest)
+    match /beheerlog/{id} {
+      allow create: if (isBeheerder() || isKantoor())
+        && request.resource.data.keys().hasOnly(['t','door','actie','wat'])
+        && request.resource.data.door is string && request.resource.data.door.lower() == em()
+        && request.resource.data.actie is string && request.resource.data.actie.size() <= 120
+        && request.resource.data.wat is string && request.resource.data.wat.size() <= 500;
+      allow read, delete: if isBeheerder();
     }
     // v211: aandachtspunten die kantoor als afgehandeld heeft gemarkeerd
     match /afgehandeld/{id} {

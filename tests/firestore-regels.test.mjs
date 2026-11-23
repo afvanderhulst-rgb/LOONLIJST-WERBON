@@ -93,6 +93,8 @@ test('monteur meldt zijn eigen verstuurde werkbon, niet die van een ander', asyn
   await assertSucceeds(setDoc(doc(db(JAN), 'bonlog/uA_b1'), ok));
   await assertFails(setDoc(doc(db(JAN), 'bonlog/uB_b1'), Object.assign({}, ok, {voor: PIET.uid})));
   await assertFails(setDoc(doc(db(JAN), 'bonlog/uA_b2'), Object.assign({}, ok, {extra: 'x'})));
+  await assertSucceeds(setDoc(doc(db(JAN), 'bonlog/uA_b3'), Object.assign({}, ok, {hist: [{t: 1, w: 'aangemaakt', d: 'jan'}]})));
+  await assertFails(setDoc(doc(db(JAN), 'bonlog/uA_b4'), Object.assign({}, ok, {hist: Array(25).fill({t: 1, w: 'x', d: ''})})));
   await assertFails(getDoc(doc(db(JAN), 'bonlog/uA_b1')));
   await assertSucceeds(getDoc(doc(db(KANTOOR), 'bonlog/uA_b1')));
 });

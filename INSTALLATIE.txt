@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v207,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v208,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,12 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+REISTIJD IN DE PLANNING (v208)
+- Bij gewerkte tijden (✓) staat nu ook de reistijd uit de werkbon: "🚗 reis 07:45–08:15 + 12:30–13:00 (1:00)"
+  (heen: vertrek tot begin werk, terug: einde werk tot aankomst; tussen haakjes het totaal).
+- In de app (Mijn planning) en in de kantoor-app (rooster, venster van de bon, eigen werkbonnen).
+- De app meldt de verstuurde werkbonnen van de laatste 60 dagen één keer opnieuw aan kantoor, nu met reistijd.
 
 MIJN PLANNING GELIJK AAN KANTOOR (v207)
 - "Mijn planning" in de app toont nu hetzelfde als het rooster van kantoor:

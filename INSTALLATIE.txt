@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v201,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v203,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,17 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+MELDINGEN MET OK-KNOP + MELDING BIJ NIEUW STORINGSROOSTER (v203)
+- Pushmeldingen over de planning (klaargezet/ingepland, verplaatst, agenda nieuw/gewijzigd) en het storingsrooster blijven
+  op de telefoon staan tot de monteur op OK tikt (of op de melding zelf, dan opent de app). Android/computer (Chrome/Edge);
+  iPhone toont geen OK-knop (beperking van iOS), daar blijft het een gewone melding.
+- In de app: wijzigingen in de planning/agenda en in je eigen storingsdiensten komen in een venster met OK (en Bekijken).
+  Het venster blijft terugkomen tot OK is getikt. (Was een melding die na 6 seconden verdween.)
+- Nieuw storingsrooster (per mail of via de kantoor-app, ook "Vorige versie terugzetten"): alleen monteurs bij wie hun eigen
+  diensten (vanaf vandaag) anders zijn, krijgen een pushmelding "Storingsrooster gewijzigd" met nieuw/vervallen (servercode pushRooster).
+  Koppeling monteur <-> rooster: de naam die de monteur in de app bij het rooster heeft gekozen (monteurs/<uid>.rooster, app v203);
+  anders op naam (kleine spelverschillen mogen). Firestore-regels: monteurs mag nu ook 'rooster' bevatten.
 
 STORINGSROOSTER PER MAIL: rooster@mit-werkbon.com (v202)
 - Mail de PDF van het storingsrooster naar rooster@mit-werkbon.com. Hij wordt meteen gepubliceerd voor alle collega's

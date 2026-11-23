@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v208,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v209,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,12 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+GEEN MATERIAAL? EERST BEVESTIGEN (v209)
+- Afronden (en Verzenden naar klant) van een werkbon zonder materiaal geeft eerst de vraag "Geen materiaal ingevuld.
+  Klopt dat?": "Klopt, geen materiaal gebruikt" gaat verder; "Materiaal invullen" opent het tabblad Materialen
+  (met een lege regel). Een lege regel zonder omschrijving telt niet als materiaal.
+- Het antwoord wordt bij de bon onthouden: daarna wordt het niet nog een keer gevraagd.
 
 REISTIJD IN DE PLANNING (v208)
 - Bij gewerkte tijden (✓) staat nu ook de reistijd uit de werkbon: "🚗 reis 07:45–08:15 + 12:30–13:00 (1:00)"

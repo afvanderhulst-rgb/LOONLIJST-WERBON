@@ -126,7 +126,7 @@ service cloud.firestore {
       allow read: if isBeheerder() || isKantoor();
       allow create, update: if request.auth != null && !geblokkeerd()
         && request.resource.data.voor == request.auth.uid && id.matches(request.auth.uid + '_.*')
-        && request.resource.data.keys().hasOnly(['voor','wb','klant','adres','plaats','tel','dagen','van','tot','verstuurd','gereed','repm','t'])
+        && request.resource.data.keys().hasOnly(['voor','wb','klant','adres','plaats','tel','pr','mis','dagen','van','tot','verstuurd','gereed','repm','t'])
         && request.resource.data.dagen is list && request.resource.data.dagen.size() <= 14;
       allow delete: if isBeheerder();
     }
@@ -152,6 +152,10 @@ service cloud.firestore {
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','gezien','opnieuw'])
             && request.resource.data.status in ['open','opnieuw']);
+    }
+    // v211: aandachtspunten die kantoor als afgehandeld heeft gemarkeerd
+    match /afgehandeld/{id} {
+      allow read, write: if isBeheerder() || isKantoor();
     }
     match /agendaimport/{id} {
       allow read: if isBeheerder() || isKantoor();

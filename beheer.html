@@ -104,7 +104,7 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 .pu{background:#fff;color:#14172e;border:1px dashed var(--ac);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px;cursor:grab}.pu b{display:block;font-size:14px}
 .pleg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mu);margin-top:10px}.pleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
 .plz{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px}.plz input[type=search]{flex:1;min-width:220px;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}.plz label{display:flex;gap:6px;align-items:center;margin:0;white-space:nowrap}
-#plZR{margin:0 0 12px}#plZR .zr{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--bd);border-left:4px solid #1a147f;border-radius:8px;margin-bottom:6px;cursor:pointer;background:var(--card)}#plZR .zr:hover{border-color:var(--ac)}#plZR .zr.k{border-left-color:#16693e}#plZR .zr.n{border-left-color:#b3261e}#plZR .zr.z{border-left-color:#d08700}#plZR .zd{flex:0 0 120px;font-weight:700;font-size:14px}#plZR .zt{flex:1;min-width:0;font-size:14px}
+#plZR{margin:0 0 12px}.plz input[type=checkbox],#aAll{width:auto}#aL .zr .zd{flex-basis:90px}.zr{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--bd);border-left:4px solid #1a147f;border-radius:8px;margin-bottom:6px;cursor:pointer;background:var(--card)}.zr:hover{border-color:var(--ac)}.zr.k{border-left-color:#16693e}.zr.n{border-left-color:#b3261e}.zr.z{border-left-color:#d08700}.zr .zd{flex:0 0 120px;font-weight:700;font-size:14px}.zr .zt{flex:1;min-width:0;font-size:14px}
 #plDlg{position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px}#plDlg[hidden]{display:none}
 #plDlg .card{width:100%;max-width:460px;max-height:92vh;overflow:auto;margin:0}#plDlg select,#plDlg input{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}
 /* ---- kantoor op de computer (v169) ---- */
@@ -140,7 +140,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="er" id="le" role="alert"></div>
  </div>
  <div class="card" id="msg" hidden></div>
- <nav class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="b">Bonnen klaarzetten</button><button type="button" data-tab="k">Klanten</button><button type="button" data-tab="p">Planning</button><button type="button" data-tab="r">Rooster</button><button type="button" data-tab="i">Instellingen</button><button type="button" data-tab="s">Systeem<span class="dot" id="sdot" hidden></span></button><button type="button" data-tab="f">Info</button><a class="kpl" href="https://mit-kantoor.web.app/" target="_blank" rel="noopener">Kantoor-app ↗</a></nav>
+ <nav class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="b">Bonnen klaarzetten</button><button type="button" data-tab="k">Klanten</button><button type="button" data-tab="p">Planning</button><button type="button" data-tab="z">Zoeken</button><button type="button" data-tab="a">Aandacht<span class="dot" id="adot" hidden></span></button><button type="button" data-tab="r">Rooster</button><button type="button" data-tab="i">Instellingen</button><button type="button" data-tab="s">Systeem<span class="dot" id="sdot" hidden></span></button><button type="button" data-tab="f">Info</button><a class="kpl" href="https://mit-kantoor.web.app/" target="_blank" rel="noopener">Kantoor-app ↗</a></nav>
  <div id="list" hidden>
   <div class="tiles" id="tiles"></div>
   <div class="tools"><input id="q" type="search" placeholder="Zoek op naam of e-mailadres…"><button class="btn" id="rf" type="button">Vernieuwen</button></div>
@@ -198,6 +198,14 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="card"><b>Beheer en techniek</b><p class="mu" style="margin:2px 0 4px">Inloggen met het Google-account van MIT (Firebase/Google Cloud) of het eigen account van die dienst.</p><div class="br"><span style="min-width:0;flex:1"><b>Firebase console</b><br><a href="https://console.firebase.google.com/project/backup-loonlijst-werkbon-mit/overview" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://console.firebase.google.com/project/backup-loonlijst-werkbon-mit/overview</a><div class="mu" style="font-size:13px">Accounts (Authentication), database (Firestore), App Check, Hosting en de servercode (Functions).</div></span><button class="btn sm" type="button" data-cp="https://console.firebase.google.com/project/backup-loonlijst-werkbon-mit/overview">Kopiëren</button></div><div class="br"><span style="min-width:0;flex:1"><b>Google Cloud console</b><br><a href="https://console.cloud.google.com/home/dashboard?project=backup-loonlijst-werkbon-mit" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://console.cloud.google.com/home/dashboard?project=backup-loonlijst-werkbon-mit</a><div class="mu" style="font-size:13px">Serviceaccount en rechten (IAM), reCAPTCHA-sleutel, kosten en budget (Billing), logboeken.</div></span><button class="btn sm" type="button" data-cp="https://console.cloud.google.com/home/dashboard?project=backup-loonlijst-werkbon-mit">Kopiëren</button></div><div class="br"><span style="min-width:0;flex:1"><b>GitHub (broncode en publiceren)</b><br><a href="https://github.com/afvanderhulst-rgb/loonlijst-werbon" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://github.com/afvanderhulst-rgb/loonlijst-werbon</a><div class="mu" style="font-size:13px">Hier staat de app. Tabblad Actions: zien of een nieuwe versie goed is gepubliceerd (groen vinkje).</div></span><button class="btn sm" type="button" data-cp="https://github.com/afvanderhulst-rgb/loonlijst-werbon">Kopiëren</button></div><div class="br"><span style="min-width:0;flex:1"><b>Brevo (mail versturen)</b><br><a href="https://app.brevo.com/" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://app.brevo.com/</a><div class="mu" style="font-size:13px">Verstuurt de werkbonnen naar kantoor, de weeklijsten en de bevestigingsmails.</div></span><button class="btn sm" type="button" data-cp="https://app.brevo.com/">Kopiëren</button></div><div class="br"><span style="min-width:0;flex:1"><b>Cloudflare (mail ontvangen, mit-werkbon.com)</b><br><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://dash.cloudflare.com/</a><div class="mu" style="font-size:13px">Domein mit-werkbon.com: Email Routing en de Worker voor klaarzetten per mail en agenda@.</div></span><button class="btn sm" type="button" data-cp="https://dash.cloudflare.com/">Kopiëren</button></div></div>
   <div class="card"><b>Mailadressen van de app</b><div class="br"><span><b>rooster@mit-werkbon.com</b><div class="mu" style="font-size:13px">Het storingsrooster (PDF) hierheen mailen: wordt meteen gepubliceerd voor alle collega's. Vorige versie terugzetten: kantoor-app &gt; Rooster.</div></span></div><div class="br"><span><b>agenda@mit-werkbon.com</b><div class="mu" style="font-size:13px">De agenda-PDF van de planner hierheen mailen: komt in de planning van de monteurs.</div></span></div><div class="br"><span><b>&lt;monteur&gt;@mit-werkbon.com</b><div class="mu" style="font-size:13px">Werkbon-PDF klaarzetten voor die monteur. De adressen staan in de kantoor-app bij Bonnen klaarzetten.</div></span></div></div>
  </div>
+ <div id="zlist" hidden>
+  <div class="card"><b>Zoeken in alle bonnen</b><p class="mu" style="margin:4px 0 8px">Zoek op werkbonnummer, projectnummer, klant, adres, plaats, telefoon, monteur of datum (bijv. 23-11 of 23-11-2026). Meerdere woorden mag: "kerkstraat jan". Klik op een bon voor details, de verstuurde werkbon (PDF met foto's en bijlagen) en "Correctie vragen".</p>
+   <div class="plz"><input id="zQ" type="search" placeholder="Bonnummer, klant, adres, monteur, datum…" autocomplete="off"><label class="mu"><input type="checkbox" id="zQo"> ook ouder (tot 1 jaar)</label></div><div id="zR"></div></div>
+ </div>
+ <div id="alist" hidden>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b id="aT">Aandachtspunten</b><label class="mu" style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="aAll"> ook afgehandelde tonen</label></div>
+   <p class="mu" style="margin:4px 0 8px">Wat kantoor nog moet nakijken (laatste 30 dagen). Klik op een regel om de bon te openen; "Afgehandeld" haalt hem van de lijst (voor alle kantoor-collega's).</p><div id="aL"><p class="mu">Laden…</p></div></div>
+ </div>
  <div id="plist" hidden>
   <div class="plw">
    <div class="card"><b>Nog in te plannen (<span id="plN">0</span>)</b><p class="mu">Sleep een bon naar een monteur en een dag, of klik erop. Nieuwe PDF's kun je hier ook in slepen; ze staan dan klaar om in te plannen.</p>
@@ -210,7 +218,6 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
     <div class="scroll"><div id="plGrid"></div></div>
     <div class="pleg"><span><i style="background:#1a147f"></i>Gepland (monteur nog niet begonnen)</span><span><i style="background:#d08700"></i>Bezig (monteur heeft hem overgenomen)</span><span><i style="background:#16693e"></i>Verstuurd, werk gereed</span><span><i style="background:#b3261e"></i>Verstuurd, NIET gereed</span><span><b style="background:#c25e00;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">REP</b> reparatiemelding</span><span>Stippelrand links = uit de agenda-PDF</span><span>Dubbele rand links = werkbon die de monteur zelf maakte (niet gepland)</span><span><b style="background:#b3261e;color:#fff;border-radius:4px;padding:0 4px;font-size:10px">CORR</b> correctie gevraagd, nog niet opnieuw verstuurd</span><span>✓ achter de tijd = gewerkte tijd volgens de verstuurde werkbon; 🚗 = reistijd (heen + terug).</span><span>Klik op een bon om monteur, dag, tijd of opmerking te wijzigen.</span></div></div>
   </div>
-  <div id="plDlg" hidden></div>
  </div>
  <div id="rlist" hidden>
   <div class="card"><b>Storingsrooster</b><div class="mu" id="rcur" style="margin-top:4px">Laden…</div>
@@ -244,6 +251,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
    <button class="btn" id="klog" type="button">Wijzigingen tonen</button><div id="klogl" style="margin-top:10px"></div></div>
  </div>
 </main>
+<div id="plDlg" hidden></div>
 <div id="hlpDlg" hidden><div class="card" style="width:100%;max-width:480px;margin:0"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b id="hlpT" style="font-size:17px"></b><button class="btn sm" type="button" id="hlpX">Sluiten</button></div><div id="hlpB" style="margin-top:8px;font-size:15px;line-height:1.5"></div></div></div>
 <div id="hbDlg" hidden style="position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px"></div>
 <div id="ksDlg" hidden style="position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px"><div class="card" style="width:100%;max-width:520px;max-height:92vh;overflow:auto;margin:0">
@@ -296,13 +304,13 @@ auth.onAuthStateChanged(async function(u){
  $('kset').hidden=true;try{$('ksDlg').hidden=true}catch(x){}
  try{if(UNSUB){UNSUB();UNSUB=null}}catch(x){}
  try{if(typeof AGU==='function'){AGU();}AGU=null;AGL=false;AG=[]}catch(x){}try{if(typeof BLU==='function'){BLU();}BLU=null;BLL=false;BL=[]}catch(x){}
- $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('rlist').hidden=true;$('blist').hidden=true;$('flist').hidden=true;$('tabs').hidden=true;show('');ROLE='';
+ $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('rlist').hidden=true;$('blist').hidden=true;$('flist').hidden=true;$('zlist').hidden=true;$('alist').hidden=true;$('tabs').hidden=true;show('');ROLE='';
  if(!u){$('who').textContent=KP?'Bonnen klaarzetten en storingsrooster':'Gebruikers en back-ups';if(ADMIN&&!KP)$('lm').value=ADMIN;return}
  $('who').textContent='Ingelogd als '+u.email;
  ROLE='admin';
  var isK=false;if(KP||(ADMIN&&!isAdm(u.email))){try{isK=(await db.collection('kantoor').doc(String(u.email).toLowerCase()).get()).exists}catch(x){}}
  if(KP){if(!isK&&!isAdm(u.email)){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') staat niet in de lijst met kantoor-collega\'s. Vraag de beheerder ('+ee(ADMIN)+') om je toe te voegen.</p>');return}
-  ROLE='kantoor';if(!/^[brp]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email;$('kset').hidden=false}
+  ROLE='kantoor';if(!/^[brpza]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email;$('kset').hidden=false}
  else if(ADMIN&&!isAdm(u.email)){
   show(isK?'<b>Gebruik de kantoorpagina</b><p class="mu">Bonnen klaarzetten en het storingsrooster staan op een eigen pagina.</p><p><a class="btn pr" href="https://mit-kantoor.web.app/" style="text-decoration:none;display:inline-block">Naar de kantoor-app</a></p>':'<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina.</p>');return}
  try{await u.reload()}catch(x){}
@@ -313,10 +321,10 @@ auth.onAuthStateChanged(async function(u){
   return}
  load()});
 
-var TAB=KP?'b':'u',TABK=KP?'kt:tab':'bh:tab',PLANON=false;try{var _t=sessionStorage.getItem(TABK);if((KP?/^[brp]$/:/^[uksif]$/).test(_t||''))TAB=_t}catch(e){}
+var TAB=KP?'b':'u',TABK=KP?'kt:tab':'bh:tab',PLANON=false;try{var _t=sessionStorage.getItem(TABK);if((KP?/^[brpza]$/:/^[uksif]$/).test(_t||''))TAB=_t}catch(e){}
 function planMag(){return PLANON||isAdm(auth&&auth.currentUser&&auth.currentUser.email)}
-function showTab(){[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x.dataset.tab===TAB);if(x.dataset.tab===TAB&&x.scrollIntoView)try{x.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}if(!x.dataset.tab){x.hidden=KP;return}x.hidden=(ROLE==='kantoor'&&!/^[brp]$/.test(x.dataset.tab))||(x.dataset.tab==='p'&&!planMag())||(!KP&&/^[brp]$/.test(x.dataset.tab))});if(TAB==='p'&&!planMag())TAB='b';if(!KP&&/^[brp]$/.test(TAB))TAB='u';$('plist').hidden=TAB!=='p';document.body.classList.toggle('wide',TAB==='p');$('list').hidden=TAB!=='u';$('ilist').hidden=TAB!=='i';$('slist').hidden=TAB!=='s';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';$('blist').hidden=TAB!=='b';$('flist').hidden=TAB!=='f'}
-$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b||!b.dataset.tab)return;TAB=b.dataset.tab;try{sessionStorage.setItem(TABK,TAB)}catch(e){}showTab();window.scrollTo(0,0);if(TAB==='b')loadSent();if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR();if(TAB==='p'){loadSent();drawPlan()}};
+function showTab(){[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x.dataset.tab===TAB);if(x.dataset.tab===TAB&&x.scrollIntoView)try{x.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}if(!x.dataset.tab){x.hidden=KP;return}x.hidden=(ROLE==='kantoor'&&!/^[brpza]$/.test(x.dataset.tab))||(x.dataset.tab==='p'&&!planMag())||(!KP&&/^[brpza]$/.test(x.dataset.tab))});if(TAB==='p'&&!planMag())TAB='b';if(!KP&&/^[brpza]$/.test(TAB))TAB='u';$('plist').hidden=TAB!=='p';document.body.classList.toggle('wide',TAB==='p');$('list').hidden=TAB!=='u';$('ilist').hidden=TAB!=='i';$('slist').hidden=TAB!=='s';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';$('blist').hidden=TAB!=='b';$('flist').hidden=TAB!=='f';$('zlist').hidden=TAB!=='z';$('alist').hidden=TAB!=='a'}
+$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b||!b.dataset.tab)return;TAB=b.dataset.tab;try{sessionStorage.setItem(TABK,TAB)}catch(e){}showTab();window.scrollTo(0,0);if(TAB==='b')loadSent();if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR();if(TAB==='p'){loadSent();drawPlan()}if(TAB==='z'||TAB==='a'){ensureData();if(TAB==='a')drawAandacht();else{try{$('zQ').focus()}catch(x){}zoekC()}}};
 /* ---------- rooster ---------- */
 var RP=null,RFILE='',RVOR=null;
 // v202: bij publiceren de vorige versie bewaren (rooster/vorige), en terugzetten
@@ -561,7 +569,7 @@ function daIso(da){var m=/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/.exec(String(da||'').t
 function plKl(o){return o.verstuurd?(o.gereed==='nee'?'n':'k'):(o.status==='opgehaald'||o.bezig?'z':'')}
 function plGr(o){return o.verstuurd?(o.gereed==='nee'?' · NIET GEREED':o.gereed==='ja'?' · GEREED':'')+(o.repm?' · REPARATIEMELDING':''):''}
 function plKort(o){var g=o.g||{},a=String(g.wadres||'').split(NL);return (a[0]||o.bestand||'')+(a[2]?', '+String(a[2]).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):'')}
-function drawPlan(){var gr=$('plGrid');if(!gr||$('plist').hidden)return;loadCorr();try{if(String($('plQ').value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT);ZT=setTimeout(zoek,300)}}catch(e){}
+function drawPlan(){try{aDot();if(TAB==='a')drawAandacht();if(TAB==='z'&&String(($('zQ')||{}).value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT2);ZT2=setTimeout(zoekC,400)}}catch(e){}var gr=$('plGrid');if(!gr||$('plist').hidden)return;loadCorr();try{if(String($('plQ').value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT);ZT=setTimeout(zoek,300)}}catch(e){}
  $('plOff').textContent=PLANON?'':'Nog uit: alleen jij ziet de planning. Aanzetten: beheer.html > Instellingen.';
  var ma=maandagVan(PLW),dagen=[];for(var i=0;i<6;i++){var d=new Date(ma);d.setDate(ma.getDate()+i);dagen.push(d)}
  var za=dagen[5];$('plWk').textContent='Week '+weekNr(ma)+' · '+ma.getDate()+'-'+(ma.getMonth()+1)+' t/m '+za.getDate()+'-'+(za.getMonth()+1)+'-'+za.getFullYear();
@@ -654,35 +662,72 @@ function zNorm(v){return normK(v)}
 async function zOud(){if(ZL)return;ZL=true;var d=new Date();d.setFullYear(d.getFullYear()-1);var mp=function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o};
  try{var qa=await db.collection('agenda').where('pd','>=',isoD(d)).get();ZA=qa.docs.map(agMap)}catch(e){ZA=[]}
  try{var qb=await db.collection('bonlog').where('van','>=',isoD(d)).get();ZB=qb.docs.map(mp)}catch(e){ZB=[]}}
+function zDat(pd){var p=String(pd||'').split('-');return p.length===3?[p[2]+'-'+p[1]+'-'+p[0],(+p[2])+'-'+(+p[1])+'-'+p[0],p[2]+'-'+p[1]].join(' '):''}
 function zItems(){var R=[],gez={},wbs={},nm=function(uid,o){var u=USERS.filter(function(x){return x.uid===uid})[0]||{};return u.naam||u.email||(o&&(o.voorNaam||o.voorMail))||''};
  SENT.forEach(function(o){var g=o.g||{},a=String(g.wadres||'').split(NL),pd=o.pd||(o.verstuurd?isoD(new Date(o.verstuurd)):isoD(new Date(o.t||Date.now())));
-  if(o.voor&&g.wb)wbs[o.voor+'|'+g.wb]=1;
+  if(o.voor&&g.wb)wbs[o.voor+'|'+g.wb]=R.length;
   R.push({src:'k',id:o.id,voor:o.voor,mon:o.voor?nm(o.voor,o):'nog geen monteur',pd:pd,pt:o.pt||'',wb:g.wb||'',klant:a[0]||o.bestand||'',adres:a[1]||'',plaats:a[2]||'',kl:plKl(o),st:o.verstuurd?'verstuurd'+plGr(o):o.status==='opgehaald'?'bezig':o.pd?'gepland':'nog in te plannen',
-   z:[g.wb,g.wadres,g.storing,g.opdr,o.opm,o.bestand,nm(o.voor,o)].join(' ')})});
- [].concat(AG,ZA||[]).forEach(function(o){if(gez['a'+o.id])return;gez['a'+o.id]=1;if(o.wb)wbs[o.voor+'|'+o.wb]=1;
+   vs:!!o.verstuurd,z:[g.wb,g.wadres,g.storing,g.opdr,o.opm,o.bestand,nm(o.voor,o),zDat(pd)].join(' ')})});
+ [].concat(AG,ZA||[]).forEach(function(o){if(gez['a'+o.id])return;gez['a'+o.id]=1;if(o.wb&&!((o.voor+'|'+o.wb) in wbs))wbs[o.voor+'|'+o.wb]=R.length;
   R.push({src:'a',id:o.id,voor:o.voor,mon:nm(o.voor,o),pd:o.pd,pt:o.pt||'',wb:o.wb||'',klant:o.klant||String(o.oms||'').split('\n')[0],adres:o.adres||'',plaats:o.plaats||'',kl:plKl(o),st:o.verstuurd?'verstuurd'+plGr(o):o.bezig?'bezig':'gepland (agenda)',
-   z:[o.wb,o.klant,o.adres,o.plaats,o.tel,o.oms,o.inst,nm(o.voor,o)].join(' ')})});
- [].concat(BL,ZB||[]).forEach(function(e){if(gez['e'+e.id])return;gez['e'+e.id]=1;if(e.wb&&wbs[e.voor+'|'+e.wb])return;
+   vs:!!o.verstuurd,z:[o.wb,o.klant,o.adres,o.plaats,o.tel,o.oms,o.inst,nm(o.voor,o),zDat(o.pd)].join(' ')})});
+ [].concat(BL,ZB||[]).forEach(function(e){if(gez['e'+e.id])return;gez['e'+e.id]=1;var ix=e.wb?wbs[e.voor+'|'+e.wb]:undefined;
+  if(ix!==undefined){var t=R[ix];if(e.pr){t.pr=e.pr;t.z+=' '+e.pr}t.z+=' '+(e.dagen||[]).map(function(d){return zDat(d.pd)}).join(' ');t.vs=true;t.bon=t.bon||String(e.id).slice(String(e.voor).length+1);return}
   R.push({src:'e',id:e.id,voor:e.voor,mon:nm(e.voor),pd:e.tot||e.van,pt:((e.dagen||[])[0]||{}).ws||'',wb:e.wb||'',klant:e.klant||'',adres:e.adres||'',plaats:e.plaats||'',kl:e.gereed==='nee'?'n':'k',st:'eigen werkbon, verstuurd'+plGr(e),
-   z:[e.wb,e.klant,e.adres,e.plaats,e.tel,nm(e.voor)].join(' ')})});
+   vs:true,pr:e.pr||'',bon:String(e.id).slice(String(e.voor).length+1),z:[e.wb,e.pr,e.klant,e.adres,e.plaats,e.tel,nm(e.voor)].concat((e.dagen||[]).map(function(d){return zDat(d.pd)})).join(' ')})});
  return R}
 // v206: een bonnummer wordt in ALLE jaren gezocht (agenda en verstuurde werkbonnen), zonder alles op te halen
 var ZN={};
 async function zNummer(n){if(ZN[n])return;ZN[n]=1;var mp=function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o},has=function(L,id){return L.some(function(x){return x.id===id})};
  try{var qa=await db.collection('agenda').where('wb','==',n).get();ZA=ZA||[];qa.docs.map(agMap).forEach(function(o){if(!has(ZA,o.id)&&!has(AG,o.id))ZA.push(o)})}catch(e){}
- try{var qb=await db.collection('bonlog').where('wb','==',n).get();ZB=ZB||[];qb.docs.map(mp).forEach(function(o){if(!has(ZB,o.id)&&!has(BL,o.id))ZB.push(o)})}catch(e){}}
-async function zoek(){var q=String($('plQ').value||'').trim(),el=$('plZR');if(q.length<2){el.innerHTML='';return}
- if($('plQo').checked&&!ZL){el.innerHTML='<p class="mu">Oudere bonnen ophalen…</p>';await zOud()}
- var nrs=q.split(/\s+/).filter(function(w){return /^\d{4,12}$/.test(w)});for(var ni=0;ni<nrs.length;ni++)await zNummer(nrs[ni]);
+ try{var qb=await db.collection('bonlog').where('wb','==',n).get();ZB=ZB||[];qb.docs.map(mp).forEach(function(o){if(!has(ZB,o.id)&&!has(BL,o.id))ZB.push(o)})}catch(e){}
+ try{var qp=await db.collection('bonlog').where('pr','==',n).get();ZB=ZB||[];qp.docs.map(mp).forEach(function(o){if(!has(ZB,o.id)&&!has(BL,o.id))ZB.push(o)})}catch(e){}}
+function zoek(){return zoekIn($('plQ'),$('plQo'),$('plZR'),false)}
+function zoekC(){return zoekIn($('zQ'),$('zQo'),$('zR'),true)}
+var ZT2=null;
+async function zoekIn(qE,oE,el,groot){var q=String(qE.value||'').trim();if(q.length<2){el.innerHTML=groot?'<p class="mu">Typ minstens 2 tekens.</p>':'';return}
+ if(oE.checked&&!ZL){el.innerHTML='<p class="mu">Oudere bonnen ophalen…</p>';await zOud()}
+ var nrs=q.split(/\s+/).filter(function(w){return /^[A-Za-z]?\d{3,12}$/.test(w)});for(var ni=0;ni<nrs.length;ni++)await zNummer(nrs[ni]);
  if(!BLL)loadBl();var W=q.split(/\s+/).map(zNorm).filter(Boolean),L=zItems().filter(function(x){var t=zNorm(x.z);return W.every(function(w){return t.indexOf(w)>=0})});
  L.sort(function(a,b){return String(b.pd||'').localeCompare(String(a.pd||''))||String(b.pt||'').localeCompare(String(a.pt||''))});
  var n=L.length;L=L.slice(0,60);
- el.innerHTML=n?'<div class="mu" style="margin:0 2px 6px">'+n+(n===1?' bon gevonden':' bonnen gevonden')+(n>60?' (de nieuwste 60)':'')+(!$('plQo').checked?' · de laatste 2 maanden (een bonnummer: alle jaren); vink "ook ouder" aan voor meer':'')+' · klik om te openen</div>'+L.map(function(x,i){var p=String(x.pd||'').split('-'),dt=p.length===3?pdTxt({pd:x.pd})+'-'+p[0]:'';
-   return '<div class="zr '+x.kl+'" data-zi="'+i+'"><div class="zd">'+ee(dt)+(x.pt?'<div class="mu" style="font-weight:400">'+ee(x.pt)+'</div>':'')+'</div><div class="zt"><b>'+ee((x.wb?x.wb+' · ':'')+x.klant)+'</b><div>'+ee([x.adres,x.plaats].filter(Boolean).join(', '))+'</div><div class="mu">'+(x.mon?ee(x.mon)+' · ':'')+ee(x.st)+'</div></div></div>'}).join(''):'<p class="mu">Niets gevonden'+(!$('plQo').checked?' in de laatste 2 maanden. Vink "ook ouder" aan om verder terug te zoeken (een bonnummer wordt altijd in alle jaren gezocht).':'.')+'</p>';
- el.querySelectorAll('[data-zi]').forEach(function(c){c.onclick=function(){var x=L[+c.dataset.zi],p=String(x.pd||'').split('-');
+ el.innerHTML=n?'<div class="mu" style="margin:0 2px 6px">'+n+(n===1?' bon gevonden':' bonnen gevonden')+(n>60?' (de nieuwste 60)':'')+(!oE.checked?' · de laatste 2 maanden (een bonnummer: alle jaren); vink "ook ouder" aan voor meer':'')+' · klik om te openen</div>'+L.map(function(x,i){var p=String(x.pd||'').split('-'),dt=p.length===3?pdTxt({pd:x.pd})+'-'+p[0]:'';
+   return '<div class="zr '+x.kl+'" data-zi="'+i+'"><div class="zd">'+ee(dt)+(x.pt?'<div class="mu" style="font-weight:400">'+ee(x.pt)+'</div>':'')+'</div><div class="zt"><b>'+ee((x.wb?x.wb+' · ':'')+x.klant)+'</b><div>'+ee([x.adres,x.plaats].filter(Boolean).join(', '))+'</div><div class="mu">'+(x.mon?ee(x.mon)+' · ':'')+ee(x.st)+(x.pr?' · project '+ee(x.pr):'')+'</div></div>'+(groot&&x.vs?'<div style="flex:none">'+bonPdfKnop(x.voor,x.wb,x.bon||'').replace('class="btn"','class="btn sm"').replace('Verstuurde werkbon (PDF)','PDF')+'</div>':'')+'</div>'}).join(''):'<p class="mu">Niets gevonden'+(!oE.checked?' in de laatste 2 maanden. Vink "ook ouder" aan om verder terug te zoeken (een bonnummer wordt altijd in alle jaren gezocht).':'.')+'</p>';
+ el.querySelectorAll('[data-zi]').forEach(function(c){c.onclick=function(ev){if(ev&&ev.target.closest&&ev.target.closest('[data-bpu]'))return;var x=L[+c.dataset.zi],p=String(x.pd||'').split('-');
   if(p.length===3){var d0=new Date(+p[0],+p[1]-1,+p[2],12);d0.setDate(d0.getDate()-(d0.getDay()+6)%7);PLW=Math.round((d0-maandagVan(0))/(7*864e5))}
   drawPlan();if(x.src==='k')plDlg(x.id);else if(x.src==='a')agInfo(x.id);else ebInfo(x.id)}})}
 $('plQ').oninput=function(){clearTimeout(ZT);ZT=setTimeout(zoek,200)};$('plQo').onchange=zoek;
+$('zQ').oninput=function(){clearTimeout(ZT2);ZT2=setTimeout(zoekC,200)};$('zQo').onchange=zoekC;
+/* ---------- aandachtspunten voor kantoor (v211) ---------- */
+var AFG={},AFGL=false,MLF=[],MLFL=false;
+function ensureData(){try{if(!SENT.length)loadSent();if(!AGL)loadAg();if(!BLL)loadBl();loadCorr();loadAfg();if(isAdm(auth.currentUser&&auth.currentUser.email)&&!MLFL)loadMlf()}catch(e){}}
+function loadAfg(){if(AFGL||!db)return;AFGL=true;try{db.collection('afgehandeld').where('t','>=',Date.now()-120*864e5).onSnapshot(function(s){AFG={};s.docs.forEach(function(d){AFG[d.id]=d.data()||{}});drawPlan()},function(){})}catch(e){}}
+function loadMlf(){MLFL=true;db.collection('mailuit').where('status','==','fout').get().then(function(s){MLF=s.docs.map(function(d){var o=d.data()||{};o.id=d.id;return o}).filter(function(o){return (o.t||0)>Date.now()-7*864e5});drawPlan()}).catch(function(){})}
+function aItems(){var vd=isoD(new Date()),g30=isoD(new Date(Date.now()-30*864e5)),R=[],nm=function(uid,o){var u=USERS.filter(function(x){return x.uid===uid})[0]||{};return u.naam||u.email||(o&&(o.voorNaam||o.voorMail))||''};
+ var blHas=function(uid,wb,pd){var st=new Date(pd.split('-')[0],+pd.split('-')[1]-1,+pd.split('-')[2]).getTime();return [].concat(BL,ZB||[]).some(function(e){return e.voor===uid&&String(e.wb||'')===String(wb)&&(e.verstuurd||0)>=st})};
+ CORR.filter(corrOpen).forEach(function(c){R.push({g:'corr',key:'c_'+c.id,pd:isoD(new Date(c.t||Date.now())),mon:nm(c.voor),txt:(c.wb?'werkbon '+c.wb:'werkbon')+(c.klant?' · '+c.klant:'')+' — '+(c.reden||[]).join(', ')+(c.gezien?' (gezien)':' (nog niet gezien)'),open:{voor:c.voor,wb:c.wb,bon:c.bon,ib:c.ib}})});
+ AG.forEach(function(a){if(!a.wb||!a.pd||a.pd>=vd||a.pd<g30||a.verstuurd||blHas(a.voor,a.wb,a.pd))return;R.push({g:'open',key:'a_'+a.id,pd:a.pd,mon:nm(a.voor,a),txt:'werkbon '+a.wb+(a.klant?' · '+a.klant:'')+' (agenda '+pdTxt(a)+')',open:{src:'a',id:a.id}})});
+ SENT.forEach(function(o){var gg=o.g||{};if(o.voor&&o.pd&&o.pd<vd&&o.pd>=g30&&!o.verstuurd&&!(gg.wb&&blHas(o.voor,gg.wb,o.pd)))R.push({g:'open',key:'k_'+o.id,pd:o.pd,mon:nm(o.voor,o),txt:(gg.wb?'werkbon '+gg.wb:'bon')+' · '+plKort(o)+' (gepland '+pdTxt(o)+')',open:{src:'k',id:o.id}});
+  if(o.status==='klaar'&&o.voor&&(o.t||0)<Date.now()-2*864e5)R.push({g:'klaar',key:'q_'+o.id,pd:isoD(new Date(o.t)),mon:nm(o.voor,o),txt:(gg.wb?'werkbon '+gg.wb:'bon')+' · '+plKort(o)+' — klaargezet '+fd(o.t),open:{src:'k',id:o.id}})});
+ var gz={};[].concat(BL,ZB||[]).forEach(function(e){if(gz[e.id]||(e.verstuurd||0)<Date.now()-30*864e5)return;gz[e.id]=1;var pd=e.tot||e.van,tx='werkbon '+(e.wb||'')+(e.klant?' · '+e.klant:'');
+  if(e.gereed==='nee'||e.repm)R.push({g:'nietg',key:'n_'+e.id+'_'+(e.verstuurd||0),pd:pd,mon:nm(e.voor),txt:tx+' — '+[e.gereed==='nee'?'NIET GEREED':'',e.repm?'REPARATIEMELDING':''].filter(Boolean).join(' + '),open:{src:'e',id:e.id}});
+  if((e.mis||[]).length)R.push({g:'mis',key:'m_'+e.id+'_'+(e.verstuurd||0),pd:pd,mon:nm(e.voor),txt:tx+' — ontbreekt: '+e.mis.join(', '),open:{src:'e',id:e.id}})});
+ MLF.forEach(function(m){R.push({g:'mail',key:'f_'+m.id+'_'+(m.t||0),pd:isoD(new Date(m.t||Date.now())),mon:m.naam||m.van||'',txt:(m.soort==='weeklijst'?'Weeklijst':m.soort==='klant'?'Werkbon naar klant':'Werkbon')+' '+(m.bestand||'')+' — '+(m.fout||'mislukt'),open:null})});
+ return R}
+var AGRP=[['corr','Correctie gevraagd, nog niet opnieuw verstuurd'],['open','Gepland, maar nog geen werkbon ontvangen'],['klaar','Klaargezet, al meer dan 2 dagen niet opgehaald'],['nietg','Niet gereed of reparatiemelding: opvolgen'],['mis','Verstuurd met ontbrekende gegevens'],['mail','Mislukte mails (synchronisatiefout, alleen beheerder)']];
+function aDot(){var n=aItems().filter(function(x){return !AFG[x.key]}).length,d=$('adot');if(d)d.hidden=!n;return n}
+function aOpen(o){if(!o)return;if(o.src==='a')return agInfo(o.id);if(o.src==='k')return plDlg(o.id);if(o.src==='e')return ebInfo(o.id);
+ var e=[].concat(BL,ZB||[]).filter(function(x){return x.voor===o.voor&&(o.bon?x.id===o.voor+'_'+o.bon:String(x.wb||'')===String(o.wb))})[0];if(e)return ebInfo(e.id);
+ var a=AG.filter(function(x){return x.voor===o.voor&&String(x.wb||'')===String(o.wb)})[0];if(a)return agInfo(a.id);
+ var k=SENT.filter(function(x){return o.ib?x.id===o.ib:(x.voor===o.voor&&(x.g||{}).wb===o.wb)})[0];if(k)return plDlg(k.id)}
+function drawAandacht(){var el=$('aL');if(!el)return;var all=$('aAll').checked,L=aItems(),n=0;
+ var h=AGRP.map(function(gr){var X=L.filter(function(x){return x.g===gr[0]&&(all||!AFG[x.key])}).sort(function(a,c){return String(c.pd).localeCompare(String(a.pd))});if(!X.length)return '';n+=X.filter(function(x){return !AFG[x.key]}).length;
+  return '<h2 class="sh">'+ee(gr[1])+' ('+X.length+')</h2>'+X.map(function(x){var af=AFG[x.key];return '<div class="zr'+(af?'':' n')+'" data-ak="'+ee(x.key)+'" style="'+(af?'opacity:.55':'')+'"><div class="zd">'+ee(pdTxt({pd:x.pd}))+'</div><div class="zt"><b>'+ee(x.mon||'')+'</b><div>'+ee(x.txt)+'</div>'+(af?'<div class="mu">afgehandeld '+ee(fd(af.t))+(af.door?' door '+ee(af.door):'')+'</div>':'')+'</div><div style="flex:none">'+(af?'<button class="btn sm" type="button" data-au="'+ee(x.key)+'">Terugzetten</button>':'<button class="btn sm" type="button" data-aa="'+ee(x.key)+'">Afgehandeld</button>')+'</div></div>'}).join('')}).join('');
+ $('aT').textContent='Aandachtspunten'+(n?' ('+n+')':'');el.innerHTML=h||'<p class="ok">Niets om na te kijken.</p>';
+ el.querySelectorAll('[data-ak]').forEach(function(c){c.onclick=function(ev){if(ev.target.closest('button'))return;var x=L.filter(function(y){return y.key===c.dataset.ak})[0];if(x)aOpen(x.open)}});
+ el.querySelectorAll('[data-aa]').forEach(function(bt){bt.onclick=async function(){bt.disabled=true;var k=bt.dataset.aa;try{AFG[k]={t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()};await db.collection('afgehandeld').doc(k).set(AFG[k]);drawAandacht();aDot()}catch(e){delete AFG[k];bt.disabled=false;alert0(err(e))}}});
+ el.querySelectorAll('[data-au]').forEach(function(bt){bt.onclick=async function(){bt.disabled=true;var k=bt.dataset.au;try{await db.collection('afgehandeld').doc(k).delete();delete AFG[k];drawAandacht();aDot()}catch(e){bt.disabled=false;alert0(err(e))}}})}
+$('aAll').onchange=drawAandacht;
 /* ---------- correctie vragen aan de monteur (v210) ---------- */
 var CORR=[],CORRU=null,CORRL=false;
 function loadCorr(){if(CORRL||!db)return;CORRL=true;var d=Date.now()-120*864e5,q=db.collection('correctie').where('t','>=',d),mp=function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o};
@@ -736,7 +781,7 @@ async function loadBl(){BLL=true;var d=new Date();d.setDate(d.getDate()-70);var 
 function ebInfo(id){var e=[].concat(BL,ZB||[]).filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!e)return;var u=USERS.filter(function(x){return x.uid===e.voor})[0]||{};
  dl.innerHTML='<div class="card"><b>'+ee(e.wb?'Werkbon '+e.wb:'Werkbon')+'</b><div class="mu">'+ee(u.naam||u.email||'')+'</div>'+(e.klant?'<div style="margin-top:6px">'+ee(e.klant)+(e.adres?'<br>'+ee(e.adres):'')+(e.plaats?'<br>'+ee(e.plaats):'')+(e.tel?'<br>'+ee(e.tel):'')+'</div>':'')+
   '<div style="margin-top:6px">'+(e.dagen||[]).map(function(d){var r=reisTxt(d);return ee(pdTxt({pd:d.pd}))+(d.ws?' '+ee(d.ws)+(d.we?'–'+ee(d.we):''):'')+(r?' <span class="mu">· 🚗 '+ee(r)+'</span>':'')}).join('<br>')+'</div>'+
-  '<p style="font-weight:700;color:'+(e.gereed==='nee'?'#b3261e':'#16693e')+'">Verstuurd '+ee(fd(e.verstuurd))+ee(plGr(e))+'</p><p class="mu">Deze werkbon heeft de monteur zelf gemaakt; hij stond niet in de planning of de agenda.</p>'+
+  (e.pr?'<div class="mu" style="margin-top:4px">Projectnummer '+ee(e.pr)+'</div>':'')+((e.mis||[]).length?'<div style="margin-top:6px;color:#9a5a00"><b>Ontbreekt:</b> '+ee(e.mis.join(', '))+'</div>':'')+'<p style="font-weight:700;color:'+(e.gereed==='nee'?'#b3261e':'#16693e')+'">Verstuurd '+ee(fd(e.verstuurd))+ee(plGr(e))+'</p><p class="mu">Deze werkbon heeft de monteur zelf gemaakt; hij stond niet in de planning of de agenda.</p>'+
   corrHtml(e.voor,e.wb)+'<div class="tools" style="margin:10px 0 0">'+bonPdfKnop(e.voor,e.wb,String(e.id).slice(String(e.voor).length+1))+corrKnop(e.voor,e.wb,String(e.id).slice(String(e.voor).length+1),'',e.klant)+'<button class="btn" type="button" id="ebC">Sluiten</button></div></div>';
  dl.hidden=false;dl.onclick=function(x){if(x.target===dl)dl.hidden=true};$('ebC').onclick=function(){dl.hidden=true}}
 /* ---------- agenda-PDF inlezen (v180) ---------- */
@@ -934,7 +979,7 @@ $('blf').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\
 $('blb').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}setBlock(v,true);$('blm').value=''};
 async function load(){show('');$('tabs').hidden=false;showTab();if(TAB==='r')loadR();$('users').innerHTML='<p class="mu">Laden…</p>';
  try{var _ia=await db.collection('instellingen').doc('app').get();PLANON=!!(_ia.exists&&(_ia.data()||{}).planAan)}catch(e){}showTab();
- if(ROLE==='kantoor'){$('blogc').hidden=true;try{await auth.currentUser.getIdToken(true);var qk=await db.collection('monteurs').get();USERS=qk.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o})}catch(e){show('<b>Kon de monteurs niet laden.</b><p class="mu">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</p>')}renderNew();loadSent();return}
+ if(ROLE==='kantoor'){$('blogc').hidden=true;setTimeout(function(){try{ensureData()}catch(e){}},1500);try{await auth.currentUser.getIdToken(true);var qk=await db.collection('monteurs').get();USERS=qk.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o})}catch(e){show('<b>Kon de monteurs niet laden.</b><p class="mu">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</p>')}renderNew();loadSent();return}
  try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();
   USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();await loadToe();await loadErr();render();drawAc();loadMail();loadKeep();loadKantoor();renderNew();syncMon();$('blogc').hidden=false;try{window.mitSecDraw()}catch(x){}}
  catch(e){$('users').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}

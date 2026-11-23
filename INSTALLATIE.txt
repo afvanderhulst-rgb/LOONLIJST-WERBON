@@ -42,7 +42,7 @@ LET OP
 - Bij de eerste keer openen is internet nodig; daarna werkt de app ook offline
   (de PDF-onderdelen worden dan uit het geheugen gehaald).
 - Aangeleverde werkbonnen importeren: zie hieronder.
-- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v210,
+- Wijzig je later bestanden, verhoog dan het versienummer in sw.js (nu mit-werkbon-v211,
   verhoog naar v164 enz.), zodat telefoons de nieuwe versie ophalen.
 
 BIJLAGEN BIJ AANVULLEND RAPPORT
@@ -274,6 +274,22 @@ DAARNA
    "firebase functions:secrets:set ..." (computer of shell.cloud.google.com), daarna in Actions op Run workflow.
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
+
+ZOEKEN EN AANDACHTSPUNTEN IN DE KANTOOR-APP (v211)
+- Nieuw tabblad Zoeken: zoek op werkbonnummer, projectnummer, klant, adres, plaats, telefoon, monteur of datum
+  (23-11 of 23-11-2026). Een werk- of projectnummer wordt in alle jaren gezocht; tekst standaard 2 maanden, met
+  "ook ouder" tot 1 jaar. Bij verstuurde bonnen staat een knop PDF (de verstuurde werkbon met foto's en bijlagen);
+  klik op een bon voor alle details en "Correctie vragen".
+- Nieuw tabblad Aandacht (rood bolletje als er iets openstaat), laatste 30 dagen:
+  * correctie gevraagd, nog niet opnieuw verstuurd;
+  * gepland (agenda of klaargezet), dag is voorbij, maar nog geen werkbon ontvangen;
+  * klaargezet en al meer dan 2 dagen niet opgehaald;
+  * niet gereed of reparatiemelding (opvolgen);
+  * verstuurd met ontbrekende gegevens (handtekening klant/monteur, omschrijving, materiaal);
+  * mislukte mails (alleen voor de beheerder).
+  "Afgehandeld" haalt een punt van de lijst voor alle kantoor-collega's (Firestore: afgehandeld/); terugzetten kan.
+- De app geeft nu ook het projectnummer en ontbrekende gegevens door (bonlog: pr, mis). Bonnen van de laatste
+  60 dagen worden één keer opnieuw doorgegeven als de monteur de app opent.
 
 CORRECTIE GEVRAAGD: BON TERUG NAAR DE MONTEUR (v210)
 - Kantoor-app > Planning (of zoeken): klik op een verstuurde bon > "Correctie vragen". Kies de reden(en): handtekening

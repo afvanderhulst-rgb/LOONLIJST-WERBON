@@ -6,6 +6,7 @@
                   ook de weeklijst (weeklijst-PDF + verzamel-PDF) naar de leidinggevende (soort: 'weeklijst')
    - mailInbox:   werkbon klaarzetten doordat kantoor hem mailt naar <monteur>@mit-werkbon.com
                   (Cloudflare Email Routing + Worker; afzender wordt gecontroleerd met DMARC/DKIM/ARC)
+   - (v202) rooster@mit-werkbon.com: storingsrooster-PDF van kantoor -> direct gepubliceerd (rooster/actief; vorige versie in rooster/vorige)
    - (v180) agenda@mit-werkbon.com: agenda-PDF van kantoor -> planning (collectie agenda), pushAgenda meldt het de monteur
    - inboxSetup:  knop op beheer.html die het Cloudflare-script maakt
    Geheimen (Secret Manager): VAPID_PRIVATE_KEY (pushmeldingen), BREVO_API_KEY (mailen). */
@@ -436,6 +437,64 @@ async function zetAgenda(mt, regels, door, bestand, via, van, tot) {
     bij: vg.bij, weg: vg.weg, gew: vg.gew, eerste: vg.eerste, wijz: vg.regels.slice(0, 20).map((x) => tekst(x, 160)), bestand: tekst(bestand, 120), via});
   return {van, tot, vg};
 }
+// ---- storingsrooster per mail (v202): rooster@mit-werkbon.com -> direct gepubliceerd voor alle collega's ----
+// Zelfde lezer als kantoor.html (rooster.js; dezelfde kopie staat in functions/). De vorige versie blijft bewaard in rooster/vorige,
+// zodat kantoor hem in de kantoor-app > Rooster kan terugzetten.
+async function verwerkRoosterMail(m, van, logRef) {
+  const R = require('./rooster.js');
+  const pdfs = (m.bijlagen || []).filter((b) => /pdf/i.test(b.type || '') || /\.pdf$/i.test(b.naam || '')).slice(0, 5);
+  const fouten = [];
+  let r = null, bestand = '';
+  if (!pdfs.length) fouten.push('Er zat geen PDF bij de mail.');
+  for (const b of pdfs) {
+    const naam = tekst(b.naam, 120) || 'rooster.pdf';
+    let buf; try { buf = await b.buf(); } catch (e) { fouten.push(naam + ' kon niet worden opgehaald.'); continue; }
+    if (buf.length > MAX_PDF_IN || buf.slice(0, 4).toString('latin1') !== '%PDF') { fouten.push(naam + ' is geen PDF of is te groot.'); continue; }
+    try {
+      const pdfjs = require('pdfjs-dist/legacy/build/pdf.js');
+      const doc = await pdfjs.getDocument({data: new Uint8Array(buf), isEvalSupported: false, disableFontFace: true, useSystemFonts: false, verbosity: 0}).promise;
+      const pg = await doc.getPage(1), vp = pg.getViewport({scale: 1}), tc = await pg.getTextContent();
+      await doc.destroy();
+      if (tc.items.filter((i) => i.str && i.str.trim()).length < 20) { fouten.push(naam + ': hierin staat geen tekst (een foto of scan). Stuur de PDF zoals hij uit het programma komt, of lees hem in via de kantoor-app > Rooster.'); continue; }
+      const x = R.parse(tc.items, vp.height);
+      if (!x.weken || !x.weken.length || !x.weken.some((w) => w.wie && w.wie.length)) { fouten.push(naam + ': geen storingsrooster gevonden' + (x.fouten && x.fouten.length ? ' (' + x.fouten.join(' ') + ')' : '') + '.'); continue; }
+      r = x; bestand = naam; break;
+    } catch (e) { fouten.push(naam + ' kon niet worden gelezen.'); }
+  }
+  if (!r) {
+    await logRef.set({status: 'rooster mislukt', fouten}, {merge: true});
+    await brevoMail(van, 'Rooster niet gepubliceerd: ' + tekst(m.onderwerp || 'rooster', 150),
+      'Het storingsrooster is NIET gepubliceerd; collega\'s houden het rooster dat er al stond.\n\n- ' + fouten.join('\n- ') +
+      '\n\nLukt het niet per mail? Kantoor-app > Rooster > PDF kiezen.\n\nMIT Werkbon\n(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)');
+    return 'rooster mislukt';
+  }
+  const mon = r.monteurs.filter((x) => x.n > 0);
+  const D = {titel: tekst(r.titel, 120), bestand: tekst(bestand, 120), t: Date.now(), door: van, via: 'mail',
+    weken: r.weken.map((w) => ({w: w.w, s: w.s, e: w.e, b: !!w.bouwvak, wie: w.wie})),
+    monteurs: mon.map((x) => ({naam: x.naam, toon: x.telNaam || x.naam, tel: tekst(x.tel || '', 40)})),
+    calamiteiten: (r.calamiteiten || []).filter((c) => c.naam && c.tel).map((c) => ({naam: tekst(c.naam, 80), tel: tekst(c.tel, 40)}))};
+  const oud = await db.doc('rooster/actief').get();
+  if (oud.exists) await db.doc('rooster/vorige').set(Object.assign({}, oud.data(), {bewaard: Date.now()}));
+  await db.doc('rooster/actief').set(D);
+  await db.collection('inboxlog').doc(Date.now() + '_' + crypto.randomBytes(2).toString('hex')).set({t: Date.now(), door: van, actie: 'rooster gepubliceerd (per mail)', wb: tekst(bestand, 120), klant: '', voor: '', naar: ''});
+  const ing = D.weken.filter((w) => w.wie.length), bv = D.weken.filter((w) => w.b).map((w) => w.w);
+  const zonderTel = D.monteurs.filter((x) => !x.tel).map((x) => x.toon);
+  const fd = (iso) => { const p = String(iso || '').split('-'); return p.length === 3 ? (+p[2]) + '-' + (+p[1]) + '-' + p[0] : ''; };
+  await logRef.set({status: 'rooster gepubliceerd', aantal: ing.length, fouten: fouten.concat(r.fouten || [])}, {merge: true});
+  logger.info('rooster per mail', {van, weken: ing.length});
+  await brevoMail(van, 'Rooster gepubliceerd: ' + tekst(D.titel, 150),
+    'Het storingsrooster is gepubliceerd voor alle collega\'s. Ze krijgen het bij het openen van de app.\n\n' +
+    D.titel + ' (' + D.bestand + ')\n' +
+    '- ' + ing.length + ' van de ' + D.weken.length + ' weken ingedeeld (' + fd(ing[0].s) + ' t/m ' + fd(ing[ing.length - 1].e) + ')\n' +
+    '- bouwvak (overgang 17:00): ' + (bv.length ? 'week ' + bv.join(', ') : 'geen') + '\n' +
+    '- monteurs: ' + D.monteurs.map((x) => x.toon + (x.tel ? '' : ' (GEEN telefoonnummer)')).join(', ') + '\n' +
+    '- bij calamiteiten: ' + (D.calamiteiten.map((c) => c.naam).join(', ') || 'geen') + '\n' +
+    (zonderTel.length ? '\nLet op: zonder telefoonnummer: ' + zonderTel.join(', ') + '. Vul het aan in de kantoor-app > Rooster.\n' : '') +
+    ((r.fouten || []).concat(fouten).length ? '\nLet op:\n- ' + (r.fouten || []).concat(fouten).join('\n- ') + '\n' : '') +
+    '\nKlopt er iets niet? Kantoor-app > Rooster: daar kun je de vorige versie terugzetten, of de PDF opnieuw inlezen en aanpassen.\n\nMIT Werkbon\n(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)');
+  return 'rooster';
+}
+
 async function verwerkAgendaMail(m, van, logRef, cache) {
   const A = require('./agenda-parse.js');
   // v188: test/beheer-accounts (zelfde lijst als PLAN_NIET in beheer.html) niet in de agenda
@@ -450,7 +509,7 @@ async function verwerkAgendaMail(m, van, logRef, cache) {
     if (!P.some((p) => p.items.length > 20)) { fouten.push((b.naam || 'bijlage') + ': hierin staat geen tekst (een foto of scan zonder tekstherkenning). Sleep deze PDF in kantoor.html > Planning > Agenda inlezen: daar wordt de tekst herkend.'); continue; }
     const r = A.leesAgenda(P);
     r.fouten.forEach((f) => fouten.push((b.naam || 'agenda') + ': ' + f));
-    if (!r.regels.length) { fouten.push((b.naam || 'agenda') + ': geen afspraken gevonden. Is dit de "Agenda servicemonteurs"?'); continue; }
+    if (!r.regels.length) { fouten.push((b.naam || 'agenda') + ': geen afspraken gevonden. Is dit de "Agenda servicemonteurs"?' + (P.some((p) => p.items.some((i) => /Rooster storingsdienst/i.test(i.s))) ? ' Dit lijkt het storingsrooster: stuur dat naar rooster@mit-werkbon.com.' : '')); continue; }
     const V = A.verdeel(r.regels, lijst);
     const pvan = r.regels.reduce((a, x) => (!a || x.pd < a ? x.pd : a), ''), ptot = r.regels.reduce((a, x) => (x.pd > a ? x.pd : a), '');
     V.los.forEach((x) => fouten.push('Monteur "' + (x.monteur || '?') + '" (' + x.pd + ' ' + x.pt + ') niet gevonden in de app; die regel is overgeslagen.'));
@@ -623,6 +682,8 @@ async function verwerkMail(m, cache) {
       return 'niet gecontroleerd';
     }
     if (vervalst(m.headers)) { await logRef.set({status: 'geweigerd: afzender niet echt'}, {merge: true}); logger.warn('klaarzetten: vervalste afzender?', {van}); return 'vervalst'; }
+    // rooster@mit-werkbon.com: storingsrooster van kantoor, direct publiceren (v202)
+    if ((m.adressen || []).some((a) => /^rooster@/i.test(String(a || '').trim()))) return await verwerkRoosterMail(m, van, logRef);
     // agenda@mit-werkbon.com: weekplanning van kantoor (v180)
     if ((m.adressen || []).some((a) => /^agenda@/i.test(String(a || '').trim()))) return await verwerkAgendaMail(m, van, logRef, cache);
     // voor welke monteur(s)?

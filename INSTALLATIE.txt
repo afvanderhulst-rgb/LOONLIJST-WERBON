@@ -275,6 +275,17 @@ DAARNA
  - Sleutel kwijt of uitgelekt? Google Cloud > Serviceaccounts > github-deploy > Sleutels > verwijderen en een nieuwe maken
    (stap 2-3).
 
+STORINGSROOSTER PER MAIL: rooster@mit-werkbon.com (v202)
+- Mail de PDF van het storingsrooster naar rooster@mit-werkbon.com. Hij wordt meteen gepubliceerd voor alle collega's
+  (ze krijgen hem bij het openen van de app). Alleen van kantoor-collega's en de beheerder; zelfde afzendercontrole als
+  bij klaarzetten per mail. Je krijgt een mail terug: weken ingedeeld, bouwvak, monteurs (en wie geen telefoonnummer heeft)
+  en de calamiteitennummers. Geen rooster herkend (bijv. een foto/scan)? Dan wordt er niets gepubliceerd en staat in de mail waarom.
+- De vorige versie blijft bewaard (rooster/vorige). Kantoor-app > Rooster > "Vorige versie terugzetten" (twee keer tikken).
+  Ook bij publiceren in de kantoor-app wordt de vorige versie bewaard.
+- Geen instelling in Cloudflare nodig: de catch-all stuurt rooster@ al naar de server.
+- Rooster per ongeluk naar agenda@ gestuurd? De antwoordmail zegt dan dat het naar rooster@ moet.
+- Nieuw bestand: functions/rooster.js (moet gelijk zijn aan rooster.js in de app-map, net als agenda-parse.js).
+
 BEHEER > INFO > WEBSITES (v200)
 - Nieuw tabblad Info in beheer met alle adressen: werkbon-app, kantoor-app, beheer, handleiding, en de diensten erachter
   (Firebase, Google Cloud, GitHub, Brevo, Cloudflare), plus de mailadressen van de app. Met knop Kopiëren.

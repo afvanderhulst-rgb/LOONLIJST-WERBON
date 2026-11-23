@@ -402,7 +402,7 @@ function drawMail(){var el=$('mlL'),alleen=$('mlF').checked,nf=ML.filter(functio
  var wie=function(o){var u=(USERS||[]).filter(function(x){return x.uid===o.uid})[0]||{};return o.naam||u.naam||o.van||u.email||o.uid};
  el.innerHTML=L.map(function(o){var ok=o.status==='ok';
   return '<div style="border-top:1px solid var(--bd);padding:8px 0"><span class="tag" style="margin:0 6px 0 0;background:'+(ok?'#e3f5e8':'#fdeaea')+';color:'+(ok?'#1e7d34':'#c62828')+'">'+(ok?'Verstuurd':'Mislukt')+'</span>'+
-   '<b>'+ee(o.soort==='weeklijst'?'Weeklijst':'Werkbon')+'</b> '+ee(o.bestand||o.onderwerp||'')+
+   '<b>'+ee(o.soort==='weeklijst'?'Weeklijst':o.soort==='klant'?'Werkbon naar klant':'Werkbon')+'</b> '+ee(o.bestand||o.onderwerp||'')+
    '<div class="mu" style="margin-top:2px">'+ee(fd(o.t))+' · van '+ee(wie(o))+' · aan '+ee(o.aan||'?')+(o.pogingen>1?' · '+o.pogingen+' pogingen':'')+(o.kb?' · '+o.kb+' kB':'')+
    (o.eerst&&o.t&&o.t-o.eerst>60000?' · eerste poging '+ee(fd(o.eerst)):'')+'</div>'+
    (!ok&&o.fout?'<div style="color:#c62828;font-size:13px;margin-top:2px">'+ee(o.fout)+'</div>':'')+'</div>'}).join('')}

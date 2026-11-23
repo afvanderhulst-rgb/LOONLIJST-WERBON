@@ -219,6 +219,7 @@ const AFZENDER = {name: 'MIT Werkbon', email: 'noreply@mit-werkbon.com'};
 const TOEGESTANE_DOMEINEN = ['mit-installatietechniek.com'];
 const TOEGESTANE_ADRESSEN = ['a.f.vanderhulst@gmail.com']; // losse adressen (tijdelijk, om te testen); later weghalen
 const MAX_PER_DAG = 60;            // mails per monteur per dag
+const MAX_KLANT_PER_DAG = 30;      // v204: werkbonnen naar klanten per monteur per dag (elk adres; vaste tekst)
 const MAX_CC = 3;                  // extra CC-adressen die de monteur mag invullen
 const MAX_PDF = 10 * 1024 * 1024;  // 10 MB
 const MAX_WL = 13 * 1024 * 1024;   // weeklijst: alle PDF's samen (Brevo: max. 20 MB per mail, na omzetting groter)
@@ -254,7 +255,7 @@ exports.mailKantoor = onRequest({
   // 2. wat moet er verstuurd worden?
   const b = req.body || {};
   const id = tekst(b.id, 80), naam = tekst(b.naam, 80).trim();
-  const soort = b.soort === 'weeklijst' ? 'weeklijst' : 'werkbon';
+  const soort = b.soort === 'weeklijst' ? 'weeklijst' : b.soort === 'klant' ? 'klant' : 'werkbon';
   let aan = tekst(b.to, 200).trim();
   // vast kantooradres van de beheerder gaat altijd voor (alleen bij werkbonnen; de weeklijst gaat naar de leidinggevende)
   let vast = '';
@@ -264,8 +265,21 @@ exports.mailKantoor = onRequest({
   } catch (e) { logger.warn('instellingen lezen', e); }
   if (vast && !MAIL_RE.test(vast)) vast = '';
   if (vast) aan = vast;
-  const onderwerp = tekst(b.subject, 200).trim() || (soort === 'weeklijst' ? 'Weeklijst' : 'Werkbon');
-  const bericht = tekst(b.text, 5000);
+  // v204: werkbon naar de KLANT: elk geldig adres, maar onderwerp en tekst maakt de server zelf (geen vrije tekst), antwoorden gaan naar kantoor
+  let kantoorAdres = 'storingen@mit-installatietechniek.com';
+  if (soort === 'klant') try {
+    const inst = await db.doc('instellingen/app').get(), ka = inst.exists && tekst(inst.get('kantoorAdres') || '', 200).trim();
+    if (ka && MAIL_RE.test(ka)) kantoorAdres = ka;
+  } catch (e) { logger.warn('instellingen lezen', e); }
+  const wbNr = tekst(b.wb, 12).replace(/[^0-9A-Za-z-]/g, '');
+  const onderwerp = soort === 'klant' ? 'Werkbon ' + (wbNr ? wbNr + ' ' : '') + '- MIT Installatietechniek'
+    : (tekst(b.subject, 200).trim() || (soort === 'weeklijst' ? 'Weeklijst' : 'Werkbon'));
+  const bericht = soort === 'klant'
+    ? 'Geachte heer/mevrouw,\n\n' +
+      'In de bijlage vindt u de werkbon' + (wbNr ? ' ' + wbNr : '') + ' van de werkzaamheden die ' + (naam || 'onze monteur') + ' van MIT Installatietechniek bij u heeft uitgevoerd.\n\n' +
+      'Heeft u vragen over deze werkbon? Beantwoord dan deze e-mail; uw antwoord komt bij ons kantoor terecht.\n\n' +
+      'Met vriendelijke groet,\n\n' + (naam ? naam + '\n' : '') + 'MIT Installatietechniek\ninfo@mit-installatietechniek.com'
+    : tekst(b.text, 5000);
   const naamPdf = (v, std) => { let x = tekst(v, 120).replace(/[\\/:*?"<>|]+/g, '-').trim() || std; if (!/\.pdf$/i.test(x)) x += '.pdf'; return x; };
   const isPdf = (x) => typeof x === 'string' && /^[A-Za-z0-9+/]+={0,2}$/.test(x) && Buffer.from(x.slice(0, 8), 'base64').toString('latin1').slice(0, 4) === '%PDF';
   if (!/^[\w-]{6,80}$/.test(id)) return fout(400, 'Ongeldig verzoek.');
@@ -282,7 +296,7 @@ exports.mailKantoor = onRequest({
     } catch (e) { logger.warn('mailuit (fout) schrijven', e); }
     return fout(code, msg);
   };
-  const ccIn = Array.isArray(b.cc) ? b.cc : [];
+  const ccIn = soort !== 'klant' && Array.isArray(b.cc) ? b.cc : [];
   if (ccIn.length > MAX_CC) return mislukt(400, 'CC: maximaal ' + MAX_CC + ' adressen.');
   const cc = [], gezien = new Set([aan.toLowerCase(), em.toLowerCase()]);
   for (const x of ccIn) {
@@ -290,7 +304,8 @@ exports.mailKantoor = onRequest({
     if (!magNaar(a)) return mislukt(400, 'CC: naar ' + a + ' kan de app niet mailen. Alleen adressen op @' + TOEGESTANE_DOMEINEN.join(' of @') + '.');
     if (!gezien.has(a.toLowerCase())) { gezien.add(a.toLowerCase()); cc.push({email: a}); }
   }
-  if (!vast && !magNaar(aan)) return mislukt(400, 'Naar dit adres kan de app niet mailen. Alleen adressen op @' + TOEGESTANE_DOMEINEN.join(' of @') + '.');
+  if (soort === 'klant' && !MAIL_RE.test(aan)) return mislukt(400, 'Het e-mailadres van de klant klopt niet: ' + aan);
+  if (soort !== 'klant' && !vast && !magNaar(aan)) return mislukt(400, 'Naar dit adres kan de app niet mailen. Alleen adressen op @' + TOEGESTANE_DOMEINEN.join(' of @') + '.');
   // de PDF('s): werkbon = 1 PDF (b.pdf), weeklijst = lijst b.bijlagen [{name, pdf}]
   const bijlagen = [];
   if (soort === 'weeklijst') {
@@ -324,21 +339,22 @@ exports.mailKantoor = onRequest({
 
   // 4. niet te veel per dag
   const dag = new Date().toISOString().slice(0, 10);
-  const teller = db.doc(`mailteller/${tok.uid}_${dag}`);
+  const teller = db.doc(`mailteller/${tok.uid}_${dag}` + (soort === 'klant' ? '_klant' : ''));
+  const maxDag = soort === 'klant' ? MAX_KLANT_PER_DAG : MAX_PER_DAG;
   try {
     const n = await db.runTransaction(async (t) => {
       const s = await t.get(teller), v = ((s.exists && s.get('n')) || 0) + 1;
-      if (v <= MAX_PER_DAG) t.set(teller, {n: v, t: Date.now()});
+      if (v <= maxDag) t.set(teller, {n: v, t: Date.now()});
       return v;
     });
-    if (n > MAX_PER_DAG) return mislukt(429, 'Je hebt vandaag al ' + MAX_PER_DAG + ' mails verstuurd. Verstuur deze via je mail-app.');
+    if (n > maxDag) return mislukt(429, 'Je hebt vandaag al ' + maxDag + ' mails verstuurd. Verstuur deze via je mail-app.');
   } catch (e) { logger.warn('teller', e); }
 
   // 5. versturen via Brevo
   const mail = {
-    sender: AFZENDER,
+    sender: soort === 'klant' ? {name: 'MIT Installatietechniek', email: AFZENDER.email} : AFZENDER,
     to: [{email: aan}],
-    replyTo: {email: em, name: naam || em},
+    replyTo: soort === 'klant' ? {email: kantoorAdres, name: 'MIT Installatietechniek'} : {email: em, name: naam || em},
     subject: onderwerp,
     textContent: bericht || onderwerp, // de status staat al in de tekst (tussen de tekst en de groet)
     attachment: bijlagen,
@@ -355,7 +371,8 @@ exports.mailKantoor = onRequest({
     else t = blok + t; // oude app-versie (status niet in de tekst): bovenaan
     mail.htmlContent = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222"><div style="white-space:pre-wrap">' + t + '</div></div>';
   }
-  if (aan.toLowerCase() !== em.toLowerCase()) cc.push({email: em, name: naam || em});
+  if (soort === 'klant') { if (aan.toLowerCase() !== em.toLowerCase()) mail.bcc = [{email: em, name: naam || em}]; } // monteur krijgt een stille kopie
+  else if (aan.toLowerCase() !== em.toLowerCase()) cc.push({email: em, name: naam || em});
   if (cc.length) mail.cc = cc;
   let r, j = {};
   try {

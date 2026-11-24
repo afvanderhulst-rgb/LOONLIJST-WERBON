@@ -56,8 +56,10 @@ Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige ver
   (lijst: "MINDER RECHTEN VOOR HET SERVICEACCOUNT" in WIJZIGINGEN.txt). Publicatie rood met "permission"? De melding
   noemt welke rol mist: voeg die toe bij github-deploy in Google Cloud > IAM.
 - Brevo > Settings > Webhooks > Inbound: een oude inbound-webhook verwijderen (niet meer nodig).
-- Laat de ICT van kantoor DKIM en DMARC instellen voor mit-installatietechniek.com.
-- Google Cloud Billing: budget (bijv. EUR 5 per maand) met mail bij 50% en 100%.
+- DKIM en DMARC voor mit-installatietechniek.com: kan nu niet (ICT). Gevolg: de server controleert mail naar <monteur>@,
+  agenda@ en rooster@ via SPF; dat werkt. Wordt een echte mail van kantoor toch geweigerd (de afzender krijgt een mail met de
+  reden), gebruik dan de kantoor-app, of zet in beheer > Instellingen de strenge afzendercontrole tijdelijk uit.
+- KLAAR (24-11-2026): Google Cloud Billing: budget met mail bij 50% en 100%.
 
 7. DAGELIJKS BEHEER
 - Beheer > Toegang: externe adressen toelaten, kantoor-collega's, blokkeren (hele app of één persoon).

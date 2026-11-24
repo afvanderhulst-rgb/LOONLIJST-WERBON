@@ -3,6 +3,11 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+FOTO-OMSCHRIJVING OVER DE HELE BREEDTE + HANDLEIDING KANTOOR EN FILMPJES (v219)
+- Bij Aanvullend rapport staat het vak "Omschrijving" nu onder de foto over de hele breedte (was op een telefoon te smal).
+- Nieuwe handleiding voor de kantoor-app (document), en de instructiefilmpjes opnieuw gemaakt met de huidige app, plus
+  film 4 "Nieuw in de app" (planning, bezig, zonder internet, foto's, delen, geschiedenis, correctie).
+
 ZOEKEN: LAATSTE 2 MAANDEN / LAATSTE JAAR / ALLE JAREN (kantoor, 24-11-2026)
 - Het vinkje "ook ouder (tot 1 jaar)" bij zoeken (tabblad Zoeken en Planning) is een keuzelijst geworden: laatste 2 maanden,
   laatste jaar of alle jaren. Er wordt niets opgeruimd: werkbon-PDF's blijven 7 jaar, agenda-afspraken en de gegevens van

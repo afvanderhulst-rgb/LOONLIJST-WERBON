@@ -55,7 +55,7 @@ Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige ver
 - KLAAR (24-11-2026): serviceaccount github-deploy heeft geen rol Eigenaar meer, alleen de rollen om te publiceren
   (lijst: "MINDER RECHTEN VOOR HET SERVICEACCOUNT" in WIJZIGINGEN.txt). Publicatie rood met "permission"? De melding
   noemt welke rol mist: voeg die toe bij github-deploy in Google Cloud > IAM.
-- Brevo > Settings > Webhooks > Inbound: een oude inbound-webhook verwijderen (niet meer nodig).
+- KLAAR (24-11-2026, volgens de beheerder): oude inbound-webhook in Brevo weg. Brevo zelf blijft nodig om te versturen.
 - DKIM en DMARC voor mit-installatietechniek.com: kan nu niet (ICT). Gevolg: de server controleert mail naar <monteur>@,
   agenda@ en rooster@ via SPF; dat werkt. Wordt een echte mail van kantoor toch geweigerd (de afzender krijgt een mail met de
   reden), gebruik dan de kantoor-app, of zet in beheer > Instellingen de strenge afzendercontrole tijdelijk uit.

@@ -930,7 +930,7 @@ function agDlg(){var dl=$('plDlg'),D=AGP;if(!D)return;
   '<div class="tools" style="margin:14px 0 0"><button class="btn pr" type="button" id="agOk">In de planning zetten</button><button class="btn" type="button" id="agX">Annuleren</button></div><div class="mu" id="agR"></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('agX').onclick=function(){dl.hidden=true;AGP=null};
  dl.querySelectorAll('[data-agm]').forEach(function(sl){sl.onchange=function(){D.groepen[+sl.dataset.agm].uidK=sl.value;var keep=D.groepen.map(function(g,gi){var x=dl.querySelector('[data-agm="'+gi+'"]');return x?x.value:g.uid});agDlg();keep.forEach(function(v,gi){var x=dl.querySelector('[data-agm="'+gi+'"]');if(x)x.value=v})}});
- $('agOk').onclick=async function(){var b=this,tot=0;b.disabled=true;
+ $('agOk').onclick=async function(){var b=this,tot=0,IMPS=[];b.disabled=true;
   try{for(var gi=0;gi<D.groepen.length;gi++){var g=D.groepen[gi],uid=dl.querySelector('[data-agm="'+gi+'"]').value;if(!uid)continue;var u=USERS.filter(function(x){return x.uid===uid})[0]||{};
     $('agR').textContent='Opslaan voor '+(u.naam||u.email)+'…';var R=g.regels,van=D.van,tt=D.tot;
     var oudQ=await db.collection('agenda').where('voor','==',uid).get(),oud=oudQ.docs.filter(function(d){var pd=(d.data()||{}).pd||'';return pd>=van&&pd<=tt});
@@ -939,11 +939,17 @@ function agDlg(){var dl=$('plDlg'),D=AGP;if(!D)return;
     var imp=Date.now()+'_'+Math.random().toString(36).slice(2,8),me=String(auth.currentUser.email||'').toLowerCase(),t=Date.now();
     for(var j=0;j<R.length;j++){var x=R[j];await db.collection('agenda').doc(ids[j]).set({voor:uid,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||'',pd:x.pd,pt:x.pt||'',duur:x.duur||'',min:x.min||0,wb:String(x.wb||'').slice(0,12),inst:String(x.inst||'').slice(0,40),klant:String(x.klant||'').slice(0,120),adres:String(x.adres||'').slice(0,160),plaats:String(x.plaats||'').slice(0,80),tel:String(x.tel||'').slice(0,40),oms:String(x.oms||'').slice(0,800),imp:imp,t:t,door:me,bestand:String(D.bestand||'').slice(0,120)},{merge:true})}
     await db.collection('agendaimport').doc(imp).set({voor:uid,voorNaam:u.naam||'',voorMail:String(u.email||'').toLowerCase(),door:me,t:t,n:R.length,van:van,tot:tt,bij:vg.bij,weg:vg.weg,gew:vg.gew,eerste:vg.eerste,wijz:vg.regels.slice(0,20).map(function(x){return String(x).slice(0,160)}),bestand:String(D.bestand||'').slice(0,120),via:'kantoor'});
-    blog('agenda ingelezen ('+R.length+')',{bestand:D.bestand,voorNaam:u.naam,voorMail:u.email});tot+=R.length}
-   dl.hidden=true;AGP=null;kToast(tot?tot+' afspraken in de planning gezet.':'Niets ingelezen (geen monteur gekozen).',5000);
+    blog('agenda ingelezen ('+R.length+')',{bestand:D.bestand,voorNaam:u.naam,voorMail:u.email});tot+=R.length;IMPS.push({id:imp,naam:u.naam||u.email})}
+   dl.hidden=true;AGP=null;kToast(tot?tot+' afspraken in de planning gezet.':'Niets ingelezen (geen monteur gekozen).',5000);if(IMPS.length)agPushUitslag(IMPS);
    if(tot){var p0=D.groepen[0].regels[0].pd.split('-'),d0=new Date(+p0[0],+p0[1]-1,+p0[2],12);d0.setDate(d0.getDate()-(d0.getDay()+6)%7);PLW=Math.round((d0-maandagVan(0))/(7*864e5))}
    loadAg()}
   catch(e){b.disabled=false;$('agR').innerHTML='<span class="er">Opslaan mislukt: '+ee(err(e))+'</span>'}}}
+// v215: na het inlezen laten zien of de monteur(s) een melding op de telefoon kregen (de server schrijft dat terug in agendaimport)
+async function agPushUitslag(L){var R={};for(var k=0;k<6&&Object.keys(R).length<L.length;k++){await new Promise(function(r){setTimeout(r,k?4000:3000)});
+  for(var i=0;i<L.length;i++){if(R[L[i].id])continue;try{var d=await db.collection('agendaimport').doc(L[i].id).get(),o=d.data()||{};if(o.pushReden)R[L[i].id]=o}catch(e){}}}
+ var regels=L.map(function(x){var o=R[x.id];if(!o)return x.naam+': nog onbekend (server antwoordt niet)';return x.naam+': '+(o.push?'melding verstuurd ✓ ('+o.push+(o.push===1?' telefoon)':' telefoons)'):'geen melding — '+o.pushReden)});
+ var st=$('agSt');if(st)st.innerHTML='<b>Melding op de telefoon:</b><br>'+regels.map(ee).join('<br>');
+ kToast('Melding op de telefoon: '+regels.join(' · '),12000)}
 function agInfo(id){var o=[].concat(AG,ZA||[]).filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!o)return;
  dl.innerHTML='<div class="card"><b>'+ee(o.wb?'Werkbon '+o.wb:String(o.oms||'Afspraak').split('\n')[0])+'</b><div class="mu">'+ee(o.voorNaam||o.voorMail)+' · '+ee(pdTxt(o))+' · '+ee(agTijd(o))+(o.duur?' ('+ee(o.duur)+' u)':'')+'</div>'+
   (o.klant?'<div style="margin-top:6px">'+ee(o.klant)+'<br>'+ee([o.adres,o.plaats].filter(Boolean).join(', '))+(o.tel?'<br>'+ee(o.tel):'')+'</div>':'')+

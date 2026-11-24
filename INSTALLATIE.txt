@@ -48,8 +48,7 @@ Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige ver
   opnieuw in GitHub zetten.
 
 6. EENMALIG NOG TE DOEN (beheerder)
-- Firebase console > Authentication > Settings > Authorized domains: mit-werkbon.web.app en mit-kantoor.web.app.
-  "localhost" mag weg.
+- KLAAR (24-11-2026): Firebase > Authentication > Authorized domains bevat mit-werkbon.web.app en mit-kantoor.web.app.
 - KLAAR (24-11-2026): reCAPTCHA-sleutel van MIT Werkbon heeft mit-werkbon.web.app en mit-kantoor.web.app.
 - App Check: na 1-2 weken met bijna alles "verified" bij APIs op Enforce zetten (Firebase console > App Check).
   Wie nog niet klaar is: beheer > Systeem.

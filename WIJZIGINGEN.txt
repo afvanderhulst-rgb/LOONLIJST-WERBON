@@ -3,6 +3,18 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+KANTOOR-APP: ZELF ACCOUNT AANMAKEN + AUTOMATISCH UITLOGGEN (kantoor, 24-11-2026)
+- Inlogscherm van de kantoor-app: "Nog geen account? Account aanmaken" voor collega's die de werkbon-app niet gebruiken.
+  E-mailadres + zelfgekozen wachtwoord (min. 8 tekens, twee keer). Er gaat meteen een bevestigingsmail; na bevestigen
+  werkt de kantoor-app. Alleen adressen die in de kantoor-lijst staan (kantoor-app > tandwiel > Toegang, of beheer >
+  Kantoor-collega's) krijgen toegang; andere adressen zien "Geen toegang". Een niet-toegelaten adres buiten
+  @mit-installatietechniek.com wordt door de server (nieuwAccount) meteen weer verwijderd.
+  Ook "Wachtwoord vergeten?" op het inlogscherm (mail met link).
+- Automatisch uitloggen: de kantoor-app logt X uur na het inloggen vanzelf uit (standaard 5), met 5 minuten van tevoren een
+  melding. In de kopregel staat hoe laat. Instellen: beheer > Instellingen > "Kantoor-app: automatisch uitloggen" (0 = nooit,
+  max. 72, per kwartier). Opgeslagen in instellingen/app.kantoorUitlog; geen nieuwe Firestore-regels nodig.
+- Hersteld (fout uit v212): opslaan van instellingen in beheer mislukte (instSet riep zichzelf aan). Werkt weer, met logboek.
+
 KANTOOR-PLANNING: MEERDERE MONTEURS KIEZEN (kantoor, 24-11-2026)
 - Planning > keuzelijst naast "Deze week" heeft nu vinkjes: vink één, een paar of alle monteurs aan.
   Knoppen "Alle" en "Geen" (Geen = alles uit, daarna zelf aanvinken). Klik ernaast om de lijst te sluiten.

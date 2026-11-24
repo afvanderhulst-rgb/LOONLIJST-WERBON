@@ -3,6 +3,16 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+SNELKOPPELINGEN OP HET APP-ICOON + FOTO'S DELEN NAAR EEN BON (v216)
+- App-icoon ingedrukt houden (Android; iPhone ondersteunt dit niet voor web-apps): Nieuwe werkbon, Mijn planning, Weeklijst.
+  (manifest.webmanifest > shortcuts, icoontjes sc-nieuw.png, sc-plan.png, sc-week.png; ?go=nieuw / ?go=plan / ?go=wl)
+- Foto's (ook meerdere) of meerdere PDF's uit de galerij of een andere app: Delen > MIT Werkbon. De app vraagt bij welke bon
+  (bonnen die nog niet verstuurd zijn, laatst geopende bovenaan) of "Nieuwe werkbon". Ze komen bij Aanvullend rapport
+  (die gaat dan op Ja) en gaan achter de PDF van de bon; de omschrijving per foto kan erbij. Eén PDF delen = werkbon
+  importeren, zoals altijd.
+- Al geïnstalleerde app: Android neemt de snelkoppelingen en het delen van foto's over zodra Chrome het app-pakket bijwerkt
+  (meestal binnen een dag of twee na het openen van de app). Niet nodig om de app opnieuw te installeren.
+
 MIJN PLANNING OOK ZONDER INTERNET (v215)
 - De app bewaart Mijn planning (agenda-afspraken en geplande bonnen) en de klaargezette bonnen op de telefoon na elke
   geslaagde ophaalbeurt. Zonder internet staat die planning er gewoon, met een oranje melding "Geen internet · planning van

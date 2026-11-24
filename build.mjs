@@ -23,7 +23,7 @@ const P = n => path.join(dirOf(n), 'node_modules', n);
 
 const OUT = 'dist', LIB = path.join(OUT, 'lib');
 const APP = ['index.html', 'beheer.html', 'sw.js', 'manifest.webmanifest', 'fb.js', 'rooster.js', 'libs.js',
-  'firebase-config.js', 'handleiding.pdf', 'lmra.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'kantoor.webmanifest', 'agenda-parse.js', 'sw-kantoor.js', 'kantoor-192.png', 'kantoor-512.png', 'kantoor-maskable-512.png'];
+  'firebase-config.js', 'handleiding.pdf', 'lmra.png', 'icon-192.png', 'sc-nieuw.png', 'sc-plan.png', 'sc-week.png', 'icon-512.png', 'icon-maskable-512.png', 'kantoor.webmanifest', 'agenda-parse.js', 'sw-kantoor.js', 'kantoor-192.png', 'kantoor-512.png', 'kantoor-maskable-512.png'];
 const log = [], miss = [];
 
 fs.rmSync(OUT, { recursive: true, force: true });

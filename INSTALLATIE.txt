@@ -71,7 +71,8 @@ Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige ver
   * Planning en Agenda: status per bon, gewerkte tijden en reistijd, PDF van de verstuurde werkbon.
     Bovenaan met vinkjes kiezen welke monteurs je ziet (één, een paar of alle).
     Oranje met dubbele rand = werkbon die de monteur zelf maakt en nog niet heeft verstuurd (bezig).
-  * Zoeken: op werkbon-/projectnummer (alle jaren), klant, adres, plaats, telefoon, monteur of datum.
+  * Zoeken: op werkbon-/projectnummer (alle jaren), klant, adres, plaats, telefoon, monteur of datum;
+    kies laatste 2 maanden / laatste jaar / alle jaren.
   * Archief downloaden (onder Zoeken): ZIP per maand of jaar met alle verstuurde werkbon-PDF's + overzicht.csv.
   * Aandacht: correcties, open en niet-gereed bonnen, ontbrekende gegevens, mails die niet aankwamen.
   * Correctie vragen: bon terug naar de monteur met reden; hij krijgt een melding en verstuurt opnieuw.

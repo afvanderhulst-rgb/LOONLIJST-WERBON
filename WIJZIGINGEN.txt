@@ -3,6 +3,12 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+ZOEKEN: LAATSTE 2 MAANDEN / LAATSTE JAAR / ALLE JAREN (kantoor, 24-11-2026)
+- Het vinkje "ook ouder (tot 1 jaar)" bij zoeken (tabblad Zoeken en Planning) is een keuzelijst geworden: laatste 2 maanden,
+  laatste jaar of alle jaren. Er wordt niets opgeruimd: werkbon-PDF's blijven 7 jaar, agenda-afspraken en de gegevens van
+  verstuurde werkbonnen blijven altijd staan (bewaard sinds de agenda (v180) en de planning van eigen bonnen (v194) bestaan).
+  Zoeken op werkbon- of projectnummer gaat zoals voorheen altijd door alle jaren.
+
 OOK IN DE APP: EIGEN BONNEN DIE NOG NIET VERSTUURD ZIJN IN MIJN PLANNING (v218)
 - Bon met alleen een projectnummer (geen werkordernummer): het projectnummer staat nu bij de bon in het rooster van kantoor,
   in het venster ("Project 25065R04") en in Mijn planning.

@@ -63,6 +63,7 @@ Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige ver
 - Beheer > Toegang: externe adressen toelaten, kantoor-collega's, blokkeren (hele app of één persoon).
 - Beheer > Instellingen: kantooradres, meldingen, saldo verlof/ADV, afzendercontrole, automatisch uitloggen van de
   kantoor-app (standaard na 5 uur, 0 = nooit) enz. (alles in het logboek).
+- Beheer > Instellingen en Systeem: elke kaart klapt open/dicht door op de titel te klikken (of Alles uitvouwen).
 - Beheer > Systeem: foutenlogboek, App Check-status, Logboek beheer (wie deed wat, 2 jaar bewaard).
 - Back-ups: elke monteur heeft online back-ups (laatste 7) en een archief van alle bonnen; downloaden via beheer.
 - Kantoor-app:

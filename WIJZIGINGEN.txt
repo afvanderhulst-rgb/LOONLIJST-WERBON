@@ -3,6 +3,11 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+BEHEER: INSTELLINGEN EN SYSTEEM UITKLAPBAAR (beheer, 24-11-2026)
+- In beheer > Instellingen en > Systeem is elke kaart ingeklapt tot alleen de titel. Klik op de titel om hem open of
+  dicht te klappen; bovenaan "Alles uitvouwen" en "Alles inklappen". Welke kaarten open staan wordt per computer onthouden.
+- De tegel "fouten" bij Gebruikers opent het foutenlogboek meteen.
+
 KANTOOR-APP: ZELF ACCOUNT AANMAKEN + AUTOMATISCH UITLOGGEN (kantoor, 24-11-2026)
 - Inlogscherm van de kantoor-app: "Nog geen account? Account aanmaken" voor collega's die de werkbon-app niet gebruiken.
   E-mailadres + zelfgekozen wachtwoord (min. 8 tekens, twee keer). Er gaat meteen een bevestigingsmail; na bevestigen

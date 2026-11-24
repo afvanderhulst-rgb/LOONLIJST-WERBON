@@ -139,8 +139,10 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <p class="mu">Gebruik hetzelfde e-mailadres en wachtwoord als in de app.</p>
   <form id="lf"><label for="lm">E-mailadres</label><input id="lm" type="email" autocomplete="username" required>
   <label for="lp">Wachtwoord</label><input id="lp" type="password" autocomplete="current-password" required>
-  <div style="margin-top:14px"><button class="btn pr" id="lb" type="submit">Inloggen</button></div></form>
-  <div class="er" id="le" role="alert"></div>
+  <div id="lpw2W" hidden><label for="lp2">Wachtwoord nog een keer</label><input id="lp2" type="password" autocomplete="new-password"></div>
+  <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn pr" id="lb" type="submit">Inloggen</button><a href="#" id="lfPw" hidden>Wachtwoord vergeten?</a></div></form>
+  <p class="mu" id="lfReg" hidden style="margin:14px 0 0;border-top:1px solid var(--bd);padding-top:10px"></p>
+  <div class="er" id="le" role="alert"></div><div class="ok" id="lok" style="margin-top:10px;font-size:14px"></div>
  </div>
  <div class="card" id="msg" hidden></div>
  <nav class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="b">Bonnen klaarzetten</button><button type="button" data-tab="k">Klanten</button><button type="button" data-tab="p">Planning</button><button type="button" data-tab="z">Zoeken</button><button type="button" data-tab="a">Aandacht<span class="dot" id="adot" hidden></span></button><button type="button" data-tab="r">Rooster</button><button type="button" data-tab="i">Instellingen</button><button type="button" data-tab="s">Systeem<span class="dot" id="sdot" hidden></span></button><button type="button" data-tab="f">Info</button><a class="kpl" href="https://mit-kantoor.web.app/" target="_blank" rel="noopener">Kantoor-app ↗</a></nav>
@@ -178,6 +180,9 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
    <p class="mu" style="margin-top:6px">De monteur kan zijn eigen tegoed per jaar zelf aanpassen (bijv. parttime of meegenomen uren); leeg laten = deze standaard. Standaard 200 uur vrij (25 dagen) + 104 uur ADV (13 dagen); 1 dag = 8 uur.</p>
    <div class="tools" style="margin:0"><button class="btn pr" id="slSave" type="button">Opslaan</button></div>
    <div id="slRes" class="mu" style="margin-top:8px"></div></div>
+  <div class="card"><b>Kantoor-app: automatisch uitloggen</b><p class="mu">Na hoeveel uur na het inloggen de kantoor-app (mit-kantoor.web.app) iemand vanzelf uitlogt. 5 minuten ervoor krijgt hij een melding. 0 = nooit automatisch uitloggen. Geldt voor iedereen die de kantoor-app gebruikt (ook de beheerder), vanaf de volgende keer dat de kantoor-app wordt geopend of herladen.</p>
+   <div class="tools" style="margin:0"><input id="kuU" inputmode="decimal" style="max-width:120px" placeholder="5"><span class="mu">uur</span><button class="btn pr" id="kuSave" type="button">Opslaan</button></div>
+   <div id="kuRes" class="mu" style="margin-top:8px"></div></div>
   <div class="card"><b>Afzendercontrole bij klaarzetten per mail</b><p class="mu">Een bon die naar &lt;monteur&gt;@mit-werkbon.com wordt gemaild, wordt alleen klaargezet als de server kan controleren dat de mail echt van de afzender komt (DMARC, DKIM of SPF van het eigen domein). Komt een echte mail van kantoor toch niet door? De afzender krijgt dan een mail met de reden; je ziet hem ook in Firestore bij <code>inboundlog</code>. Zet dit dan tijdelijk uit en vraag de ICT van kantoor om DKIM en DMARC in te stellen.</p>
    <label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="afChk" style="width:20px;height:20px"> Strenge afzendercontrole (aanbevolen)</label>
    <div id="afRes" class="mu" style="margin-top:8px"></div></div>
@@ -301,9 +306,35 @@ window.addEventListener('appinstalled',function(){$('inst').hidden=true});
 function kToast(t,ms){var el=$('kToast');if(!el){el=document.createElement('div');el.id='kToast';document.body.appendChild(el)}el.textContent=t;el.hidden=false;clearTimeout(el._t);el._t=setTimeout(function(){el.hidden=true},ms||6000)}
 function err(e){var c=(e&&e.code)||'';return ({'auth/invalid-credential':'E-mailadres of wachtwoord klopt niet.','auth/invalid-login-credentials':'E-mailadres of wachtwoord klopt niet.','auth/wrong-password':'E-mailadres of wachtwoord klopt niet.','auth/user-not-found':'Er is geen account met dit e-mailadres. Maak het eerst aan in de app.','auth/too-many-requests':'Te vaak geprobeerd. Wacht een paar minuten.','auth/network-request-failed':'Geen internetverbinding.','permission-denied':'Geen toegang. Controleer of de Firestore-regels uit INSTALLATIE.txt (met jouw e-mailadres) zijn gepubliceerd en of je e-mailadres is bevestigd.'})[c]||('Er ging iets mis'+(c?' ('+c+')':'')+'.')}
 
-$('lf').onsubmit=async function(e){e.preventDefault();$('le').textContent='';$('lb').disabled=true;
- try{await auth.signInWithEmailAndPassword($('lm').value.trim(),$('lp').value);$('lp').value=''}catch(x){$('le').textContent=err(x)}$('lb').disabled=false};
-$('out').onclick=function(){auth.signOut()};
+// v214: in de kantoor-app zelf een account aanmaken (voor collega's die de werkbon-app niet gebruiken) en wachtwoord vergeten
+var LREG=false;
+function lfMode(reg){LREG=!!reg;$('lpw2W').hidden=!LREG;$('lb').textContent=LREG?'Account aanmaken':'Inloggen';$('lfPw').hidden=LREG||!KP;$('lp').autocomplete=LREG?'new-password':'current-password';$('le').textContent='';$('lok').textContent='';
+ $('login').querySelector('b').textContent=LREG?'Account aanmaken (kantoor)':(KP?'Inloggen (kantoor)':'Inloggen als beheerder');
+ $('login').querySelector('p.mu').innerHTML=LREG?'Alleen voor collega\'s die de beheerder of een kantoor-collega toegang heeft gegeven (kantoor-app &gt; tandwiel). Kies zelf een wachtwoord van minimaal 8 tekens. Je krijgt daarna een mail om je e-mailadres te bevestigen.':'Gebruik hetzelfde e-mailadres en wachtwoord als in de app'+(KP?', of maak hieronder een account aan als je de werkbon-app niet gebruikt.':'.');
+ var r=$('lfReg');r.hidden=!KP;r.innerHTML=LREG?'Heb je al een account (ook uit de werkbon-app)? <a href="#" id="lfTo">Inloggen</a>':'Nog geen account? <a href="#" id="lfTo">Account aanmaken</a>';$('lfTo').onclick=function(ev){ev.preventDefault();lfMode(!LREG)}}
+if(KP)lfMode(false);
+$('lfPw').onclick=async function(e){e.preventDefault();var m=$('lm').value.trim();$('le').textContent='';$('lok').textContent='';
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)){$('le').textContent='Vul eerst je e-mailadres in.';return}
+ try{await auth.sendPasswordResetEmail(m)}catch(x){if(x&&x.code==='auth/invalid-email'){$('le').textContent='Dit e-mailadres klopt niet.';return}}
+ $('lok').textContent='Als er een account is met dit adres, krijg je een mail met een link om een nieuw wachtwoord te kiezen. Kijk ook bij ongewenste mail.'};
+$('lf').onsubmit=async function(e){e.preventDefault();$('le').textContent='';$('lok').textContent='';var m=$('lm').value.trim(),pw=$('lp').value;
+ if(LREG){if(pw.length<8){$('le').textContent='Kies een wachtwoord van minimaal 8 tekens.';return}if(pw!==$('lp2').value){$('le').textContent='De twee wachtwoorden zijn niet gelijk.';return}}
+ $('lb').disabled=true;
+ try{if(LREG){var c=await auth.createUserWithEmailAndPassword(m,pw);try{await auth.sendEmailVerification(c.user||auth.currentUser)}catch(x){}}
+  else await auth.signInWithEmailAndPassword(m,pw);
+  try{localStorage.setItem('kt:inlog',String(Date.now()))}catch(x){}$('lp').value='';$('lp2').value='';if(LREG)lfMode(false)}
+ catch(x){var c2=(x&&x.code)||'';$('le').textContent=c2==='auth/email-already-in-use'?'Er bestaat al een account met dit e-mailadres (bijvoorbeeld uit de werkbon-app). Kies "Inloggen" en gebruik dat wachtwoord, of "Wachtwoord vergeten?".':c2==='auth/invalid-email'?'Dit e-mailadres klopt niet.':c2==='auth/weak-password'?'Kies een sterker wachtwoord (minimaal 8 tekens).':err(x)}
+ $('lb').disabled=false};
+$('out').onclick=function(){try{localStorage.removeItem('kt:inlog')}catch(x){}auth.signOut()};
+/* v214: kantoor-app automatisch uitloggen na een instelbaar aantal uur (beheer > Instellingen) */
+var UITU=5,UITT=null,UITW=false;
+function uitStart(){if(!KP)return;clearInterval(UITT);UITW=false;var t0=0;try{t0=+localStorage.getItem('kt:inlog')||0}catch(e){}if(!t0){t0=Date.now();try{localStorage.setItem('kt:inlog',String(t0))}catch(e){}}
+ uitChk();UITT=setInterval(uitChk,30000)}
+function uitTijd(){var t0=0;try{t0=+localStorage.getItem('kt:inlog')||0}catch(e){}return UITU>0&&t0?t0+UITU*3600e3:0}
+function uitChk(){if(!KP||!auth.currentUser)return;var e=uitTijd();if(!e)return;var rest=e-Date.now();
+ if(rest<=0){clearInterval(UITT);try{localStorage.removeItem('kt:inlog');sessionStorage.setItem('kt:uit',String(UITU))}catch(x){}auth.signOut();return}
+ if(rest<=5*60e3&&!UITW){UITW=true;kToast('Over '+Math.max(1,Math.round(rest/60e3))+' minuten word je automatisch uitgelogd. Sla je werk op.',15000)}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')uitChk()});
 $('rf').onclick=function(){load()};
 $('q').oninput=function(){render()};
 
@@ -312,17 +343,18 @@ auth.onAuthStateChanged(async function(u){
  try{if(UNSUB){UNSUB();UNSUB=null}}catch(x){}
  try{if(typeof AGU==='function'){AGU();}AGU=null;AGL=false;AG=[]}catch(x){}try{if(typeof BLU==='function'){BLU();}BLU=null;BLL=false;BL=[]}catch(x){}
  $('login').hidden=!!u;$('out').hidden=!u;$('list').hidden=true;$('klist').hidden=true;$('rlist').hidden=true;$('blist').hidden=true;$('flist').hidden=true;$('zlist').hidden=true;$('alist').hidden=true;$('tabs').hidden=true;show('');ROLE='';
- if(!u){$('who').textContent=KP?'Bonnen klaarzetten en storingsrooster':'Gebruikers en back-ups';if(ADMIN&&!KP)$('lm').value=ADMIN;return}
+ if(!u){clearInterval(UITT);$('who').textContent=KP?'Bonnen klaarzetten en storingsrooster':'Gebruikers en back-ups';if(ADMIN&&!KP)$('lm').value=ADMIN;
+  try{var _u=sessionStorage.getItem('kt:uit');if(_u){sessionStorage.removeItem('kt:uit');$('lok').textContent='';$('le').textContent='Je bent automatisch uitgelogd na '+String(_u).replace('.',',')+' uur. Log opnieuw in.'}}catch(x){}return}
  $('who').textContent='Ingelogd als '+u.email;
  ROLE='admin';
  var isK=false;if(KP||(ADMIN&&!isAdm(u.email))){try{isK=(await db.collection('kantoor').doc(String(u.email).toLowerCase()).get()).exists}catch(x){}}
- if(KP){if(!isK&&!isAdm(u.email)){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') staat niet in de lijst met kantoor-collega\'s. Vraag de beheerder ('+ee(ADMIN)+') om je toe te voegen.</p>');return}
-  ROLE='kantoor';if(!/^[brpza]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email;$('kset').hidden=false}
+ if(KP){if(!isK&&!isAdm(u.email)){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') staat niet in de lijst met kantoor-collega\'s. Vraag een kantoor-collega (kantoor-app &gt; tandwiel &gt; Toegang) of de beheerder ('+ee(ADMIN)+') om je toe te voegen. Daarna opnieuw inloggen.</p><p><button class="btn" type="button" onclick="document.getElementById(\'out\').click()">Uitloggen</button></p>');return}
+  ROLE='kantoor';if(!/^[brpza]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email;$('kset').hidden=false;uitStart()}
  else if(ADMIN&&!isAdm(u.email)){
   show(isK?'<b>Gebruik de kantoorpagina</b><p class="mu">Bonnen klaarzetten en het storingsrooster staan op een eigen pagina.</p><p><a class="btn pr" href="https://mit-kantoor.web.app/" style="text-decoration:none;display:inline-block">Naar de kantoor-app</a></p>':'<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina.</p>');return}
  try{await u.reload()}catch(x){}
  if(!auth.currentUser.emailVerified){
-  show('<b>Bevestig eerst je e-mailadres</b><p class="mu">Ter beveiliging werkt het beheer pas als bevestigd is dat '+ee(u.email)+' echt van jou is. Klik op de knop, open de mail en klik op de link. Kom daarna hier terug en klik op "Ik heb bevestigd".</p><div class="tools"><button class="btn pr" id="vf" type="button">Bevestigingsmail sturen</button><button class="btn" id="vd" type="button">Ik heb bevestigd</button></div><div class="mu" id="vs"></div>');
+  show('<b>Bevestig eerst je e-mailadres</b><p class="mu">Ter beveiliging werkt '+(KP?'de kantoor-app':'het beheer')+' pas als bevestigd is dat '+ee(u.email)+' echt van jou is. '+(KP?'Er is al een mail gestuurd bij het aanmaken; niet ontvangen? Klik op de knop. ':'Klik op de knop, ')+'open de mail en klik op de link. Kom daarna hier terug en klik op "Ik heb bevestigd".</p><div class="tools"><button class="btn pr" id="vf" type="button">Bevestigingsmail sturen</button><button class="btn" id="vd" type="button">Ik heb bevestigd</button></div><div class="mu" id="vs"></div>');
   $('vf').onclick=async function(){try{await auth.sendEmailVerification(auth.currentUser);$('vs').innerHTML='<span class="ok">Mail verstuurd. Kijk ook bij ongewenste mail.</span>'}catch(x){$('vs').textContent=err(x)}};
   $('vd').onclick=async function(){try{await auth.currentUser.reload();await auth.currentUser.getIdToken(true)}catch(x){}if(auth.currentUser.emailVerified){show('');load()}else $('vs').textContent='Nog niet bevestigd. Klik eerst op de link in de mail.'};
   return}
@@ -388,7 +420,7 @@ async function setBlock(em,on,vol){em=String(em||'').trim().toLowerCase();if(!em
  catch(e){alert0(err(e))}}
 // v212: logboek van beheer- en kantooracties (beheer.html > Systeem > Logboek beheer)
 function alog(actie,wat){try{if(!db||!auth.currentUser)return;db.collection('beheerlog').doc(Date.now()+'_'+Math.random().toString(36).slice(2,6)).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase(),actie:String(actie||'').slice(0,120),wat:String(wat||'').slice(0,500)}).catch(function(){})}catch(e){}}
-async function instSet(o,m){var r=await instSet(o,m);try{var c=Object.assign({},o);delete c.t;delete c.door;alog('instelling gewijzigd',JSON.stringify(c))}catch(e){}return r}
+async function instSet(o,m){var r=await db.collection('instellingen').doc('app').set(o,m);try{var c=Object.assign({},o);delete c.t;delete c.door;alog('instelling gewijzigd',JSON.stringify(c))}catch(e){}return r}
 function alert0(t){show('<b>Niet gelukt.</b><p class="mu">'+ee(t)+'</p>');setTimeout(function(){show('')},6000)}
 /* ---------- foutenlogboek ---------- */
 async function loadErr(){var el=$('errL');if(!el)return;el.innerHTML='<p class="mu">Laden…</p>';ERRN={};
@@ -969,6 +1001,7 @@ async function loadKeep(){try{var d=await db.collection('instellingen').doc('app
  $('slChk').checked=!!o.saldoAan;$('slVrij').value=String(Math.round((o.saldoVrijDag!=null?o.saldoVrijDag:25)*800)/100).replace('.',',');$('slAdv').value=String(Math.round((o.saldoAdvDag!=null?o.saldoAdvDag:13)*800)/100).replace('.',',');
  $('slRes').textContent=o.saldoAan?'Nu: aan voor alle medewerkers.':'Nu: uit. Alleen de beheerder ziet het in de app.';
  $('afChk').checked=o.afzenderStreng!==false;$('afRes').textContent=o.afzenderStreng!==false?'Nu: streng (standaard).':'Nu: uit. Alleen aantoonbaar vervalste mail wordt geweigerd.';
+ var ku=o.kantoorUitlog==null?5:+o.kantoorUitlog||0;$('kuU').value=String(ku).replace('.',',');$('kuRes').textContent=ku?'Nu: na '+String(ku).replace('.',',')+' uur uitloggen'+(o.kantoorUitlog==null?' (standaard)':'')+'.':'Nu: nooit automatisch uitloggen.';
  $('kmChk').checked=!!o.klantMat;$('kmRes').textContent=o.klantMat?'Nu: klant ziet de materialen.':'Nu: klant ziet géén materialen (standaard).';
  $('kpSel').value=String(v);$('kpRes').textContent=d.exists?'Nu: '+kpName(v)+(o.t?' (gewijzigd '+new Date(o.t).toLocaleString('nl-NL')+')':''):'Nog niet ingesteld: de telefoons bewaren alles (oneindig).'}
  catch(e){$('kpRes').textContent='Kon de bewaartermijn niet lezen: '+err(e)+' (zijn de nieuwe Firestore-regels gepubliceerd?)'}}
@@ -992,6 +1025,11 @@ $('slChk').onchange=function(){$('slSave').click()};
 $('afChk').onchange=async function(){var c=this,v=!!c.checked;c.disabled=true;
  try{await instSet({afzenderStreng:v,t:Date.now(),door:auth.currentUser.email},{merge:true});$('afRes').textContent=v?'Opgeslagen: streng. Alleen mail die aantoonbaar van de afzender komt, zet een bon klaar.':'Opgeslagen: uit. Alleen aantoonbaar vervalste mail wordt geweigerd. Zet dit weer aan zodra het kan.'}
  catch(e){c.checked=!v;$('afRes').textContent='Opslaan mislukt: '+err(e)}c.disabled=false};
+$('kuSave').onclick=async function(){var b=this,v=String($('kuU').value||'').trim().replace(',','.'),n=v===''?5:parseFloat(v);
+ if(isNaN(n)||n<0||n>72){$('kuRes').innerHTML='<span class="er">Vul een aantal uren in tussen 0 en 72 (bijv. 5 of 8,5).</span>';return}
+ n=Math.round(n*4)/4;b.disabled=true;try{await instSet({kantoorUitlog:n,t:Date.now(),door:auth.currentUser.email},{merge:true});$('kuU').value=String(n).replace('.',',');
+  $('kuRes').textContent=n?'Opgeslagen: de kantoor-app logt '+String(n).replace('.',',')+' uur na het inloggen vanzelf uit.':'Opgeslagen: de kantoor-app logt nooit automatisch uit.'}
+ catch(e){$('kuRes').textContent='Opslaan mislukt: '+err(e)}b.disabled=false};
 $('kmChk').onchange=async function(){var c=this,v=!!c.checked;c.disabled=true;
  try{await instSet({klantMat:v,t:Date.now(),door:auth.currentUser.email},{merge:true});$('kmRes').textContent=(v?'Opgeslagen: klant ziet de materialen.':'Opgeslagen: klant ziet géén materialen.')+' De telefoons nemen dit over zodra ze online zijn.'}
  catch(e){c.checked=!v;$('kmRes').textContent='Opslaan mislukt: '+err(e)}c.disabled=false};
@@ -1036,7 +1074,8 @@ $('libChk').onclick=async function(){var el=$('libRes');el.textContent='Controle
 $('blf').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker weten? Tik nogmaals';setTimeout(function(){b.dataset.sure='';b.textContent='Hele app blokkeren'},5000);return}b.dataset.sure='';b.textContent='Hele app blokkeren';setBlock(v,true,true);$('blm').value=''};
 $('blb').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}setBlock(v,true);$('blm').value=''};
 async function load(){show('');$('tabs').hidden=false;showTab();if(TAB==='r')loadR();$('users').innerHTML='<p class="mu">Laden…</p>';
- try{var _ia=await db.collection('instellingen').doc('app').get();PLANON=!!(_ia.exists&&(_ia.data()||{}).planAan)}catch(e){}showTab();
+ try{var _ia=await db.collection('instellingen').doc('app').get(),_io=_ia.exists?(_ia.data()||{}):{};PLANON=!!_io.planAan;UITU=_io.kantoorUitlog==null?5:+_io.kantoorUitlog||0}catch(e){}showTab();
+ if(KP&&ROLE==='kantoor'){uitChk();var _e=uitTijd();if(_e)$('who').textContent='Kantoor · '+auth.currentUser.email+' · automatisch uitloggen om '+p2(new Date(_e).getHours())+':'+p2(new Date(_e).getMinutes())}
  if(ROLE==='kantoor'){$('blogc').hidden=true;setTimeout(function(){try{ensureData()}catch(e){}},1500);try{await auth.currentUser.getIdToken(true);var qk=await db.collection('monteurs').get();USERS=qk.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o})}catch(e){show('<b>Kon de monteurs niet laden.</b><p class="mu">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</p>')}renderNew();loadSent();return}
  try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();
   USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();await loadToe();await loadErr();render();drawAc();loadMail();loadKeep();loadKantoor();renderNew();syncMon();$('blogc').hidden=false;try{window.mitSecDraw()}catch(x){}}

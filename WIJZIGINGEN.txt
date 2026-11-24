@@ -3,6 +3,12 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+MIJN PLANNING BLIJFT STAAN ALS HET INTERNET WEGVALT (v221)
+- Viel het internet weg terwijl de app open was, dan verdween de hele planning (en kwam pas terug met internet). Oorzaak:
+  zonder verbinding geeft de database geen fout maar een lege lijst, en die werd als "geen afspraken" getoond en bewaard.
+  Nu vraagt de app de planning altijd aan de server; lukt dat niet, of staat de telefoon offline, dan blijft de bewaarde
+  planning staan met de melding "Geen internet". Met internet wordt hij vanzelf bijgewerkt.
+
 APP-VERSIE WEER ZICHTBAAR IN BEHEER (v220)
 - De app gaf zijn versienummer niet meer door aan beheer (het zocht window.APPV, dat niet bestaat). Daardoor stond bij
   iedereen "app v? (te oud)" en bij App Check "0 van n klaar". Hersteld: zodra iemand de app (v220) opent, staat zijn versie

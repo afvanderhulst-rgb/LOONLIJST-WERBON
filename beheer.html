@@ -108,6 +108,9 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 .pmd{position:relative}.pmd>summary{list-style:none;cursor:pointer;padding:6px 10px;border:1px solid var(--bd);border-radius:8px;font-size:14px;background:var(--bg);color:var(--tx);white-space:nowrap}.pmd>summary::-webkit-details-marker{display:none}.pmd>summary::after{content:' ▾';color:var(--mu)}
 .pmp{position:absolute;z-index:20;top:calc(100% + 4px);left:0;min-width:240px;max-height:60vh;overflow:auto;background:var(--card);border:1px solid var(--bd);border-radius:10px;box-shadow:0 6px 24px #0003;padding:8px}.pmk{display:flex;gap:6px;margin-bottom:6px}
 .pmp label{display:flex;gap:8px;align-items:center;margin:0;padding:6px 4px;font-size:15px;color:var(--tx);cursor:pointer;border-radius:6px}.pmp label:hover{background:var(--ac2)}.pmp input{width:18px;height:18px;flex:none}
+.cb>.cbh{cursor:pointer;position:relative;padding-right:28px;user-select:none}.cb>.cbh::after{content:'▾';position:absolute;right:2px;top:0;color:var(--mu);font-size:16px;transition:transform .15s}
+.cb.dicht>.cbh::after{transform:rotate(-90deg)}.cb.dicht>.cbd{display:none}.cb.dicht>.cbh>span{display:none}.cb.dicht{padding-top:12px;padding-bottom:12px}.cb>.cbh:hover{color:var(--ac)}
+.cbt{display:flex;gap:6px;justify-content:flex-end;margin:0 0 8px}
 #plDlg{position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px}#plDlg[hidden]{display:none}
 #plDlg .card{width:100%;max-width:460px;max-height:92vh;overflow:auto;margin:0}#plDlg select,#plDlg input{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}
 /* ---- kantoor op de computer (v169) ---- */
@@ -422,6 +425,17 @@ async function setBlock(em,on,vol){em=String(em||'').trim().toLowerCase();if(!em
 function alog(actie,wat){try{if(!db||!auth.currentUser)return;db.collection('beheerlog').doc(Date.now()+'_'+Math.random().toString(36).slice(2,6)).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase(),actie:String(actie||'').slice(0,120),wat:String(wat||'').slice(0,500)}).catch(function(){})}catch(e){}}
 async function instSet(o,m){var r=await db.collection('instellingen').doc('app').set(o,m);try{var c=Object.assign({},o);delete c.t;delete c.door;alog('instelling gewijzigd',JSON.stringify(c))}catch(e){}return r}
 function alert0(t){show('<b>Niet gelukt.</b><p class="mu">'+ee(t)+'</p>');setTimeout(function(){show('')},6000)}
+/* ---------- v215: kaarten bij Instellingen en Systeem in- en uitklappen ---------- */
+(function(){var K='bh:open',O={};try{O=JSON.parse(localStorage.getItem(K))||{}}catch(e){}
+ function bewaar(){try{localStorage.setItem(K,JSON.stringify(O))}catch(e){}}
+ ['ilist','slist'].forEach(function(sec){var root=$(sec);if(!root)return;var CS=[].filter.call(root.children,function(c){return c.classList.contains('card')});
+  CS.forEach(function(c){var h=c.firstElementChild;if(!h)return;var key=sec+':'+String((c.querySelector('b')||h).textContent||'').replace(/\s*\(.*$/,'').trim().slice(0,50);
+   var bd=document.createElement('div');bd.className='cbd';while(h.nextSibling)bd.appendChild(h.nextSibling);c.appendChild(bd);
+   h.classList.add('cbh');c.classList.add('cb');c.dataset.ck=key;if(!O[key])c.classList.add('dicht');h.title='Klik om open of dicht te klappen';
+   h.addEventListener('click',function(e){if(e.target.closest('button,input,select,label,a'))return;c.classList.toggle('dicht');O[key]=!c.classList.contains('dicht');bewaar()})});
+  var t=document.createElement('div');t.className='cbt';t.innerHTML='<button class="btn sm" type="button">Alles uitvouwen</button><button class="btn sm" type="button">Alles inklappen</button>';root.insertBefore(t,root.firstChild);
+  var bt=t.querySelectorAll('button');[0,1].forEach(function(k){bt[k].onclick=function(){CS.forEach(function(c){c.classList.toggle('dicht',k===1);O[c.dataset.ck]=k===0});bewaar()}})});
+ window.mitKaartOpen=function(id){var c=$(id);c=c&&c.closest('.cb');if(c&&c.classList.contains('dicht')){c.classList.remove('dicht');O[c.dataset.ck]=true;bewaar()}}})();
 /* ---------- foutenlogboek ---------- */
 async function loadErr(){var el=$('errL');if(!el)return;el.innerHTML='<p class="mu">Laden…</p>';ERRN={};
  try{var q=await db.collection('foutlog').orderBy('t','desc').limit(500).get(),oud=Date.now()-90*864e5,wk=Date.now()-7*864e5;
@@ -1136,7 +1150,7 @@ function drawTiles(){var el=$('tiles');if(!el)return;var mon=USERS.filter(functi
   '<div class="tile"><div class="n">'+act+'</div><div class="l">actief deze week</div></div>'+
   '<div class="tile '+(okb===mon.length?'good':'bad')+'"><div class="n">'+okb+'/'+mon.length+'</div><div class="l">back-up recent</div></div>'+
   '<button type="button" class="tile '+(fo?'bad':'good')+'" id="tErr"><div class="n">'+fo+'</div><div class="l">fouten (7 dagen) ›</div></button>';
- $('tErr').onclick=function(){TAB='s';showTab();window.scrollTo(0,0)};var d=$('sdot');if(d)d.hidden=!fo}
+ $('tErr').onclick=function(){TAB='s';showTab();try{window.mitKaartOpen('errL');$('errL').closest('.card').scrollIntoView({block:'start'})}catch(e){window.scrollTo(0,0)}};var d=$('sdot');if(d)d.hidden=!fo}
 function full(u){var em=String(u.email||'').toLowerCase();if(!em||isAdm(em))return '';var b=BLOCK[em];
  return b&&b.volledig?'<button class="btn sm" type="button" data-full="'+ee(em)+'" data-on="0">Deblokkeren</button>':'<button class="btn sm dg" type="button" data-full="'+ee(em)+'" data-on="1">Blokkeren</button>'}
 function acc(u){var em=String(u.email||'').toLowerCase();if(!em||isAdm(em))return '';if(BLOCK[em]&&BLOCK[em].volledig)return '';

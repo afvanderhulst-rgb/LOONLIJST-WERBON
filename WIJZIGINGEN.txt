@@ -3,6 +3,11 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+APP-VERSIE WEER ZICHTBAAR IN BEHEER (v220)
+- De app gaf zijn versienummer niet meer door aan beheer (het zocht window.APPV, dat niet bestaat). Daardoor stond bij
+  iedereen "app v? (te oud)" en bij App Check "0 van n klaar". Hersteld: zodra iemand de app (v220) opent, staat zijn versie
+  weer in beheer > Gebruikers en bij App Check.
+
 FOTO-OMSCHRIJVING OVER DE HELE BREEDTE + HANDLEIDING KANTOOR EN FILMPJES (v219)
 - Bij Aanvullend rapport staat het vak "Omschrijving" nu onder de foto over de hele breedte (was op een telefoon te smal).
 - Nieuwe handleiding voor de kantoor-app (document), en de instructiefilmpjes opnieuw gemaakt met de huidige app, plus

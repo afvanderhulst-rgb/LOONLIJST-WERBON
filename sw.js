@@ -1,4 +1,4 @@
-var V='mit-werkbon-v215';
+var V='mit-werkbon-v216';
 var FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','firebase-config.js','fb.js','rooster.js','libs.js','handleiding.pdf','lmra.png'];
 var CDN=['lib/jspdf.umd.min.js','lib/pdf.min.js','lib/pdf.worker.min.js','lib/pdf-lib.min.js','lib/jszip.min.js','lib/firebase/firebase-app.js','lib/firebase/firebase-auth.js','lib/firebase/firebase-firestore.js']; // eigen adres; ontbrekende worden overgeslagen
 self.addEventListener('install',function(e){e.waitUntil(caches.open(V).then(function(c){
@@ -9,7 +9,10 @@ self.addEventListener('fetch',function(e){
  if(u.pathname.indexOf('/api/')>=0)return; // mail-koppeling: altijd live, nooit uit cache
  if(/googleapis\.com$|firebaseapp\.com$|firebaseio\.com$|cloudfunctions\.net$|run\.app$/.test(u.hostname))return; // inloggen, online back-up en mailen: altijd live
  if(u.hostname==='www.gstatic.com'||u.pathname.slice(-18)==='firebase-config.js'||u.pathname.slice(-6)==='/fb.js'){e.respondWith(fetch(e.request).then(function(res){var cp=res.clone();caches.open(V).then(function(c){c.put(e.request,cp)});return res}).catch(function(){return caches.match(e.request,{ignoreSearch:true})}));return}
- if(e.request.method==='POST'&&u.pathname.slice(-13)==='/share-target'){e.respondWith((async function(){try{var fd=await e.request.formData(),f=fd.get('file');if(f&&f.size!==undefined){var c=await caches.open('mit-share');await c.put('shared-file',new Response(f,{headers:{'Content-Type':f.type||'application/pdf','X-Name':encodeURIComponent(f.name||'bon.pdf')}}))}}catch(err){}return Response.redirect(new URL('index.html?import=1',self.registration.scope).href,303)})());return}
+ if(e.request.method==='POST'&&u.pathname.slice(-13)==='/share-target'){e.respondWith((async function(){try{var fd=await e.request.formData(),L=fd.getAll('file').filter(function(f){return f&&f.size!==undefined}).slice(0,20),c=await caches.open('mit-share');
+  // v216: ook foto's (meerdere tegelijk); de app vraagt bij welke bon ze horen
+  for(var i=0;i<L.length;i++)await c.put('shared-file-'+i,new Response(L[i],{headers:{'Content-Type':L[i].type||'application/octet-stream','X-Name':encodeURIComponent(L[i].name||('bestand-'+(i+1)))}}));
+  await c.put('shared-n',new Response(String(L.length)))}catch(err){}return Response.redirect(new URL('index.html?import=1',self.registration.scope).href,303)})());return}
  if(e.request.method!=='GET')return;
  // v214: beheer en kantoor altijd eerst live ophalen (anders bleef een oude beheerpagina staan); zonder internet de laatste versie
  if(/\/(beheer|kantoor)\.html$/.test(u.pathname)){e.respondWith(fetch(e.request,{cache:'no-store'}).then(function(res){if(res&&res.ok){var cp=res.clone();caches.open(V).then(function(c){c.put(e.request,cp)})}return res}).catch(function(){return caches.match(e.request,{ignoreSearch:true})}));return}

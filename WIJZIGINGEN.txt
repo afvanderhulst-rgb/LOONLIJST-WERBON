@@ -3,6 +3,11 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+BEHEERPAGINA ALTIJD ACTUEEL (v214)
+- De service worker van de werkbon-app bewaarde beheer.html en kantoor.html in het geheugen en liet die zien tot er een
+  nieuwe app-versie (sw.js) kwam. Daardoor bleven wijzigingen aan beheer onzichtbaar. Nu worden beheer.html en kantoor.html
+  altijd eerst live opgehaald (zonder internet: de laatst geladen versie). Versie naar v214.
+
 BEHEER: INSTELLINGEN EN SYSTEEM UITKLAPBAAR (beheer, 24-11-2026)
 - In beheer > Instellingen en > Systeem is elke kaart ingeklapt tot alleen de titel. Klik op de titel om hem open of
   dicht te klappen; bovenaan "Alles uitvouwen" en "Alles inklappen". Welke kaarten open staan wordt per computer onthouden.

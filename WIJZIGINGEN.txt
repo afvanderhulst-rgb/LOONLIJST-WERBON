@@ -3,6 +3,15 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+EIGEN BONNEN AL IN DE PLANNING TERWIJL DE MONTEUR ERMEE BEZIG IS + ZOEKEN OP NUMMERS MET LETTERS (v217)
+- Een werkbon die de monteur zelf maakt, verschijnt nu al in het rooster van kantoor zodra er een datum en begintijd in
+  staan: oranje met dubbele rand, "bezig, nog niet verstuurd", met de ingevulde tijden en reistijd. Wijzigt hij de tijden,
+  dan wordt het bijgewerkt (bij de volgende ronde, elke paar minuten zolang de app open is). Na versturen wordt hij groen
+  of rood zoals voorheen. Gooit hij de bon weg voor het versturen, dan verdwijnt hij weer uit het rooster.
+- Zolang hij niet verstuurd is: geen PDF, geen "Correctie vragen", geen "ontbrekende gegevens" en geen ✓ gewerkte tijd.
+- Zoeken op werkbonnummer werkt nu ook voor nummers met letters (bijv. 25065R04, ook in kleine letters) in alle jaren.
+- Geen nieuwe Firestore-regels (bonlog met verstuurd: 0).
+
 SNELKOPPELINGEN OP HET APP-ICOON + FOTO'S DELEN NAAR EEN BON (v216)
 - App-icoon ingedrukt houden (Android; iPhone ondersteunt dit niet voor web-apps): Nieuwe werkbon, Mijn planning, Weeklijst.
   (manifest.webmanifest > shortcuts, icoontjes sc-nieuw.png, sc-plan.png, sc-week.png; ?go=nieuw / ?go=plan / ?go=wl)

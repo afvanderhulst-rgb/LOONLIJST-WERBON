@@ -3,6 +3,16 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+OOK IN DE APP: EIGEN BONNEN DIE NOG NIET VERSTUURD ZIJN IN MIJN PLANNING (v218)
+- Bon met alleen een projectnummer (geen werkordernummer): het projectnummer staat nu bij de bon in het rooster van kantoor,
+  in het venster ("Project 25065R04") en in Mijn planning.
+- Kantoor-app en beheer: een pagina die al open staat, controleert elke 10 minuten (en bij terugkomen) of er een nieuwe
+  versie is en toont dan onderaan een balk "Er is een nieuwe versie van deze pagina" met Vernieuwen. (Een oude open
+  kantoor-pagina toonde een bon die nog niet verstuurd was als groen met "Verstuurd –".)
+- Mijn planning in de app toont nu ook je eigen werkbonnen waar je mee bezig bent (datum + begintijd ingevuld, nog niet
+  verstuurd): status "Bezig", "Eigen werkbon, nog niet verstuurd", met tijden en reistijd, en de knop "Werkbon openen".
+  Zo ziet de monteur hetzelfde als kantoor. Werkt ook zonder internet.
+
 EIGEN BONNEN AL IN DE PLANNING TERWIJL DE MONTEUR ERMEE BEZIG IS + ZOEKEN OP NUMMERS MET LETTERS (v217)
 - Een werkbon die de monteur zelf maakt, verschijnt nu al in het rooster van kantoor zodra er een datum en begintijd in
   staan: oranje met dubbele rand, "bezig, nog niet verstuurd", met de ingevulde tijden en reistijd. Wijzigt hij de tijden,

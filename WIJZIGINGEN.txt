@@ -3,6 +3,11 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+KANTOOR-PLANNING: MEERDERE MONTEURS KIEZEN (kantoor, 24-11-2026)
+- Planning > keuzelijst naast "Deze week" heeft nu vinkjes: vink één, een paar of alle monteurs aan.
+  Knoppen "Alle" en "Geen" (Geen = alles uit, daarna zelf aanvinken). Klik ernaast om de lijst te sluiten.
+- De keuze wordt per computer onthouden. Alleen beheer.html gewijzigd; de werkbon-app (sw.js) hoeft geen nieuwe versie.
+
 FOTO'S MET OMSCHRIJVING, ARCHIEF, GESCHIEDENIS PER BON, NIEUWE HANDLEIDING (v213)
 - Foto's en bijlagen: onder elke foto een vak "Omschrijving" (max. 120 tekens, bijv. "lekkage onder de ketel").
   De omschrijving staat in de PDF onder de foto.

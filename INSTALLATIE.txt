@@ -64,6 +64,7 @@ Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige ver
 - Kantoor-app:
   * Bonnen klaarzetten (slepen of mailen naar <monteur>@mit-werkbon.com). Intrekken = 30 dagen terug te zetten.
   * Planning en Agenda: status per bon, gewerkte tijden en reistijd, PDF van de verstuurde werkbon.
+    Bovenaan met vinkjes kiezen welke monteurs je ziet (één, een paar of alle).
   * Zoeken: op werkbon-/projectnummer (alle jaren), klant, adres, plaats, telefoon, monteur of datum.
   * Archief downloaden (onder Zoeken): ZIP per maand of jaar met alle verstuurde werkbon-PDF's + overzicht.csv.
   * Aandacht: correcties, open en niet-gereed bonnen, ontbrekende gegevens, mails die niet aankwamen.

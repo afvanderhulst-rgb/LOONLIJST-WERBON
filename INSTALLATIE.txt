@@ -89,5 +89,9 @@ Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige ver
 9. PROBLEMEN
 - "Geen toegang": e-mail bevestigd? Adres toegelaten? Is de laatste run van "Firestore-regels naar Firebase" groen?
 - Nieuwe versie komt niet: app helemaal sluiten en opnieuw openen; sw.js-versie opgehoogd?
+- Geen melding op de telefoon bij een nieuwe/gewijzigde agenda: kijk na het inlezen in de kantoor-app wat er onder
+  "Melding op de telefoon" staat. Planning uit? beheer > Instellingen > Planning aanzetten. Meldingen niet aan? Op de
+  telefoon: tandwieltje > Meldingen > Aanzetten > Testmelding. Komt de testmelding ook niet: Android-instellingen >
+  Apps > Chrome/MIT Werkbon > Meldingen aan.
 - Mail niet aangekomen: kantoor-app > Aandacht > Mail, en beheer > Systeem > Foutenlogboek.
 - Workflow rood met "permission": de melding noemt welke rol mist; voeg die toe bij github-deploy in Google Cloud IAM.

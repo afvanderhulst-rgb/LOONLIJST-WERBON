@@ -3,6 +3,14 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+AGENDA-MELDINGEN: OOK VOOR DE BEHEERDER + UITSLAG ZICHTBAAR (server + kantoor, 24-11-2026)
+- Meldingen over de planning (agenda nieuw/gewijzigd, bon ingepland/verzet) gingen alleen weg als de planning in beheer >
+  Instellingen aan stond. De beheerder ziet de planning ook als hij uit staat (om te testen), maar kreeg dan geen melding.
+  Nu krijgt de beheerder ze altijd; andere monteurs pas als de planning aan staat.
+- Na "In de planning zetten" in de kantoor-app staat binnen een paar seconden per monteur of de melding naar de telefoon is
+  gegaan, of waarom niet: planning staat uit / niets gewijzigd / meldingen staan niet aan op de telefoon / versturen mislukt.
+  De server schrijft dat terug in agendaimport (push, pushReden). Ook bij agenda@ wordt dit vastgelegd.
+
 BEHEERPAGINA ALTIJD ACTUEEL (v214)
 - De service worker van de werkbon-app bewaarde beheer.html en kantoor.html in het geheugen en liet die zien tot er een
   nieuwe app-versie (sw.js) kwam. Daardoor bleven wijzigingen aan beheer onzichtbaar. Nu worden beheer.html en kantoor.html

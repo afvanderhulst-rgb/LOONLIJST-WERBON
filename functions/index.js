@@ -74,11 +74,19 @@ const bonWie = (d) => {
 async function planAan() {
   try { const s = await db.doc('instellingen/app').get(); return !!(s.exists && s.get('planAan')); } catch (e) { return false; }
 }
+// v215: planning-meldingen voor deze monteur? Planning aan, of hij is beheerder (die ziet de planning ook als hij nog uit staat, om te testen)
+async function planVoor(uid) {
+  if (await planAan()) return true;
+  try { const m = await db.doc('monteurs/' + uid).get(); return BEHEERDERS.includes(String((m.exists && m.get('email')) || '').toLowerCase()); } catch (e) { return false; }
+}
+async function aantalTel(uid) {
+  try { return (await db.collection('users').doc(uid).collection('push').get()).docs.filter((d) => ((d.data() || {}).sub || {}).endpoint).length; } catch (e) { return 0; }
+}
 
 exports.pushKlaar = onDocumentCreated({document: 'inbox/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
   let d = (ev.data && ev.data.data()) || {};
   if (!d.voor || d.status !== 'klaar') return;
-  if (d.pd && !(await planAan())) d = Object.assign({}, d, {pd: ''}); // planning nog uit: gewone melding
+  if (d.pd && !(await planVoor(d.voor))) d = Object.assign({}, d, {pd: ''}); // planning nog uit: gewone melding
   const g = d.g || {};
   const wie = [g.naam || g.klant, [g.adres, g.plaats].filter(Boolean).join(', ')].filter(Boolean).join(' - ');
   await sendTo(d.voor, {
@@ -92,19 +100,25 @@ exports.pushKlaar = onDocumentCreated({document: 'inbox/{id}', secrets: [VAPID_P
 // agenda (v180): kantoor heeft een agenda-PDF ingelezen voor een monteur -> één melding per keer
 exports.pushAgenda = onDocumentCreated({document: 'agendaimport/{id}', secrets: [VAPID_PRIVATE_KEY]}, async (ev) => {
   const d = (ev.data && ev.data.data()) || {};
-  if (!d.voor || !(await planAan())) return;
+  // v215: uitslag van de melding terugschrijven, zodat kantoor ziet of de telefoon hem kreeg (en zo niet: waarom)
+  const uit = async (push, reden) => { try { await ev.data.ref.set({push, pushReden: reden, pushT: Date.now()}, {merge: true}); } catch (e) {} logger.info('pushAgenda', {voor: d.voor, push, reden}); };
+  if (!d.voor) return;
+  if (!(await planVoor(d.voor))) return uit(0, 'planning staat uit (beheer > Instellingen)');
   const dt = (iso) => { const p = String(iso || '').split('-'); if (p.length !== 3) return ''; const x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); return DGN[x.getUTCDay()] + ' ' + (+p[2]) + '-' + (+p[1]); };
   const per = d.van ? ' (' + dt(d.van) + (d.tot && d.tot !== d.van ? ' t/m ' + dt(d.tot) : '') + ')' : '';
   const w = Array.isArray(d.wijz) ? d.wijz : [];
-  if (d.eerste === false && !(d.bij || d.weg || d.gew)) return; // zelfde agenda opnieuw: geen melding
+  if (d.eerste === false && !(d.bij || d.weg || d.gew)) return uit(0, 'niets gewijzigd'); // zelfde agenda opnieuw: geen melding
+  const tel = await aantalTel(d.voor);
+  if (!tel) return uit(0, 'meldingen staan niet aan op de telefoon');
   if (d.eerste === false) {
-    await sendTo(d.voor, {title: 'Planning gewijzigd' + per, body: w.slice(0, 3).join('\n') + (w.length > 3 ? '\n+ ' + (w.length - 3) + ' andere wijziging' + (w.length - 3 === 1 ? '' : 'en') : ''),
+    const n = await sendTo(d.voor, {title: 'Planning gewijzigd' + per, body: w.slice(0, 3).join('\n') + (w.length > 3 ? '\n+ ' + (w.length - 3) + ' andere wijziging' + (w.length - 3 === 1 ? '' : 'en') : ''),
       url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id), ok: true});
-    return;
+    return uit(n, n ? 'verstuurd' : 'versturen mislukt');
   }
-  await sendTo(d.voor, {title: 'Nieuwe planning van kantoor',
+  const n = await sendTo(d.voor, {title: 'Nieuwe planning van kantoor',
     body: (d.n || 0) + ((d.n === 1) ? ' afspraak' : ' afspraken') + per + '. Tik om je planning te zien.',
     url: './?go=plan', tag: 'agenda-' + (d.van || ev.params.id), ok: true});
+  return uit(n, n ? 'verstuurd' : 'versturen mislukt');
 });
 
 // v210: kantoor vraagt een correctie op een verstuurde werkbon -> melding (met OK) naar de monteur
@@ -160,8 +174,9 @@ exports.pushPlanning = onDocumentUpdated({document: 'inbox/{id}', secrets: [VAPI
   const a = (ev.data && ev.data.before && ev.data.before.data()) || {}, b = (ev.data && ev.data.after && ev.data.after.data()) || {};
   if (b.verstuurd) return; // al afgerond
   const wie = bonWie(b), id = ev.params.id;
-  if ((a.voor || '') === (b.voor || '') && !(await planAan())) return; // planning nog uit: geen meldingen over dag/tijd
-  if (!(await planAan())) { b.pd = ''; a.pd = ''; }
+  const pa = await planVoor(b.voor || a.voor);
+  if ((a.voor || '') === (b.voor || '') && !pa) return; // planning nog uit: geen meldingen over dag/tijd
+  if (!pa) { b.pd = ''; a.pd = ''; }
   if ((a.voor || '') !== (b.voor || '')) {
     if (b.voor) {
       await sendTo(b.voor, {title: b.pd ? 'Werkbon voor je ingepland' : 'Nieuwe werkbon klaargezet',

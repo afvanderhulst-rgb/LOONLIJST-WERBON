@@ -3,6 +3,20 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+SNELLER INVULLEN + MIJN PLANNING OP DE GOEDE WEEK (v224)
+- Reistijd sluit aan: kies je bij Uren een datum waarop al een bon staat (en zijn aanvang reistijd en werktijd nog leeg),
+  dan zet de app de aanvang reistijd op de eindtijd van de vorige bon die dag, met een melding. Gewoon aan te passen.
+- Bon van een eerdere week: maak je een nieuwe bon met een nummer dat al eens op een bon stond (bijv. per week een nieuwe
+  bon uit de agenda), en zijn werkzaamheden en materiaal nog leeg, dan staat bovenaan "Eerdere bon met nummer ...":
+  Overnemen zet de werkzaamheden en het materiaal van die bon erin (ook storing/contactpersoon/e-mail als die leeg zijn).
+  "Nee, dank je" haalt de vraag weg. Komt in de geschiedenis van de bon.
+- Materialen: "Vaak gebruikt" met de 12 materialen die je de laatste 6 maanden het vaakst invulde. Tik = regel erbij met
+  code en laatste prijs, aantal 1 (meteen aan te passen).
+- Handtekening: het tekenvak vult het hele scherm, ook als je de telefoon dwars houdt (bij draaien blijft de handtekening
+  staan). De handtekening wordt bijgesneden tot wat er getekend is, zodat hij in de PDF even groot blijft als voorheen.
+- Mijn planning opent altijd op de huidige week. Was je eerder naar een vorige week gebladerd, dan opende hij de volgende
+  keer op die oude week ("verspringt 1 of 2 weken terug").
+
 AFSPRAKEN VERDWENEN EVEN TIJDENS HET BIJWERKEN (v223)
 - Tijdens het bijwerken van Mijn planning (bij openen en elke paar minuten) werd de lijst eerst geleegd en kwamen de
   agenda-afspraken er pas weer bij als ze van de server binnen waren. Werd het scherm in die paar seconden getekend, dan

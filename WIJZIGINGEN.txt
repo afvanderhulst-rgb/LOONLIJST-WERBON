@@ -3,6 +3,15 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+PER WEEK EEN NIEUWE BON BIJ EEN AFSPRAAK (v222)
+- Stond in Mijn planning een afspraak met een bonnummer dat in een eerdere week ook al op een bon stond, dan opende
+  "Werkbon openen" de oude bon (en stond de afspraak op "Bezig"). Nu hoort een bon bij één week (zaterdag t/m vrijdag,
+  zoals de weeklijst): alleen een bon met een datum in dezelfde week telt. Anders staat er "Werkbon maken" en komt er een
+  nieuwe bon voor deze week. De oude bon blijft gewoon in Mijn bonnen (en in de geschiedenis van de nieuwe bon staat dat
+  er een eerdere bon met dit nummer is).
+- Geldt ook voor "Overnemen" van een klaargezette bon, voor wat de app aan kantoor terugmeldt (bezig/verstuurd/gereed)
+  en voor de gewerkte tijden in Mijn planning.
+
 KANTOOR-APP: NIEUWE INDELING MET DASHBOARD (kantoor, 25-11-2026)
 - Op de computer een donkerblauwe zijbalk met menu (Dashboard, Bonnen klaarzetten, Planning, Zoeken, Aandacht, Rooster),
   onderin Instellingen, Uitloggen en de online-status. Bovenaan een witte balk met "Live verbonden / bijgewerkt", een

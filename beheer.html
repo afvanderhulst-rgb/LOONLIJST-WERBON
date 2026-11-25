@@ -111,6 +111,74 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 .cb>.cbh{cursor:pointer;position:relative;padding-right:28px;user-select:none}.cb>.cbh::after{content:'▾';position:absolute;right:2px;top:0;color:var(--mu);font-size:16px;transition:transform .15s}
 .cb.dicht>.cbh::after{transform:rotate(-90deg)}.cb.dicht>.cbd{display:none}.cb.dicht>.cbh>span{display:none}.cb.dicht{padding-top:12px;padding-bottom:12px}.cb>.cbh:hover{color:var(--ac)}
 .cbt{display:flex;gap:6px;justify-content:flex-end;margin:0 0 8px}
+
+/* ---- v222: kantoor-app nieuwe indeling (zijbalk, bovenbalk, dashboard) ---- */
+.ksb,.ksf,.ktb{display:none}
+.plw>*{min-width:0}
+.tabs button svg{width:18px;height:18px;vertical-align:-4px;margin-right:6px;flex:none}
+#dlist .dt{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.dtile{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px 18px 34px;text-align:left;font:inherit;color:var(--tx);cursor:pointer;box-shadow:0 1px 3px #0000000f;position:relative}
+.dtile:hover{border-color:var(--ac);box-shadow:0 4px 14px #1a147f1a}
+.dtile .di{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;margin-bottom:10px}
+.dtile .di svg{width:22px;height:22px}
+.dtile .dn{font-size:34px;font-weight:800;line-height:1.05}
+.dtile .dl{font-size:15px;color:var(--mu);margin-top:2px}
+.dtile .dd{position:absolute;right:14px;bottom:12px;font-size:13px;font-weight:700}
+.dgrid{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:16px;align-items:start}
+.dcard{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px 18px;box-shadow:0 1px 3px #0000000f}
+.dcard h3{margin:0 0 8px;font-size:18px;display:flex;align-items:center;gap:10px}
+.dcard h3 svg{width:22px;height:22px;flex:none}
+.dap{display:flex;align-items:center;gap:12px;padding:11px 4px;border-top:1px solid var(--bd);cursor:pointer;border-radius:8px}
+.dap:hover{background:var(--ac2)}
+.dap .dn2{margin-left:auto;min-width:26px;height:26px;border-radius:13px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;padding:0 8px}
+.dap .ch{color:var(--mu);font-size:18px}
+.dok{display:flex;gap:10px;align-items:center;padding:6px 0;font-size:15px}
+.dok i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-size:11px;flex:none}
+table.dtab{width:100%;border-collapse:collapse;font-size:14px}
+table.dtab th{text-align:left;font-size:13px;color:var(--mu);font-weight:600;padding:8px;background:var(--bg);border-bottom:1px solid var(--bd)}
+table.dtab td{padding:9px 8px;border-bottom:1px solid var(--bd);vertical-align:middle}
+table.dtab tr:hover td{background:var(--ac2)}
+.dpill{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.dtip{display:flex;align-items:center;gap:10px;background:var(--ac2);border:1px solid var(--bd);border-radius:14px;padding:12px 16px;font-size:15px}
+.dtip a{color:var(--ac);font-weight:600;cursor:pointer}
+@media (max-width:900px){#dlist .dt{grid-template-columns:repeat(2,1fr)}.dgrid{grid-template-columns:1fr}.dtab .hm{display:none}}
+@media (min-width:1000px){
+ body.kside{--side:240px}
+ body.kside #kside{position:fixed;left:0;top:0;bottom:0;width:var(--side);background:linear-gradient(180deg,#16136a,#0e0c45);color:#fff;display:flex;flex-direction:column;padding:20px 14px 16px;z-index:40;overflow-y:auto}
+ body.kside .ksb{display:flex;align-items:center;gap:10px;padding:4px 8px 6px}
+ body.kside .ksb img{width:42px;height:42px;border-radius:10px;background:#fff;padding:3px}
+ body.kside .ksb b{display:block;font-size:22px;line-height:1;letter-spacing:.5px}
+ body.kside .ksb small{display:block;font-size:14px;opacity:.85;margin-top:3px}
+ body.kside #kside .tabs{position:static;flex-direction:column;background:none;padding:0;margin:22px 0 0;overflow:visible;gap:4px}
+ body.kside #kside .tabs button{width:100%;text-align:left;display:flex;align-items:center;gap:12px;border:0;background:transparent;color:#d9dcff;border-radius:12px;padding:12px 14px;font-size:15.5px;font-weight:600}
+ body.kside #kside .tabs button:hover{background:#ffffff17;color:#fff}
+ body.kside #kside .tabs button.on{background:#2f6bff;color:#fff;box-shadow:0 4px 14px #2f6bff55}
+ body.kside #kside .tabs button svg{width:20px;height:20px;flex:none}
+ body.kside #kside .tabs .dot{margin-left:auto;min-width:20px;height:20px;border-radius:10px;font-size:12px;line-height:20px;text-align:center;color:#fff;padding:0 6px}
+ body.kside .ksf{display:flex;flex-direction:column;gap:2px;margin-top:auto;padding-top:16px}
+ body.kside .ksf button{display:flex;align-items:center;gap:12px;background:none;border:0;color:#d9dcff;font:inherit;font-size:15px;padding:10px 14px;border-radius:12px;cursor:pointer;text-align:left}
+ body.kside .ksf button:hover{background:#ffffff17;color:#fff}
+ body.kside .ksf svg{width:20px;height:20px}
+ body.kside .ksf .kon{display:flex;align-items:center;gap:8px;padding:12px 14px 0;font-size:14px;color:#b9bce6}
+ body.kside .ksf .kon i{width:10px;height:10px;border-radius:50%;background:#3ccf7a}
+ body.kside header{margin-left:var(--side);background:var(--card);color:var(--tx);box-shadow:0 1px 0 var(--bd)}
+ body.kside header .hw{max-width:none;padding:12px 28px}
+ body.kside header .brand,body.kside #kset,body.kside #out{display:none!important}
+ body.kside header .btn{color:var(--ac);border-color:var(--ac)}
+ body.kside .ktb{display:flex;align-items:center;gap:16px;flex:1;min-width:0}
+ body.kside main,body.kside.wide main{margin-left:var(--side);max-width:none;padding:22px 28px}
+ body.kside .kpl{display:none}
+}
+.ktb .kst{display:flex;align-items:center;gap:10px;min-width:0}
+.ktb .kst i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;background:#16a34a;font-style:normal;flex:none}
+.ktb .kst b{display:block;font-size:14px;color:#16693e}.ktb .kst small{display:block;font-size:13px;color:var(--mu)}
+.ktb .ksz{flex:1;max-width:420px;margin-left:auto;position:relative}
+.ktb .ksz input{border-radius:999px;padding:10px 16px 10px 40px;background:var(--bg)}
+.ktb .ksz svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--mu)}
+.ktb .kbel{position:relative;background:none;border:0;cursor:pointer;color:var(--tx);padding:6px}
+.ktb .kbel svg{width:26px;height:26px}
+.ktb .kbel span{position:absolute;top:0;right:-2px;min-width:20px;height:20px;border-radius:10px;background:#d33;color:#fff;font-size:12px;font-weight:700;line-height:20px;text-align:center;padding:0 5px}
+.ktb .kav{width:42px;height:42px;border-radius:50%;background:#16136a;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
 #plDlg{position:fixed;inset:0;background:#0008;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px}#plDlg[hidden]{display:none}
 #plDlg .card{width:100%;max-width:460px;max-height:92vh;overflow:auto;margin:0}#plDlg select,#plDlg input{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit;background:var(--bg);color:var(--tx)}
 /* ---- kantoor op de computer (v169) ---- */
@@ -148,7 +216,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="er" id="le" role="alert"></div><div class="ok" id="lok" style="margin-top:10px;font-size:14px"></div>
  </div>
  <div class="card" id="msg" hidden></div>
- <nav class="tabs" id="tabs" hidden><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="b">Bonnen klaarzetten</button><button type="button" data-tab="k">Klanten</button><button type="button" data-tab="p">Planning</button><button type="button" data-tab="z">Zoeken</button><button type="button" data-tab="a">Aandacht<span class="dot" id="adot" hidden></span></button><button type="button" data-tab="r">Rooster</button><button type="button" data-tab="i">Instellingen</button><button type="button" data-tab="s">Systeem<span class="dot" id="sdot" hidden></span></button><button type="button" data-tab="f">Info</button><a class="kpl" href="https://mit-kantoor.web.app/" target="_blank" rel="noopener">Kantoor-app ↗</a></nav>
+ <nav class="tabs" id="tabs" hidden><button type="button" data-tab="d">Dashboard</button><button type="button" class="on" data-tab="u">Gebruikers</button><button type="button" data-tab="b">Bonnen klaarzetten</button><button type="button" data-tab="k">Klanten</button><button type="button" data-tab="p">Planning</button><button type="button" data-tab="z">Zoeken</button><button type="button" data-tab="a">Aandacht<span class="dot" id="adot" hidden></span></button><button type="button" data-tab="r">Rooster</button><button type="button" data-tab="i">Instellingen</button><button type="button" data-tab="s">Systeem<span class="dot" id="sdot" hidden></span></button><button type="button" data-tab="f">Info</button><a class="kpl" href="https://mit-kantoor.web.app/" target="_blank" rel="noopener">Kantoor-app ↗</a></nav>
  <div id="list" hidden>
   <div class="tiles" id="tiles"></div>
   <div class="tools"><input id="q" type="search" placeholder="Zoek op naam of e-mailadres…"><button class="btn" id="rf" type="button">Vernieuwen</button></div>
@@ -211,6 +279,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="card"><b>Beheer en techniek</b><p class="mu" style="margin:2px 0 4px">Inloggen met het Google-account van MIT (Firebase/Google Cloud) of het eigen account van die dienst.</p><div class="br"><span style="min-width:0;flex:1"><b>Firebase console</b><br><a href="https://console.firebase.google.com/project/backup-loonlijst-werkbon-mit/overview" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://console.firebase.google.com/project/backup-loonlijst-werkbon-mit/overview</a><div class="mu" style="font-size:13px">Accounts (Authentication), database (Firestore), App Check, Hosting en de servercode (Functions).</div></span><button class="btn sm" type="button" data-cp="https://console.firebase.google.com/project/backup-loonlijst-werkbon-mit/overview">Kopiëren</button></div><div class="br"><span style="min-width:0;flex:1"><b>Google Cloud console</b><br><a href="https://console.cloud.google.com/home/dashboard?project=backup-loonlijst-werkbon-mit" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://console.cloud.google.com/home/dashboard?project=backup-loonlijst-werkbon-mit</a><div class="mu" style="font-size:13px">Serviceaccount en rechten (IAM), reCAPTCHA-sleutel, kosten en budget (Billing), logboeken.</div></span><button class="btn sm" type="button" data-cp="https://console.cloud.google.com/home/dashboard?project=backup-loonlijst-werkbon-mit">Kopiëren</button></div><div class="br"><span style="min-width:0;flex:1"><b>GitHub (broncode en publiceren)</b><br><a href="https://github.com/afvanderhulst-rgb/loonlijst-werbon" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://github.com/afvanderhulst-rgb/loonlijst-werbon</a><div class="mu" style="font-size:13px">Hier staat de app. Tabblad Actions: zien of een nieuwe versie goed is gepubliceerd (groen vinkje).</div></span><button class="btn sm" type="button" data-cp="https://github.com/afvanderhulst-rgb/loonlijst-werbon">Kopiëren</button></div><div class="br"><span style="min-width:0;flex:1"><b>Brevo (mail versturen)</b><br><a href="https://app.brevo.com/" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://app.brevo.com/</a><div class="mu" style="font-size:13px">Verstuurt de werkbonnen naar kantoor, de weeklijsten en de bevestigingsmails.</div></span><button class="btn sm" type="button" data-cp="https://app.brevo.com/">Kopiëren</button></div><div class="br"><span style="min-width:0;flex:1"><b>Cloudflare (mail ontvangen, mit-werkbon.com)</b><br><a href="https://dash.cloudflare.com/" target="_blank" rel="noopener" style="overflow-wrap:anywhere">https://dash.cloudflare.com/</a><div class="mu" style="font-size:13px">Domein mit-werkbon.com: Email Routing en de Worker voor klaarzetten per mail en agenda@.</div></span><button class="btn sm" type="button" data-cp="https://dash.cloudflare.com/">Kopiëren</button></div></div>
   <div class="card"><b>Mailadressen van de app</b><div class="br"><span><b>rooster@mit-werkbon.com</b><div class="mu" style="font-size:13px">Het storingsrooster (PDF) hierheen mailen: wordt meteen gepubliceerd voor alle collega's. Vorige versie terugzetten: kantoor-app &gt; Rooster.</div></span></div><div class="br"><span><b>agenda@mit-werkbon.com</b><div class="mu" style="font-size:13px">De agenda-PDF van de planner hierheen mailen: komt in de planning van de monteurs.</div></span></div><div class="br"><span><b>&lt;monteur&gt;@mit-werkbon.com</b><div class="mu" style="font-size:13px">Werkbon-PDF klaarzetten voor die monteur. De adressen staan in de kantoor-app bij Bonnen klaarzetten.</div></span></div></div>
  </div>
+ <div id="dlist" hidden></div>
  <div id="zlist" hidden>
   <div class="card"><b>Zoeken in alle bonnen</b><p class="mu" style="margin:4px 0 8px">Zoek op werkbonnummer, projectnummer, klant, adres, plaats, telefoon, monteur of datum (bijv. 23-11 of 23-11-2026). Werkbon-PDF's worden 7 jaar bewaard; agenda en gegevens van verstuurde werkbonnen blijven altijd staan. Meerdere woorden mag: "kerkstraat jan". Klik op een bon voor details, de verstuurde werkbon (PDF met foto's en bijlagen) en "Correctie vragen".</p>
    <div class="plz"><input id="zQ" type="search" placeholder="Bonnummer, klant, adres, monteur, datum…" autocomplete="off"><select id="zQo" class="mu" style="padding:8px;border:1px solid var(--bd);border-radius:8px;font:inherit;font-size:14px;background:var(--bg);color:var(--tx)"><option value="0">laatste 2 maanden</option><option value="1">laatste jaar</option><option value="99">alle jaren</option></select></div><div id="zR"></div></div>
@@ -352,7 +421,7 @@ auth.onAuthStateChanged(async function(u){
  ROLE='admin';
  var isK=false;if(KP||(ADMIN&&!isAdm(u.email))){try{isK=(await db.collection('kantoor').doc(String(u.email).toLowerCase()).get()).exists}catch(x){}}
  if(KP){if(!isK&&!isAdm(u.email)){show('<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') staat niet in de lijst met kantoor-collega\'s. Vraag een kantoor-collega (kantoor-app &gt; tandwiel &gt; Toegang) of de beheerder ('+ee(ADMIN)+') om je toe te voegen. Daarna opnieuw inloggen.</p><p><button class="btn" type="button" onclick="document.getElementById(\'out\').click()">Uitloggen</button></p>');return}
-  ROLE='kantoor';if(!/^[brpza]$/.test(TAB))TAB='b';$('who').textContent='Kantoor · '+u.email;$('kset').hidden=false;uitStart()}
+  ROLE='kantoor';if(!/^[dbrpza]$/.test(TAB))TAB='d';$('who').textContent='Kantoor · '+u.email;$('kset').hidden=false;uitStart()}
  else if(ADMIN&&!isAdm(u.email)){
   show(isK?'<b>Gebruik de kantoorpagina</b><p class="mu">Bonnen klaarzetten en het storingsrooster staan op een eigen pagina.</p><p><a class="btn pr" href="https://mit-kantoor.web.app/" style="text-decoration:none;display:inline-block">Naar de kantoor-app</a></p>':'<b>Geen toegang.</b><p class="mu">Dit account ('+ee(u.email)+') heeft geen toegang tot deze pagina.</p>');return}
  try{await u.reload()}catch(x){}
@@ -363,10 +432,10 @@ auth.onAuthStateChanged(async function(u){
   return}
  load()});
 
-var TAB=KP?'b':'u',TABK=KP?'kt:tab':'bh:tab',PLANON=false;try{var _t=sessionStorage.getItem(TABK);if((KP?/^[brpza]$/:/^[uksif]$/).test(_t||''))TAB=_t}catch(e){}
+var TAB=KP?'d':'u',TABK=KP?'kt:tab':'bh:tab',PLANON=false;try{var _t=sessionStorage.getItem(TABK);if((KP?/^[dbrpza]$/:/^[uksif]$/).test(_t||''))TAB=_t}catch(e){}
 function planMag(){return PLANON||isAdm(auth&&auth.currentUser&&auth.currentUser.email)}
-function showTab(){[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x.dataset.tab===TAB);if(x.dataset.tab===TAB&&x.scrollIntoView)try{x.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}if(!x.dataset.tab){x.hidden=KP;return}x.hidden=(ROLE==='kantoor'&&!/^[brpza]$/.test(x.dataset.tab))||(x.dataset.tab==='p'&&!planMag())||(!KP&&/^[brpza]$/.test(x.dataset.tab))});if(TAB==='p'&&!planMag())TAB='b';if(!KP&&/^[brpza]$/.test(TAB))TAB='u';$('plist').hidden=TAB!=='p';document.body.classList.toggle('wide',TAB==='p');$('list').hidden=TAB!=='u';$('ilist').hidden=TAB!=='i';$('slist').hidden=TAB!=='s';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';$('blist').hidden=TAB!=='b';$('flist').hidden=TAB!=='f';$('zlist').hidden=TAB!=='z';$('alist').hidden=TAB!=='a'}
-$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b||!b.dataset.tab)return;TAB=b.dataset.tab;try{sessionStorage.setItem(TABK,TAB)}catch(e){}showTab();window.scrollTo(0,0);if(TAB==='b')loadSent();if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR();if(TAB==='p'){loadSent();drawPlan()}if(TAB==='z'||TAB==='a'){ensureData();if(TAB==='a')drawAandacht();else{try{arVul()}catch(x){}try{$('zQ').focus()}catch(x){}zoekC()}}};
+function showTab(){[].forEach.call($('tabs').children,function(x){x.classList.toggle('on',x.dataset.tab===TAB);if(x.dataset.tab===TAB&&x.scrollIntoView)try{x.scrollIntoView({block:'nearest',inline:'nearest'})}catch(e){}if(!x.dataset.tab){x.hidden=KP;return}x.hidden=(ROLE==='kantoor'&&!/^[dbrpza]$/.test(x.dataset.tab))||(x.dataset.tab==='p'&&!planMag())||(!KP&&/^[dbrpza]$/.test(x.dataset.tab))});if(TAB==='p'&&!planMag())TAB='b';if(!KP&&/^[dbrpza]$/.test(TAB))TAB='u';$('plist').hidden=TAB!=='p';document.body.classList.toggle('wide',TAB==='p');$('list').hidden=TAB!=='u';$('ilist').hidden=TAB!=='i';$('slist').hidden=TAB!=='s';$('klist').hidden=TAB!=='k';$('rlist').hidden=TAB!=='r';$('blist').hidden=TAB!=='b';$('flist').hidden=TAB!=='f';$('zlist').hidden=TAB!=='z';$('alist').hidden=TAB!=='a';$('dlist').hidden=TAB!=='d';if(TAB==='d')try{drawDash()}catch(e){}}
+$('tabs').onclick=function(e){var b=e.target.closest('button');if(!b||!b.dataset.tab)return;TAB=b.dataset.tab;try{sessionStorage.setItem(TABK,TAB)}catch(e){}showTab();window.scrollTo(0,0);if(TAB==='b')loadSent();if(TAB==='k'&&!KL.length)loadK();if(TAB==='r')loadR();if(TAB==='p'){loadSent();drawPlan()}if(TAB==='d'){ensureData();drawDash()}if(TAB==='z'||TAB==='a'){ensureData();if(TAB==='a')drawAandacht();else{try{arVul()}catch(x){}try{$('zQ').focus()}catch(x){}zoekC()}}};
 /* ---------- rooster ---------- */
 var RP=null,RFILE='',RVOR=null;
 // v202: bij publiceren de vorige versie bewaren (rooster/vorige), en terugzetten
@@ -442,6 +511,61 @@ function alert0(t){show('<b>Niet gelukt.</b><p class="mu">'+ee(t)+'</p>');setTim
   if(h!==H0&&!bar){bar=document.createElement('div');bar.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:90;max-width:560px;margin:0 auto;background:#1a147f;color:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 24px #0005;font-size:15px';
    bar.innerHTML='<span style="flex:1">Er is een nieuwe versie van deze pagina.</span><button class="btn" type="button" style="background:#fff;color:#1a147f;border-color:#fff">Vernieuwen</button>';bar.querySelector('button').onclick=function(){location.reload()};document.body.appendChild(bar)}}catch(e){}}
  chk();setInterval(chk,10*60000);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')chk()})})();
+/* ---------- v222: kantoor-app nieuwe indeling: zijbalk, bovenbalk en dashboard ---------- */
+var DUPD=0,KI={d:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',b:'<path d="M9 3h6l1 2h3v16H5V5h3z"/><path d="M9 11h6M9 15h4"/>',p:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',z:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',a:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/>',r:'<path d="M12 21s-7-4.5-7-11V5l7-3 7 3v5c0 6.5-7 11-7 11z"/>',g:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',o:'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>',bel:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/>',ok:'<path d="M20 6L9 17l-5-5"/>',klok:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',doc:'<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M9 13h6M9 17h6"/>'};
+function kIcon(k,extra){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'+(extra||'')+'>'+(KI[k]||'')+'</svg>'}
+if(KP){(function(){document.body.classList.add('kside');var nav=$('tabs'),as=document.createElement('aside');as.id='kside';
+ as.innerHTML='<div class="ksb"><img src="kantoor-192.png" alt=""><div><b>MIT</b><small>Kantoor</small></div></div>';nav.parentNode.insertBefore(as,nav);as.appendChild(nav);
+ var f=document.createElement('div');f.className='ksf';f.innerHTML='<button type="button" id="ksfI">'+kIcon('g')+'Instellingen</button><button type="button" id="ksfO">'+kIcon('o')+'Uitloggen</button><div class="kon"><i id="konI"></i><span id="konT">Online</span></div>';as.appendChild(f);
+ $('ksfI').onclick=function(){$('kset').click()};$('ksfO').onclick=function(){$('out').click()};
+ [].forEach.call(nav.querySelectorAll('button[data-tab]'),function(x){if(KI[x.dataset.tab])x.insertAdjacentHTML('afterbegin',kIcon(x.dataset.tab))});
+ var hw=document.querySelector('header .hw'),t=document.createElement('div');t.className='ktb';
+ t.innerHTML='<div class="kst"><i>'+kIcon('ok',' width="18" height="18"')+'</i><div><b id="kstT">Live verbonden</b><small id="kstS">Gegevens laden…</small></div></div><div class="ksz">'+kIcon('z')+'<input id="ksQ" type="search" placeholder="Zoeken op bonnummer, klant, adres…" autocomplete="off"></div><button type="button" class="kbel" id="kBel" title="Aandachtspunten">'+kIcon('bel')+'<span id="kBelN" hidden>0</span></button><div class="kav" id="kAv" title=""></div>';
+ hw.insertBefore(t,hw.firstChild);
+ $('ksQ').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();kNaarZoek(this.value)}};
+ $('kBel').onclick=function(){kTab('a')};
+ var st=function(){var on=navigator.onLine!==false;$('konI').style.background=on?'#3ccf7a':'#e0a030';$('konT').textContent=on?'Online':'Geen internet';kStatus()};
+ window.addEventListener('online',st);window.addEventListener('offline',st);setInterval(kStatus,30000);st()})()}
+function kTab(t){var x=document.querySelector('#tabs [data-tab="'+t+'"]');if(x)x.click()}
+function kNaarZoek(q){kTab('z');$('zQ').value=String(q||'').trim();zoekC()}
+function kStatus(){if(!KP||!$('kstT'))return;var on=navigator.onLine!==false;$('kstT').textContent=on?'Live verbonden':'Geen internet';$('kstT').style.color=on?'#16693e':'#9a5a00';
+ document.querySelector('.ktb .kst i').style.background=on?'#16a34a':'#e0a030';$('kstS').textContent=DUPD?'Bijgewerkt '+(function(){var d=new Date(DUPD);return 'vandaag '+p2(d.getHours())+':'+p2(d.getMinutes())})():'Gegevens laden…';
+ try{var u=auth.currentUser,nm=String((u&&(u.displayName||u.email))||'').split('@')[0].split(/[._\s-]+/).filter(Boolean);$('kAv').textContent=(nm.length>1?nm[0][0]+nm[1][0]:(nm[0]||'?').slice(0,2)).toUpperCase();$('kAv').title=(u&&u.email)||''}catch(e){}
+ try{var n=aItems().filter(function(x){return !AFG[x.key]}).length;$('kBelN').hidden=!n;$('kBelN').textContent=n>99?'99+':n}catch(e){}}
+function drawDash(){var el=$('dlist');if(!el||el.hidden)return;kStatus();
+ var vd=isoD(new Date()),st0=new Date();st0.setHours(0,0,0,0);var t0=st0.getTime(),y0=t0-864e5,nm=function(uid){var u=USERS.filter(function(x){return x.uid===uid})[0]||{};return u.naam||u.email||''};
+ var E=[],gz={};[].concat(BL,ZB||[]).forEach(function(e){if(gz[e.id]||!(e.dagen||[]).length)return;gz[e.id]=1;E.push(e)});
+ var vsV=E.filter(function(e){return (e.verstuurd||0)>=t0}).length+SENT.filter(function(o){return (o.verstuurd||0)>=t0&&!E.some(function(e){return e.voor===o.voor&&(o.g||{}).wb&&String(e.wb)===String((o.g||{}).wb)})}).length,
+  vsG=E.filter(function(e){return (e.verstuurd||0)>=y0&&(e.verstuurd||0)<t0}).length;
+ var bz={};E.forEach(function(e){if(!e.verstuurd&&(e.dagen||[]).some(function(d){return d.pd>=isoD(new Date(Date.now()-3*864e5))}))bz['e'+e.id]=1});
+ SENT.forEach(function(o){if(o.status==='opgehaald'&&!o.verstuurd)bz['k'+o.id]=1});AG.forEach(function(a){if(a.bezig&&!a.verstuurd&&a.pd===vd)bz['a'+a.id]=1});var nBz=Object.keys(bz).length;
+ var nA=aItems().filter(function(x){return !AFG[x.key]}).length;
+ var pl=[].concat(AG.filter(function(a){return a.pd===vd&&a.wb}),SENT.filter(function(o){return o.voor&&o.pd===vd})),plK=pl.filter(function(o){return o.verstuurd}).length;
+ var tile=function(t,ic,kl,n,l,d){return '<button type="button" class="dtile" data-dt="'+t+'"><div class="di" style="background:'+kl+'">'+kIcon(ic)+'</div><div class="dn">'+n+'</div><div class="dl">'+ee(l)+'</div>'+(d?'<div class="dd">'+d+'</div>':'')+'</button>'};
+ var dif=vsV-vsG,h='<div class="dt">'+tile('z','doc','#2f6bff',vsV,'Werkbonnen binnen vandaag',dif?'<span style="color:'+(dif>0?'#16693e':'#b3261e')+'">'+(dif>0?'↑ +':'↓ ')+dif+' t.o.v. gisteren</span>':'')+
+  tile('p','klok','#f08a1c',nBz,'Bezig, nog niet verstuurd','')+tile('a','a','#d33',nA,'Aandachtspunten open','')+
+  tile('p','ok','#16a34a',pl.length,'Afspraken vandaag',pl.length?'<span style="color:#16693e">'+plK+' afgerond</span>':'')+'</div>';
+ // aandachtspunten per groep
+ var L=aItems().filter(function(x){return !AFG[x.key]}),kl={corr:'#d33',open:'#f08a1c',klaar:'#f08a1c',nietg:'#d33',mis:'#2f6bff',mail:'#d33'};
+ var ap=AGRP.map(function(g){var n=L.filter(function(x){return x.g===g[0]}).length;return n?'<div class="dap" data-dap="1"><span style="color:'+kl[g[0]]+'">'+kIcon(g[0]==='mis'?'doc':g[0]==='open'||g[0]==='klaar'?'klok':'a',' width="20" height="20"')+'</span><span>'+ee(g[1])+'</span><span class="dn2" style="background:'+kl[g[0]]+'">'+n+'</span><span class="ch">›</span></div>':''}).join('');
+ var nKl=SENT.filter(function(o){return o.status==='klaar'&&o.voor}).length,nIn=SENT.filter(function(o){return o.status==='klaar'&&!o.voor}).length,on=navigator.onLine!==false;
+ h+='<div class="dgrid"><div class="dcard"><h3><span style="color:#d33">'+kIcon('a')+'</span>Aandachtspunten</h3>'+(ap||'<p class="ok" style="margin:6px 0">Niets om na te kijken.</p>')+'</div>'+
+  '<div class="dcard"><h3><span style="color:'+(on?'#16a34a':'#e0a030')+'">'+kIcon('ok')+'</span>'+(on?'Alles live bijgewerkt':'Geen internet')+'</h3><div class="mu" style="margin:-4px 0 8px">'+(DUPD?'Laatst bijgewerkt om '+p2(new Date(DUPD).getHours())+':'+p2(new Date(DUPD).getMinutes()):'Gegevens laden…')+'</div>'+
+  '<div class="dok"><i style="background:#16a34a">✓</i>Planning, agenda en werkbonnen werken vanzelf bij</div>'+
+  '<div class="dok"><i style="background:'+(nKl?'#f08a1c':'#16a34a')+'">'+(nKl?'!':'✓')+'</i>'+nKl+(nKl===1?' bon klaargezet, nog niet opgehaald':' bonnen klaargezet, nog niet opgehaald')+'</div>'+
+  '<div class="dok"><i style="background:'+(nIn?'#f08a1c':'#16a34a')+'">'+(nIn?'!':'✓')+'</i>'+nIn+' nog in te plannen</div>'+
+  '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" type="button" data-dt="b">Bon klaarzetten</button><button class="btn sm" type="button" data-dt="p">Naar de planning</button></div></div></div>';
+ // recente werkbonnen
+ var R=E.slice().sort(function(a,c){return (c.verstuurd||c.t||0)-(a.verstuurd||a.t||0)}).slice(0,10);
+ var pill=function(e){var c=corrVan(e.voor,e.wb);if(c&&corrOpen(c))return '<span class="dpill" style="background:#fdeaea;color:#b3261e">● Correctie gevraagd</span>';if(!e.verstuurd)return '<span class="dpill" style="background:#fff4e4;color:#9a5a00">● Bezig</span>';if(e.gereed==='nee')return '<span class="dpill" style="background:#fdeaea;color:#b3261e">● Niet gereed</span>';if(e.repm)return '<span class="dpill" style="background:#fff1e0;color:#c25e00">● Reparatiemelding</span>';return '<span class="dpill" style="background:#e3f5e8;color:#16693e">✓ Gereed</span>'};
+ h+='<div class="dcard" style="margin-bottom:16px"><h3 style="justify-content:space-between"><span style="display:flex;gap:10px;align-items:center">'+kIcon('doc')+'Recente werkbonnen</span><a class="mu" style="font-size:14px;font-weight:600;color:var(--ac);cursor:pointer" data-dt="z">Alle werkbonnen →</a></h3>'+
+  (R.length?'<div class="scroll"><table class="dtab"><thead><tr><th>Nr.</th><th>Klant</th><th class="hm">Monteur</th><th class="hm">Datum</th><th>Status</th><th></th></tr></thead><tbody>'+R.map(function(e){var d=(e.dagen||[]).map(function(x){return x.pd}).sort().pop();
+   return '<tr><td><b>'+ee(e.wb||e.pr||'–')+'</b></td><td>'+ee(e.klant||'')+(e.plaats?'<div class="mu" style="font-size:12px">'+ee(String(e.plaats).replace(/^\d{4}\s*[A-Z]{2}\s*/,''))+'</div>':'')+'</td><td class="hm">'+ee(nm(e.voor))+'</td><td class="hm">'+ee(d?pdTxt({pd:d}):'')+'</td><td>'+pill(e)+'</td><td style="text-align:right"><button class="btn sm" type="button" data-deb="'+ee(e.id)+'">Bekijken ›</button></td></tr>'}).join('')+'</tbody></table></div>':'<p class="mu">Nog geen werkbonnen van de laatste 70 dagen.</p>')+'</div>';
+ h+='<div class="dtip">'+kIcon('z',' width="20" height="20" style="color:var(--ac);flex:none"')+'<span><b>Tip:</b> zoek op werkbonnummer, projectnummer, klantnaam of adres in het zoekvak bovenaan.</span> <a data-dt="z">Zoek nu →</a></div>';
+ el.innerHTML=h;
+ el.querySelectorAll('[data-dt]').forEach(function(x){x.onclick=function(){kTab(x.dataset.dt)}});
+ el.querySelectorAll('[data-dap]').forEach(function(x){x.onclick=function(){kTab('a')}});
+ el.querySelectorAll('[data-deb]').forEach(function(x){x.onclick=function(){ebInfo(x.dataset.deb)}})}
 /* ---------- foutenlogboek ---------- */
 async function loadErr(){var el=$('errL');if(!el)return;el.innerHTML='<p class="mu">Laden…</p>';ERRN={};
  try{var q=await db.collection('foutlog').orderBy('t','desc').limit(500).get(),oud=Date.now()-90*864e5,wk=Date.now()-7*864e5;
@@ -642,7 +766,7 @@ function daIso(da){var m=/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/.exec(String(da||'').t
 function plKl(o){return o.verstuurd?(o.gereed==='nee'?'n':'k'):(o.status==='opgehaald'||o.bezig?'z':'')}
 function plGr(o){return o.verstuurd?(o.gereed==='nee'?' · NIET GEREED':o.gereed==='ja'?' · GEREED':'')+(o.repm?' · REPARATIEMELDING':''):''}
 function plKort(o){var g=o.g||{},a=String(g.wadres||'').split(NL);return (a[0]||o.bestand||'')+(a[2]?', '+String(a[2]).replace(/^\d{4}\s*[A-Z]{2}\s*/,''):'')}
-function drawPlan(){try{aDot();if(TAB==='a')drawAandacht();if(TAB==='z'&&String(($('zQ')||{}).value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT2);ZT2=setTimeout(zoekC,400)}}catch(e){}var gr=$('plGrid');if(!gr||$('plist').hidden)return;loadCorr();try{if(String($('plQ').value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT);ZT=setTimeout(zoek,300)}}catch(e){}
+function drawPlan(){try{aDot();DUPD=Date.now();if(TAB==='d')drawDash();if(TAB==='a')drawAandacht();if(TAB==='z'&&String(($('zQ')||{}).value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT2);ZT2=setTimeout(zoekC,400)}}catch(e){}var gr=$('plGrid');if(!gr||$('plist').hidden)return;loadCorr();try{if(String($('plQ').value||'').trim().length>1&&$('plDlg').hidden){clearTimeout(ZT);ZT=setTimeout(zoek,300)}}catch(e){}
  $('plOff').textContent=PLANON?'':'Nog uit: alleen jij ziet de planning. Aanzetten: beheer.html > Instellingen.';
  var ma=maandagVan(PLW),dagen=[];for(var i=0;i<6;i++){var d=new Date(ma);d.setDate(ma.getDate()+i);dagen.push(d)}
  var za=dagen[5];$('plWk').textContent='Week '+weekNr(ma)+' · '+ma.getDate()+'-'+(ma.getMonth()+1)+' t/m '+za.getDate()+'-'+(za.getMonth()+1)+'-'+za.getFullYear();
@@ -1104,7 +1228,7 @@ $('blb').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\
 async function load(){show('');$('tabs').hidden=false;showTab();if(TAB==='r')loadR();$('users').innerHTML='<p class="mu">Laden…</p>';
  try{var _ia=await db.collection('instellingen').doc('app').get(),_io=_ia.exists?(_ia.data()||{}):{};PLANON=!!_io.planAan;UITU=_io.kantoorUitlog==null?5:+_io.kantoorUitlog||0}catch(e){}showTab();
  if(KP&&ROLE==='kantoor'){uitChk();var _e=uitTijd();if(_e)$('who').textContent='Kantoor · '+auth.currentUser.email+' · automatisch uitloggen om '+p2(new Date(_e).getHours())+':'+p2(new Date(_e).getMinutes())}
- if(ROLE==='kantoor'){$('blogc').hidden=true;setTimeout(function(){try{ensureData()}catch(e){}},1500);try{await auth.currentUser.getIdToken(true);var qk=await db.collection('monteurs').get();USERS=qk.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o})}catch(e){show('<b>Kon de monteurs niet laden.</b><p class="mu">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</p>')}renderNew();loadSent();return}
+ if(ROLE==='kantoor'){$('blogc').hidden=true;setTimeout(function(){try{ensureData()}catch(e){}},TAB==='d'?50:1500);try{await auth.currentUser.getIdToken(true);var qk=await db.collection('monteurs').get();USERS=qk.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o})}catch(e){show('<b>Kon de monteurs niet laden.</b><p class="mu">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</p>')}renderNew();loadSent();return}
  try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();
   USERS=q.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o}).sort(function(a,b){return (b.last||0)-(a.last||0)});await loadBlock();await loadToe();await loadErr();render();drawAc();loadMail();loadKeep();loadKantoor();renderNew();syncMon();$('blogc').hidden=false;try{window.mitSecDraw()}catch(x){}}
  catch(e){$('users').innerHTML='<div class="card er">'+ee(err(e))+'</div>'}

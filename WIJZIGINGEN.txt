@@ -3,6 +3,13 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+AFSPRAKEN VERDWENEN EVEN TIJDENS HET BIJWERKEN (v223)
+- Tijdens het bijwerken van Mijn planning (bij openen en elke paar minuten) werd de lijst eerst geleegd en kwamen de
+  agenda-afspraken er pas weer bij als ze van de server binnen waren. Werd het scherm in die paar seconden getekend, dan
+  waren de afspraken even weg. Lukte het ophalen halverwege niet, dan bleven ze weg tot de volgende keer.
+  Nu wordt de nieuwe planning apart opgehaald en pas aan het eind in één keer vervangen; mislukt het, dan blijft de
+  vorige planning staan.
+
 PER WEEK EEN NIEUWE BON BIJ EEN AFSPRAAK (v222)
 - Stond in Mijn planning een afspraak met een bonnummer dat in een eerdere week ook al op een bon stond, dan opende
   "Werkbon openen" de oude bon (en stond de afspraak op "Bezig"). Nu hoort een bon bij één week (zaterdag t/m vrijdag,

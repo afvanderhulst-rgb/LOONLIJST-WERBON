@@ -3,6 +3,14 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+KANTOOR-APP: NIEUWE INDELING MET DASHBOARD (kantoor, 25-11-2026)
+- Op de computer een donkerblauwe zijbalk met menu (Dashboard, Bonnen klaarzetten, Planning, Zoeken, Aandacht, Rooster),
+  onderin Instellingen, Uitloggen en de online-status. Bovenaan een witte balk met "Live verbonden / bijgewerkt", een
+  zoekvak (Enter = zoeken op bonnummer, klant of adres), een belletje met het aantal open aandachtspunten en je initialen.
+- Nieuw tabblad Dashboard (startpagina): tegels "binnen vandaag" (t.o.v. gisteren), "bezig, nog niet verstuurd",
+  "aandachtspunten open" en "afspraken vandaag"; aandachtspunten per soort; statusblok; recente werkbonnen met Bekijken.
+- Op een telefoon blijven de tabbladen bovenaan, met Dashboard vooraan. Beheer en de werkbon-app zijn niet veranderd.
+
 MIJN PLANNING BLIJFT STAAN ALS HET INTERNET WEGVALT (v221)
 - Viel het internet weg terwijl de app open was, dan verdween de hele planning (en kwam pas terug met internet). Oorzaak:
   zonder verbinding geeft de database geen fout maar een lege lijst, en die werd als "geen afspraken" getoond en bewaard.

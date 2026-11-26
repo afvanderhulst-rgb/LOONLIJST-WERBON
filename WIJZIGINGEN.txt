@@ -3,6 +3,10 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+WEEKLIJST: DAGTOTAAL ZONDER REISUREN (v227)
+- Het urentotaal rechtsboven bij elke dag op de weeklijst telt nu alleen gewone uren, overuren en diversen (verlof, ziek,
+  ADV). Reisuren tellen niet meer mee. Het weektotaal onderaan en de PDF veranderen niet.
+
 VAAK GEBRUIKTE MATERIALEN WEER WEG (v226)
 - Het rijtje "Vaak gebruikt" bij Materialen (v224) is weggehaald: te onoverzichtelijk. Materialen invullen gaat weer zoals
   voorheen (bij het typen van de omschrijving verschijnen eerder gebruikte materialen als suggestie).

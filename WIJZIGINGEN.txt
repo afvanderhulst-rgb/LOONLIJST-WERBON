@@ -3,6 +3,12 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+AGENDA VERDWEEN NOG STEEDS EVEN (v225)
+- Ging het ophalen van de agenda mis met een andere fout dan "geen internet" (bijv. een time-out op een zwak mobiel
+  netwerk), dan werd de planning zonder agenda-afspraken getoond tot de volgende ronde (een paar minuten later kwamen ze
+  terug). Nu blijven de afspraken van de vorige keer staan en komt de fout in beheer > Systeem > Foutenlogboek
+  (soort "planning", "Agenda ophalen mislukt: ...").
+
 SNELLER INVULLEN + MIJN PLANNING OP DE GOEDE WEEK (v224)
 - Reistijd sluit aan: kies je bij Uren een datum waarop al een bon staat (en zijn aanvang reistijd en werktijd nog leeg),
   dan zet de app de aanvang reistijd op de eindtijd van de vorige bon die dag, met een melding. Gewoon aan te passen.

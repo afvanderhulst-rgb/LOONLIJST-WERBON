@@ -3,6 +3,12 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+MAP TOOLS OP HET STARTSCHERM (v228)
+- Onder de kaart Storingsdienst staat een map "Tools" (tik om open of dicht te klappen; wordt onthouden).
+  Daarin: "Verlof, ADV en ziek" (stond eerst bij het tandwieltje). Het overzicht zelf is hetzelfde gebleven, met onderaan
+  "Alle dagen in <jaar>": elke dag met verlof, ADV of ziek en het aantal uren.
+- Zichtbaar voor wie het overzicht mag zien (beheerder, of iedereen als het in beheer > Instellingen aan staat).
+
 WEEKLIJST: DAGTOTAAL ZONDER REISUREN (v227)
 - Het urentotaal rechtsboven bij elke dag op de weeklijst telt nu alleen gewone uren, overuren en diversen (verlof, ziek,
   ADV). Reisuren tellen niet meer mee. Het weektotaal onderaan en de PDF veranderen niet.

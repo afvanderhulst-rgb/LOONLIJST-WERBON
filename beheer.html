@@ -114,6 +114,7 @@ button.tile{cursor:pointer}button.tile:hover{border-color:var(--ac)}
 
 /* ---- v222: kantoor-app nieuwe indeling (zijbalk, bovenbalk, dashboard) ---- */
 .ksb,.ksf,.ktb{display:none}
+#hbNew,#hbNew2{white-space:normal;text-align:left}
 .plw>*{min-width:0}
 .tabs button svg{width:18px;height:18px;vertical-align:-4px;margin-right:6px;flex:none}
 #dlist .dt{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
@@ -526,6 +527,11 @@ if(KP){(function(){document.body.classList.add('kside');var nav=$('tabs'),as=doc
  $('kBel').onclick=function(){kTab('a')};
  var st=function(){var on=navigator.onLine!==false;$('konI').style.background=on?'#3ccf7a':'#e0a030';$('konT').textContent=on?'Online':'Geen internet';kStatus()};
  window.addEventListener('online',st);window.addEventListener('offline',st);setInterval(kStatus,30000);st()})()}
+/* v226: telefoon die de kantoor-app als "desktopsite" toont (alles breder dan het scherm): uitleggen hoe je dat uitzet */
+if(KP){(function(){try{var tch=('ontouchstart' in window)||navigator.maxTouchPoints>0,sw=Math.min(screen.width,screen.height),iw=window.innerWidth;
+ if(!(tch&&sw<=900&&iw>sw*1.25&&!/iPad|iPhone|Macintosh/.test(navigator.userAgent)))return;var el=document.createElement('div');el.className='card';el.style.cssText='border:2px solid #b3402f;background:#b3402f12;font-size:16px';
+ el.innerHTML='<b style="font-size:18px">De kantoor-app staat op "desktopsite"</b><br>Daardoor is de pagina breder dan je scherm. Zo zet je het uit:<ol style="margin:8px 0 6px 20px;padding:0"><li>Open <b>Chrome</b>.</li><li>Tik rechtsboven op <b>⋮</b> &gt; <b>Instellingen</b> &gt; <b>Site-instellingen</b> &gt; <b>Desktopsite</b>.</li><li>Zet het <b>uit</b> (of haal mit-kantoor.web.app uit de uitzonderingen).</li><li>Sluit de kantoor-app helemaal af en open hem opnieuw.</li></ol>Staat er in Chrome bij ⋮ een vinkje bij <b>Desktopsite</b>? Haal dat ook weg.';
+ var m=document.querySelector('main');m.insertBefore(el,m.firstChild)}catch(e){}})()}
 function kTab(t){var x=document.querySelector('#tabs [data-tab="'+t+'"]');if(x)x.click()}
 function kNaarZoek(q){kTab('z');$('zQ').value=String(q||'').trim();zoekC()}
 function kStatus(){if(!KP||!$('kstT'))return;var on=navigator.onLine!==false;$('kstT').textContent=on?'Live verbonden':'Geen internet';$('kstT').style.color=on?'#16693e':'#9a5a00';
@@ -661,7 +667,7 @@ $('blog').onclick=loadBlog;
 // v188: deze accounts (test/beheer) komen niet in de planning en de agenda
 var PLAN_NIET=['a.f.vanderhulst@gmail.com'];
 function planMonteurs(){return monteurs().filter(function(u){return PLAN_NIET.indexOf(String(u.email||'').toLowerCase())<0})}
-function monteurs(){return USERS.filter(function(u){return u.email}).slice().sort(function(a,b){return uLabel(a).localeCompare(uLabel(b))})}
+function monteurs(){return USERS.filter(function(u){return u.email&&PLAN_NIET.indexOf(String(u.email).toLowerCase())<0}).slice().sort(function(a,b){return uLabel(a).localeCompare(uLabel(b))})}
 function opts(sel){return '<option value="">Kies monteur…</option>'+monteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===sel?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')}
 function gTitle(g,name){var a=String((g&&g.wadres)||'').split(NL);return (g&&g.wb?'Werkbon '+g.wb:name)+(a[0]?' · '+a[0]:'')}
 function gSub(g){var a=String((g&&g.wadres)||'').split(NL);return [a[1],a[2]].filter(Boolean).join(', ')+(g&&g.da?' · afspraak '+g.da+(g.tijd?' '+g.tijd:''):'')}

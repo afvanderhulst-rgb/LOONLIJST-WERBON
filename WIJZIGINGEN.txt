@@ -3,6 +3,10 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+VAAK GEBRUIKTE MATERIALEN WEER WEG (v226)
+- Het rijtje "Vaak gebruikt" bij Materialen (v224) is weggehaald: te onoverzichtelijk. Materialen invullen gaat weer zoals
+  voorheen (bij het typen van de omschrijving verschijnen eerder gebruikte materialen als suggestie).
+
 KANTOOR-APP: TESTACCOUNT WEG UIT DE LIJSTEN + DESKTOPSITE-MELDING (kantoor, 26-11-2026)
 - Het testaccount (lijst PLAN_NIET in beheer.html) staat nergens meer in de kantoor-app: niet bij "Klaarzetten per mail",
   niet bij het kiezen of verplaatsen van een monteur, niet in het archief (stond al niet in de planning). Het account zelf

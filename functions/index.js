@@ -283,11 +283,14 @@ exports.mailKantoor = onRequest({
   const soort = b.soort === 'weeklijst' ? 'weeklijst' : b.soort === 'klant' ? 'klant' : 'werkbon';
   let aan = tekst(b.to, 200).trim();
   // vast kantooradres van de beheerder gaat altijd voor (alleen bij werkbonnen; de weeklijst gaat naar de leidinggevende)
-  let vast = '';
+  let vast = '', ccMag = true;
   if (soort === 'werkbon') try {
     const inst = await db.doc('instellingen/app').get();
-    if (inst.exists && inst.get('kantoorVast') === true) vast = tekst(inst.get('kantoorAdres') || 'storingen@mit-installatietechniek.com', 200).trim();
-  } catch (e) { logger.warn('instellingen lezen', e); }
+    // v229: standaard ALTIJD naar het kantooradres; alleen als de beheerder het vrijgeeft (kantoorVrij) kiest de monteur zelf. CC alleen als ccAan.
+    const io = inst.exists ? inst.data() : {};
+    if (io.kantoorVrij !== true) vast = tekst(io.kantoorAdres || 'storingen@mit-installatietechniek.com', 200).trim();
+    ccMag = io.ccAan === true;
+  } catch (e) { logger.warn('instellingen lezen', e); vast = 'storingen@mit-installatietechniek.com'; }
   if (vast && !MAIL_RE.test(vast)) vast = '';
   if (vast) aan = vast;
   // v204: werkbon naar de KLANT: elk geldig adres, maar onderwerp en tekst maakt de server zelf (geen vrije tekst), antwoorden gaan naar kantoor
@@ -321,7 +324,7 @@ exports.mailKantoor = onRequest({
     } catch (e) { logger.warn('mailuit (fout) schrijven', e); }
     return fout(code, msg);
   };
-  const ccIn = soort !== 'klant' && Array.isArray(b.cc) ? b.cc : [];
+  const ccIn = soort !== 'klant' && ccMag && Array.isArray(b.cc) ? b.cc : [];
   if (ccIn.length > MAX_CC) return mislukt(400, 'CC: maximaal ' + MAX_CC + ' adressen.');
   const cc = [], gezien = new Set([aan.toLowerCase(), em.toLowerCase()]);
   for (const x of ccIn) {

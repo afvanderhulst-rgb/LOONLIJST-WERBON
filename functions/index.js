@@ -581,7 +581,7 @@ async function verwerkRoosterMail(m, van, logRef) {
     '- bij calamiteiten: ' + (D.calamiteiten.map((c) => c.naam).join(', ') || 'geen') + '\n' +
     (zonderTel.length ? '\nLet op: zonder telefoonnummer: ' + zonderTel.join(', ') + '. Vul het aan in de kantoor-app > Rooster.\n' : '') +
     ((r.fouten || []).concat(fouten).length ? '\nLet op:\n- ' + (r.fouten || []).concat(fouten).join('\n- ') + '\n' : '') +
-    '\nKlopt er iets niet? Kantoor-app > Rooster: daar kun je de vorige versie terugzetten, of de PDF opnieuw inlezen en aanpassen.\n\nMIT Werkbon\n(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)');
+    '\nKlopt er iets niet? Kantoor-app > Rooster: daar kun je de PDF opnieuw inlezen en aanpassen.\n\nMIT Werkbon\n(Verstuurd met de MIT Werkbon-app. Dit mailadres wordt niet beantwoord.)');
   return 'rooster';
 }
 

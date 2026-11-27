@@ -237,7 +237,7 @@ exports.pushPlan = onSchedule({schedule: 'every 15 minutes', timeZone: 'Europe/A
      aan        kantooradres; alleen adressen op de domeinen hieronder (tegen misbruik).
                 Staat op beheer.html "Altijd naar vast adres" aan (instellingen/app: kantoorVast + kantoorAdres),
                 dan gaat de mail ALTIJD naar dat adres, wat de app ook stuurt.
-     CC         tot 3 extra adressen die de monteur invult (zelfde domeinen) + altijd de monteur zelf;
+     CC         tot 3 extra adressen die de monteur invult (alleen als de beheerder CC toestaat); de monteur zelf niet meer (v231);
                 "Beantwoorden" gaat naar de monteur
    BREVO_API_KEY is een API-sleutel van Brevo (Settings > SMTP & API > API Keys), GEEN SMTP-sleutel. */
 const AFZENDER = {name: 'MIT Werkbon', email: 'noreply@mit-werkbon.com'};
@@ -400,7 +400,7 @@ exports.mailKantoor = onRequest({
     mail.htmlContent = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222"><div style="white-space:pre-wrap">' + t + '</div></div>';
   }
   if (soort === 'klant') { if (aan.toLowerCase() !== em.toLowerCase()) mail.bcc = [{email: em, name: naam || em}]; } // monteur krijgt een stille kopie
-  else if (aan.toLowerCase() !== em.toLowerCase()) cc.push({email: em, name: naam || em});
+  // v231: werkbon naar kantoor en weeklijst: de monteur krijgt geen kopie meer (klant: stille kopie blijft)
   if (cc.length) mail.cc = cc;
   let r, j = {};
   try {

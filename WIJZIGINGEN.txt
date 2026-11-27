@@ -3,6 +3,11 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+KANTOOR-APP: AANDACHT OOK OVER 3 MAANDEN OF EEN JAAR (kantoor, 27-11-2026)
+- Aandacht: keuzelijst "Laatste 30 dagen / Laatste 3 maanden / Laatste jaar" (onthouden). Geldt voor de aandachtspunten en
+  de lijst Gereed. Oudere bonnen worden eenmalig opgehaald. Het getal en het rode bolletje in het menu blijven 30 dagen.
+- "Afgehandeld" wordt nu 400 dagen onthouden (was 120), zodat oude punten niet terugkomen.
+
 KANTOOR-APP: AANDACHT FILTEREN OP SOORT + LIJST GEREED (kantoor, 27-11-2026)
 - Aandacht: tweede keuzelijst "Alle soorten" / Niet gereed / Reparatiemelding / Correctie gevraagd / Gepland, geen werkbon /
   Klaargezet, niet opgehaald / Ontbrekende gegevens / Gereed. Werkt samen met de keuze per monteur; beide worden onthouden.

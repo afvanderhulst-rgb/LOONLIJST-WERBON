@@ -370,9 +370,9 @@ try{var F=await window.mitFB();auth=F.auth;db=F.db;show('')}catch(e){show('<b>Fi
 /* v190: kantoor-app op een eigen adres; op mit-werkbon.web.app/kantoor.html een verwijzing ernaartoe */
 var KURL='https://mit-kantoor.web.app/';
 if(window.MIT_KP_SITE&&'serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js')}catch(e){}}
-if(KP&&!window.MIT_KP_SITE){try{var kb=document.createElement('div');kb.className='card';kb.style.cssText='border:2px solid var(--ac);background:var(--ac2)';
- kb.innerHTML='<b>Kantoor heeft nu een eigen app</b><p class="mu" style="margin:4px 0 8px">Open <a href="'+KURL+'">mit-kantoor.web.app</a> en installeer hem daar (knop "Installeren als programma" of het installeer-icoon in de adresbalk). Hier blijft alles ook gewoon werken.</p><a class="btn pr" href="'+KURL+'" style="text-decoration:none;display:inline-block">Naar de kantoor-app</a>';
- document.querySelector('main').insertBefore(kb,document.querySelector('main').firstChild)}catch(e){}}
+if(KP&&!window.MIT_KP_SITE){try{var kBan=document.createElement('div');kBan.className='card';kBan.style.cssText='border:2px solid var(--ac);background:var(--ac2)';
+ kBan.innerHTML='<b>Kantoor heeft nu een eigen app</b><p class="mu" style="margin:4px 0 8px">Open <a href="'+KURL+'">mit-kantoor.web.app</a> en installeer hem daar (knop "Installeren als programma" of het installeer-icoon in de adresbalk). Hier blijft alles ook gewoon werken.</p><a class="btn pr" href="'+KURL+'" style="text-decoration:none;display:inline-block">Naar de kantoor-app</a>';
+ document.querySelector('main').insertBefore(kBan,document.querySelector('main').firstChild)}catch(e){}}
 /* installeren als programma (kantoor) */
 var INSTP=null;window.addEventListener('beforeinstallprompt',function(e){if(!KP)return;e.preventDefault();INSTP=e;$('inst').hidden=false});
 $('inst').onclick=async function(){if(!INSTP)return;INSTP.prompt();try{await INSTP.userChoice}catch(e){}INSTP=null;$('inst').hidden=true};
@@ -639,12 +639,17 @@ async function readBon(file){var o={file:file,name:file.name,size:file.size,g:nu
  try{if(file.size>15*1024*1024)throw new Error('Bestand is groter dan 15 MB.');var buf=await file.arrayBuffer();if(String.fromCharCode.apply(null,new Uint8Array(buf.slice(0,5)))!=='%PDF-')throw new Error('Dit is geen echte PDF (de inhoud past niet bij .pdf).');o.b64=b64(buf);
   await loadPdfjs();var d=await pdfjsLib.getDocument({isEvalSupported:false,data:new Uint8Array(buf)}).promise,pg=await d.getPage(1),vp=pg.getViewport({scale:1}),tc=await pg.getTextContent();
   var it=tc.items.filter(function(i){return i.str&&i.str.trim()}).map(function(i){var p=vp.convertToViewportPoint(i.transform[4],i.transform[5]);return{s:i.str,x:p[0]*924/vp.width,y:p[1]*1307/vp.height}});
-  o.g=parseSR(it);if(!it.length)o.err='Deze PDF bevat geen leesbare tekst (een scan?). De monteur krijgt hem wel, maar moet de gegevens zelf invullen.';
+  o.g=parseSR(it);
+  // v234: is dit de agenda van de planner (geen werkbon)? Dan als agenda inlezen in plaats van klaarzetten
+  if(it.length&&!o.g.wb&&window.mitAgenda){try{var it2=tc.items.filter(function(i){return i.str&&i.str.trim()}).map(function(i){var q=vp.convertToViewportPoint(i.transform[4],i.transform[5]);return {s:i.str,x:q[0],y:q[1],w:i.width}});if(window.mitAgenda.leesAgenda([{w:vp.width,h:vp.height,items:it2}]).regels.some(function(r){return r.pt&&(r.wb||r.klant)}))o.agenda=true}catch(e){}}
+  if(!it.length)o.err='Deze PDF bevat geen leesbare tekst (een scan?). De monteur krijgt hem wel, maar moet de gegevens zelf invullen.';
   else if(!o.g.wb)o.err='Geen werkbonnummer gevonden. Is dit wel een werkbon? Je kunt hem toch klaarzetten.'}
  catch(e){o.err=(e&&e.message)||String(e)}return o}
 async function addBonFiles(list){var fs=[].slice.call(list||[]).filter(function(f){return /pdf/i.test(f.type)||/\.pdf$/i.test(f.name)});
  if(!fs.length){alert0('Alleen PDF-bestanden. Sla een bijlage uit Outlook eerst op en sleep dan het bestand.');return}
- $('bnew').innerHTML='<p class="mu">Lezen…</p>';for(var i=0;i<fs.length;i++)NEWB.push(await readBon(fs[i]));renderNew()}
+ $('bnew').innerHTML='<p class="mu">Lezen…</p>';var agd=null;for(var i=0;i<fs.length;i++){var o=await readBon(fs[i]);if(o.agenda){agd=agd||o.file;continue}NEWB.push(o)}renderNew();if(agd)agNaar(agd)}
+// v234: een agenda-PDF die als werkbon werd aangeboden: naar Planning > Agenda inlezen
+function agNaar(f){kToast('"'+f.name+'" is de agenda van de planner, geen werkbon. Hij wordt als agenda ingelezen (Planning).',9000);try{var t=document.querySelector('#tabs [data-tab="p"]');if(t&&!t.hidden)t.click()}catch(e){}agFiles([f])}
 function uLabel(u){return (u.naam?u.naam+' – ':'')+(u.email||u.uid)}
 function blog(actie,o,naar){try{var a=String(((o.g||{}).wadres)||'').split(NL)[0];db.collection('inboxlog').doc(Date.now()+'_'+Math.random().toString(36).slice(2,6)).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase(),actie:actie,wb:String((o.g||{}).wb||o.bestand||o.name||''),klant:a,voor:o.voorNaam||o.voorMail||'',naar:naar||''}).catch(function(){})}catch(e){}}
 // beheerder: korte monteurslijst (naam + e-mail) voor kantoor bijwerken vanuit de gebruikers; volledig geblokkeerden eruit
@@ -688,11 +693,13 @@ function renderNew(){try{mailAdr()}catch(e){}var el=$('bnew');if(!el)return;if(!
   '<div class="mu" style="margin-top:4px">'+ee(o.name)+' · '+kb(o.size)+'</div>'+
   '<label style="display:block;margin-top:10px">Monteur</label><select data-bv="'+i+'" style="width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit">'+opts(o.voor)+'</select>'+
   '<label style="display:block;margin-top:8px">Opmerking (optioneel) <span class="mu">· Enter = klaarzetten</span></label><input data-bo="'+i+'" value="'+ee(o.opm)+'" maxlength="300" placeholder="bijv. vandaag nog, sleutel bij de buren">'+
+  '<div class="mu" style="margin-top:8px">'+((o.extra||[]).length?'📎 '+o.extra.map(function(f){return ee(f.name)}).join(', ')+' ':'')+'<label class="btn sm" style="display:inline-block;cursor:pointer">+ Bijlagen<input type="file" multiple hidden data-bb="'+i+'"></label></div>'+
   '<div class="tools" style="margin:10px 0 0"><button class="btn pr" type="button" data-bk="'+i+'">Klaarzetten</button><button class="btn" type="button" data-bx="'+i+'">Weghalen</button></div><div class="mu" data-bs="'+i+'"></div></div>'}).join('');
  el.querySelectorAll('[data-bv]').forEach(function(s){s.onchange=function(){NEWB[+s.dataset.bv].voor=s.value;setLastMon(s.value)}});
  el.querySelectorAll('[data-bo]').forEach(function(s){s.oninput=function(){NEWB[+s.dataset.bo].opm=s.value};
   s.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();var k=el.querySelector('[data-bk="'+s.dataset.bo+'"]');if(k&&!k.disabled)k.click()}}});
  el.querySelectorAll('[data-bx]').forEach(function(b){b.onclick=function(){NEWB.splice(+b.dataset.bx,1);renderNew()}});
+ el.querySelectorAll('[data-bb]').forEach(function(x){x.onchange=function(){var o=NEWB[+x.dataset.bb];o.extra=(o.extra||[]).concat([].slice.call(this.files||[]));renderNew()}});
  el.querySelectorAll('[data-bk]').forEach(function(b){b.onclick=async function(){var i=+b.dataset.bk,o=NEWB[i],st=el.querySelector('[data-bs="'+i+'"]');
   b.disabled=true;st.textContent='Bezig met klaarzetten…';var r=await klaarZet(o);
   if(r){st.innerHTML='<span class="er">'+ee(r)+'</span>';b.disabled=false;return}
@@ -705,9 +712,10 @@ function renderNew(){try{mailAdr()}catch(e){}var el=$('bnew');if(!el)return;if(!
 async function klaarZet(o){if(!o.voor)return 'Kies eerst een monteur.';if(!o.b64)return 'Dit bestand kon niet gelezen worden.';
  try{var u=USERS.filter(function(x){return x.uid===o.voor})[0]||{},id=Date.now()+'_'+Math.random().toString(36).slice(2,8),ref=db.collection('inbox').doc(id),n=Math.ceil(o.b64.length/CH);
   for(var k=0;k<n;k++)await ref.collection('parts').doc(String(k)).set({d:o.b64.slice(k*CH,(k+1)*CH)});
-  await ref.set({voor:o.voor,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||'',door:String(auth.currentUser.email||'').toLowerCase(),t:Date.now(),status:'klaar',bestand:o.name,size:o.size,parts:n,g:o.g||{},opm:String(o.opm||'').trim()});
+  var bj=(o.extra&&o.extra.length)?await bijlSchrijf(ref,o.extra,[]):[];
+  await ref.set(Object.assign({voor:o.voor,voorMail:String(u.email||'').toLowerCase(),voorNaam:u.naam||'',door:String(auth.currentUser.email||'').toLowerCase(),t:Date.now(),status:'klaar',bestand:o.name,size:o.size,parts:n,g:o.g||{},opm:String(o.opm||'').trim()},bj.length?{bijl:bj}:{}));
   setLastMon(o.voor);blog('klaargezet',{g:o.g,bestand:o.name,voorNaam:u.naam,voorMail:u.email});return ''}
- catch(e){return 'Klaarzetten mislukt: '+err(e)}}
+ catch(e){return 'Klaarzetten mislukt: '+((e&&/MB|mag niet mee/.test(e.message||''))?e.message:err(e))}}
 async function pdfOf(ref,n){var s='';for(var k=0;k<n;k++){var d=await ref.collection('parts').doc(String(k)).get();if(!d.exists)throw new Error('PDF onvolledig');s+=(d.data()||{}).d||''}
  var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new Blob([u],{type:'application/pdf'})}
 async function delBon(ref,n,bijl){for(var k=0;k<(n||0);k++){try{await ref.collection('parts').doc(String(k)).delete()}catch(e){}}
@@ -827,21 +835,45 @@ function plDlg(id){var o=plO(id),dl=$('plDlg');if(!o)return;var g=o.g||{},a=Stri
   gewTxt(o.voor,g.wb)+corrHtml(o.voor,g.wb)+histVan(o.voor,g.wb)+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.status==='opgehaald'?'<p class="mu" style="color:#9a5a00">De monteur heeft deze bon al overgenomen.</p>':'')+
   '<label>Monteur</label><select id="pdM"><option value="">— nog geen monteur —</option>'+planMonteurs().map(function(u){return '<option value="'+ee(u.uid)+'"'+(u.uid===o.voor?' selected':'')+'>'+ee(uLabel(u))+'</option>'}).join('')+'</select>'+
   '<div style="display:flex;gap:8px"><div style="flex:1"><label>Dag</label><input type="date" id="pdD" value="'+ee(o.pd||daIso(g.da)||'')+'"></div><div style="flex:1"><label>Tijd</label><input type="time" id="pdT" value="'+ee(o.pt||g.tijd||'')+'"></div></div>'+
-  '<label>Opmerking voor de monteur</label><input id="pdO" maxlength="300" value="'+ee(o.opm||'')+'">'+
+  '<label>Opmerking voor de monteur</label><input id="pdO" maxlength="300" value="'+ee(o.opm||'')+'">'+'<div id="bjW"></div>'+
   '<div class="tools" style="margin:14px 0 0;flex-wrap:wrap"><button class="btn pr" type="button" id="pdS">Opslaan</button>'+(o.pd?'<button class="btn" type="button" id="pdU">Uit de planning</button>':'')+''+(o.parts?'<button class="btn" type="button" id="pdP">PDF</button>':'')+(o.verstuurd?bonPdfKnop(o.voor,g.wb||'','')+corrKnop(o.voor,g.wb||'','',o.id,String(g.wadres||'').split(NL)[0]):'')+'<button class="btn" type="button" id="pdX">Sluiten</button></div><div class="mu" id="pdR"></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('pdX').onclick=function(){dl.hidden=true};
+ if(!o.verstuurd)bijlBox($('bjW'),o,o.status==='opgehaald'?'Let op: de monteur heeft de bon al overgenomen; nieuwe bijlagen komen niet meer vanzelf in zijn werkbon.':'De monteur krijgt ze bij de bon in de app.');
  $('pdS').onclick=async function(){var b=this,m=$('pdM').value,dd=$('pdD').value;if(dd&&!m){$('pdR').innerHTML='<span class="er">Kies een monteur, of maak de dag leeg.</span>';return}
   b.disabled=true;if(await plZet(id,{voor:m,pd:dd,pt:$('pdT').value,opm:$('pdO').value.trim()}))dl.hidden=true;else b.disabled=false};
  if($('pdU'))$('pdU').onclick=async function(){this.disabled=true;if(await plZet(id,{pd:'',pt:''}))dl.hidden=true};
  if($('pdP'))$('pdP').onclick=async function(){var b=this,w=window.open('','_blank');b.disabled=true;try{var url=URL.createObjectURL(await pdfOf(o.ref,o.parts));if(w)w.location.href=url;else location.href=url}catch(e){if(w)w.close();alert0('PDF openen mislukt: '+err(e))}b.disabled=false}}
+/* ---------- v234: bijlagen bij een klaargezette bon of een agenda-afspraak (zelfde opslag als klaarzetten per mail: parts b<nr>_<deel>) ---------- */
+var BIJ_NEE=/\.(exe|bat|cmd|com|scr|pif|js|jse|vbs|vbe|wsf|ps1|msi|msp|jar|lnk|hta|htm|html|svg|iso|img|dll|reg|cpl|apk|sh|app|dmg)$/i;
+async function bijlSchrijf(ref,files,bestaand){var uit=[],tot=(bestaand||[]).reduce(function(s,x){return s+(x.weg?0:(x.size||0))},0),j0=(bestaand||[]).length;
+ for(var i=0;i<files.length;i++){var f=files[i];if(BIJ_NEE.test(f.name))throw new Error(f.name+': dit soort bestand mag niet mee.');if(f.size>10*1048576)throw new Error(f.name+' is groter dan 10 MB.');tot+=f.size;if(tot>20*1048576)throw new Error('Samen meer dan 20 MB aan bijlagen.');
+  var s=b64(await f.arrayBuffer()),n=Math.max(1,Math.ceil(s.length/CH)),j=j0+uit.length;
+  for(var k=0;k<n;k++)await ref.collection('parts').doc('b'+j+'_'+k).set({d:s.slice(k*CH,(k+1)*CH)});
+  uit.push({naam:String(f.name).slice(0,120),type:String(f.type||'application/octet-stream').slice(0,100),size:f.size,n:n,t:Date.now()})}
+ return (bestaand||[]).concat(uit)}
+async function bijlLees(ref,x,j){var s='';for(var k=0;k<(x.n||1);k++){var d=await ref.collection('parts').doc('b'+j+'_'+k).get();if(!d.exists)throw new Error('bijlage onvolledig');s+=(d.data()||{}).d||''}
+ var bin=atob(s),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:x.type||'application/octet-stream'})}
+// blok met de bijlagen (openen, weghalen, toevoegen); o = inbox- of agendadoc met ref en bijl
+function bijlBox(el,o,uitleg){if(!el)return;var L=(o.bijl||[]);
+ el.innerHTML='<div style="margin-top:10px;padding:10px;border:1px solid var(--bd);border-radius:10px"><b style="font-size:15px">Bijlagen voor de monteur</b>'+(uitleg?'<div class="mu" style="font-size:13px">'+uitleg+'</div>':'')+
+  L.map(function(x,j){return x.weg?'':'<div class="br" style="padding:5px 0"><span>📎 '+ee(x.naam)+' <span class="mu">'+kb(x.size)+'</span></span><span style="display:flex;gap:6px"><button class="btn sm" type="button" data-bjo="'+j+'">Openen</button><button class="btn sm dg" type="button" data-bjw="'+j+'">Weghalen</button></span></div>'}).join('')+
+  '<label class="btn sm" style="display:inline-block;margin-top:8px;cursor:pointer">+ Bijlage toevoegen<input type="file" multiple hidden data-bja></label> <span class="mu" data-bjs></span></div>';
+ var st=el.querySelector('[data-bjs]');
+ el.querySelector('[data-bja]').onchange=async function(){var fs=[].slice.call(this.files||[]);this.value='';if(!fs.length)return;st.textContent='Uploaden…';
+  try{var nb=await bijlSchrijf(o.ref,fs,o.bijl||[]);await o.ref.set({bijl:nb},{merge:true});o.bijl=nb;alog('bijlage toegevoegd',fs.map(function(f){return f.name}).join(', '));bijlBox(el,o,uitleg);kToast(fs.length+(fs.length===1?' bijlage toegevoegd.':' bijlagen toegevoegd.'),4000)}
+  catch(e){st.innerHTML='<span class="er">'+ee((e&&e.message)||err(e))+'</span>'}};
+ el.querySelectorAll('[data-bjo]').forEach(function(bt){bt.onclick=async function(){var j=+bt.dataset.bjo,x=L[j],w=window.open('','_blank');bt.disabled=true;
+  try{var url=URL.createObjectURL(await bijlLees(o.ref,x,j));if(/^image\/|pdf/i.test(x.type||'')){if(w)w.location.href=url;else location.href=url}else{if(w)w.close();var a=document.createElement('a');a.href=url;a.download=x.naam;document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},3000)}}catch(e){if(w)w.close();alert0('Openen mislukt: '+err(e))}bt.disabled=false}});
+ el.querySelectorAll('[data-bjw]').forEach(function(bt){bt.onclick=async function(){if(bt.dataset.sure!=='1'){bt.dataset.sure='1';bt.textContent='Zeker?';return}var j=+bt.dataset.bjw,x=L[j];bt.disabled=true;
+  try{var nb=L.slice();nb[j]=Object.assign({},x,{weg:1});await o.ref.set({bijl:nb},{merge:true});for(var k=0;k<(x.n||1);k++)o.ref.collection('parts').doc('b'+j+'_'+k).delete().catch(function(){});o.bijl=nb;bijlBox(el,o,uitleg)}catch(e){bt.disabled=false;alert0(err(e))}}})}
 // PDF's direct in de planning: klaarzetten zonder monteur (komt bij "Nog in te plannen")
 async function plFiles(list){var fs=[].slice.call(list||[]).filter(function(f){return /pdf/i.test(f.type)||/\.pdf$/i.test(f.name)});if(!fs.length){alert0('Alleen PDF-bestanden.');return}
- var ok=0;for(var i=0;i<fs.length;i++){$('plSt').textContent='Bezig: '+(i+1)+' van '+fs.length+'…';var o=await readBon(fs[i]);if(!o.b64){continue}
+ var ok=0,agd=null;for(var i=0;i<fs.length;i++){$('plSt').textContent='Bezig: '+(i+1)+' van '+fs.length+'…';var o=await readBon(fs[i]);if(!o.b64){continue}if(o.agenda){agd=agd||o.file;continue}
   try{var id=Date.now()+'_'+Math.random().toString(36).slice(2,8),ref=db.collection('inbox').doc(id),n=Math.ceil(o.b64.length/CH);
    for(var k=0;k<n;k++)await ref.collection('parts').doc(String(k)).set({d:o.b64.slice(k*CH,(k+1)*CH)});
    await ref.set({voor:'',voorMail:'',voorNaam:'',door:String(auth.currentUser.email||'').toLowerCase(),t:Date.now(),status:'klaar',bestand:o.name,size:o.size,parts:n,g:o.g||{},opm:''});
    blog('klaargezet (planning)',{g:o.g,bestand:o.name});ok++}catch(e){alert0('Klaarzetten mislukt: '+err(e))}}
- $('plSt').textContent=ok?ok+' bon(nen) toegevoegd. Sleep ze naar een monteur en een dag.':'';loadSent()}
+ $('plSt').textContent=ok?ok+' bon(nen) toegevoegd. Sleep ze naar een monteur en een dag.':'';if(agd)agNaar(agd);loadSent()}
 $('plFile').onchange=function(){plFiles(this.files);this.value=''};
 (function(){var d=$('plDrop'),un=$('plUn');
  d.addEventListener('dragover',function(e){if([].indexOf.call(e.dataTransfer.types,'Files')>=0){e.preventDefault();d.style.borderColor='var(--ac)'}});d.addEventListener('dragleave',function(){d.style.borderColor=''});
@@ -1135,10 +1167,11 @@ async function agPushUitslag(L){var R={};for(var k=0;k<6&&Object.keys(R).length<
 function agInfo(id){var o=[].concat(AG,ZA||[]).filter(function(x){return x.id===id})[0],dl=$('plDlg');if(!o)return;
  dl.innerHTML='<div class="card"><b>'+ee(o.wb?'Werkbon '+o.wb:String(o.oms||'Afspraak').split('\n')[0])+'</b><div class="mu">'+ee(o.voorNaam||o.voorMail)+' · '+ee(pdTxt(o))+' · '+ee(agTijd(o))+(o.duur?' ('+ee(o.duur)+' u)':'')+'</div>'+
   (o.klant?'<div style="margin-top:6px">'+ee(o.klant)+'<br>'+ee([o.adres,o.plaats].filter(Boolean).join(', '))+(o.tel?'<br>'+ee(o.tel):'')+'</div>':'')+
-  (o.oms?'<div style="margin-top:6px;white-space:pre-wrap">'+ee(o.oms)+'</div>':'')+gewTxt(o.voor,o.wb)+histVan(o.voor,o.wb)+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.bezig?'<p style="font-weight:700;color:#9a5a00">Monteur is ermee bezig (sinds '+ee(fd(o.bezig))+').</p>':'')+'<p class="mu">Uit de agenda-PDF '+ee(o.bestand||'')+' ('+ee(fd(o.t))+', '+ee(o.door||'')+'). Wijzigen: pas de agenda aan en lees hem opnieuw in.</p>'+
+  (o.oms?'<div style="margin-top:6px;white-space:pre-wrap">'+ee(o.oms)+'</div>':'')+gewTxt(o.voor,o.wb)+histVan(o.voor,o.wb)+(o.verstuurd?'<p style="font-weight:700;color:'+(o.gereed==='nee'?'#b3261e':'#16693e')+'">Werkbon verstuurd '+ee(fd(o.verstuurd))+ee(plGr(o))+'</p>':o.bezig?'<p style="font-weight:700;color:#9a5a00">Monteur is ermee bezig (sinds '+ee(fd(o.bezig))+').</p>':'')+(o.verstuurd?'':'<div id="bjA"></div>')+'<p class="mu">Uit de agenda-PDF '+ee(o.bestand||'')+' ('+ee(fd(o.t))+', '+ee(o.door||'')+'). Wijzigen: pas de agenda aan en lees hem opnieuw in.</p>'+
   corrHtml(o.voor,o.wb)+'<div class="tools" style="margin:10px 0 0">'+(o.verstuurd?bonPdfKnop(o.voor,o.wb,'')+corrKnop(o.voor,o.wb,'','',o.klant):'')+'<button class="btn dg" type="button" id="agDel">Verwijderen</button><button class="btn" type="button" id="agC">Sluiten</button></div></div>';
  dl.hidden=false;dl.onclick=function(e){if(e.target===dl)dl.hidden=true};$('agC').onclick=function(){dl.hidden=true};
- $('agDel').onclick=async function(){var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;try{await o.ref.delete();AG=AG.filter(function(x){return x!==o});dl.hidden=true;drawPlan()}catch(e){b.disabled=false;alert0(err(e))}}}
+ if($('bjA'))bijlBox($('bjA'),o,'De monteur krijgt ze in zijn planning en in de werkbon die hij van deze afspraak maakt (app v234 of nieuwer).');
+ $('agDel').onclick=async function(){var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Tik nogmaals';return}b.disabled=true;try{(o.bijl||[]).forEach(function(x,j){for(var k=0;k<(x.n||1);k++)o.ref.collection('parts').doc('b'+j+'_'+k).delete().catch(function(){})});await o.ref.delete();AG=AG.filter(function(x){return x!==o});dl.hidden=true;drawPlan()}catch(e){b.disabled=false;alert0(err(e))}}}
 $('agFile').onchange=function(){agFiles(this.files);this.value=''};
 (function(){var d=$('agDrop');d.addEventListener('dragover',function(e){if([].indexOf.call(e.dataTransfer.types,'Files')>=0){e.preventDefault();e.stopPropagation();d.style.borderColor='var(--ac)'}});d.addEventListener('dragleave',function(){d.style.borderColor=''});
  d.addEventListener('drop',function(e){d.style.borderColor='';if(e.dataTransfer.files&&e.dataTransfer.files.length){e.preventDefault();e.stopPropagation();agFiles(e.dataTransfer.files)}})})();

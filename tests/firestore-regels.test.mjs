@@ -88,6 +88,14 @@ test('monteur mag in de agenda alleen bezig/verstuurd terugmelden', async () => 
   await assertSucceeds(updateDoc(doc(db(JAN), 'agenda/a1'), {bezig: 5}));
   await assertFails(updateDoc(doc(db(JAN), 'agenda/a1'), {pd: '2026-11-24'}));
 });
+test('bijlagen bij een afspraak: kantoor schrijft, alleen de eigen monteur leest (v234)', async () => {
+  await assertSucceeds(setDoc(doc(db(KANTOOR), 'agenda/a1/parts/b0_0'), {d: 'QUJD'}));
+  await assertFails(setDoc(doc(db(KANTOOR), 'agenda/a1/parts/b0_1'), {d: 'A'.repeat(500000)}));
+  await assertFails(setDoc(doc(db(JAN), 'agenda/a1/parts/b1_0'), {d: 'QUJD'}));
+  await assertSucceeds(getDoc(doc(db(JAN), 'agenda/a1/parts/b0_0')));
+  await assertFails(getDoc(doc(db(PIET), 'agenda/a1/parts/b0_0')));
+  await assertSucceeds(updateDoc(doc(db(KANTOOR), 'agenda/a1'), {bijl: [{naam: 'tekening.pdf', type: 'application/pdf', size: 3, n: 1}]}));
+});
 test('kantoor: te lange omschrijving in de agenda wordt geweigerd', async () => {
   await assertSucceeds(setDoc(doc(db(KANTOOR), 'agenda/a2'), {voor: JAN.uid, pd: '2026-11-24', oms: 'kort'}));
   await assertFails(setDoc(doc(db(KANTOOR), 'agenda/a3'), {voor: JAN.uid, pd: '2026-11-24', oms: 'x'.repeat(1200)}));

@@ -3,6 +3,12 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+KANTOOR-APP: AANDACHT FILTEREN OP SOORT + LIJST GEREED (kantoor, 27-11-2026)
+- Aandacht: tweede keuzelijst "Alle soorten" / Niet gereed / Reparatiemelding / Correctie gevraagd / Gepland, geen werkbon /
+  Klaargezet, niet opgehaald / Ontbrekende gegevens / Gereed. Werkt samen met de keuze per monteur; beide worden onthouden.
+- Nieuw onderaan: "Gereed, laatste 30 dagen" (inklapbaar): alle verstuurde werkbonnen met Werk gereed = Ja, nieuwste
+  bovenaan, met monteur en wanneer verstuurd. Klik = de bon openen. Telt niet mee in het aantal aandachtspunten.
+
 WERKBONNEN OP HETZELFDE TIJDSTIP KAN NIET MEER (v233)
 - Overlappen de werktijden van een bon met een andere bon (of een andere dag op dezelfde bon) op dezelfde datum, dan kan de
   bon niet meer worden afgerond of naar de klant verstuurd (rood bij Afronden: "Tijden overlappen bij ... met bon ...").

@@ -76,6 +76,13 @@ test('monteur mag alleen status/verstuurd terugmelden, niet de bon wijzigen', as
   await assertFails(setDoc(doc(db(JAN), 'inbox/n3'), {voor: JAN.uid, status: 'klaar'}));
 });
 
+test('monteur mag een overgenomen, niet verstuurde bon terugzetten naar klaargezet (v230)', async () => {
+  await env.withSecurityRulesDisabled(async (c) => { await setDoc(doc(c.firestore(), 'inbox/i3'), {voor: JAN.uid, status: 'opgehaald', opgehaald: 5, t: 1}); await setDoc(doc(c.firestore(), 'inbox/i4'), {voor: JAN.uid, status: 'opgehaald', opgehaald: 5, verstuurd: 9, t: 1}); });
+  await assertSucceeds(updateDoc(doc(db(JAN), 'inbox/i3'), {status: 'klaar', opgehaald: 0}));
+  await assertFails(updateDoc(doc(db(JAN), 'inbox/i4'), {status: 'klaar', opgehaald: 0}));
+  await assertFails(updateDoc(doc(db(PIET), 'inbox/i3'), {status: 'klaar'}));
+});
+
 // ---------- agenda ----------
 test('monteur mag in de agenda alleen bezig/verstuurd terugmelden', async () => {
   await assertSucceeds(updateDoc(doc(db(JAN), 'agenda/a1'), {bezig: 5}));

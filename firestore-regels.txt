@@ -114,7 +114,12 @@ service cloud.firestore {
       allow update: if ((isBeheerder() || isKantoor()) && inboxOk())
         || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald','verstuurd','gereed','repm'])
-            && request.resource.data.status == 'opgehaald');
+            && request.resource.data.status == 'opgehaald')
+        // v230: de monteur gooit een overgenomen bon weg die nog niet verstuurd is: weer klaargezet
+        || (request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','opgehaald'])
+            && resource.data.status == 'opgehaald' && request.resource.data.status == 'klaar'
+            && !(resource.data.get('verstuurd', 0) is number && resource.data.get('verstuurd', 0) > 0));
       match /parts/{p} {
         allow read: if isBeheerder() || isKantoor()
           || (request.auth != null && !geblokkeerd()

@@ -3,6 +3,15 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+BON WEGGOOIEN: KANTOOR WORDT BIJGEWERKT (v230 + Firestore-regels)
+- Gooit een monteur een bon weg die nog niet verstuurd is (naar de Prullenbak):
+  * een agenda-afspraak met hetzelfde bonnummer in dezelfde week staat bij kantoor niet meer op "bezig" (weer blauw, gepland);
+  * een bon die hij van kantoor had overgenomen, staat weer op "klaargezet" (bij kantoor en in de app bij Klaargezet door
+    kantoor), zodat hij opnieuw kan worden overgenomen.
+  Gebeurt meteen (of zodra er weer internet is). Zet hij de bon uit de Prullenbak terug, dan wordt het weer bezig/opgehaald.
+- Verstuurde bonnen: niets verandert bij kantoor (de gegevens en de PDF zijn al binnen).
+- Firestore-regels: de monteur mag zijn eigen overgenomen, niet verstuurde bon terugzetten naar "klaar" (met test).
+
 WERKBONNEN ALTIJD NAAR KANTOOR, CC UIT, NIEUW ONDERWERP (v229 + server + beheer)
 - Elke werkbon die een monteur vanuit de app naar kantoor verstuurt, gaat standaard naar storingen@mit-installatietechniek.com.
   De monteur ziet het adres maar kan het niet wijzigen; de server dwingt het af. "Via mijn mail-app" staat dan niet meer

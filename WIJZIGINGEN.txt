@@ -3,6 +3,15 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+KANTOOR-APP: BEHEERDER VERWIJDERT WERKBONNEN MET VINKJES (kantoor + Firestore-regels, 27-11-2026)
+- Alleen voor de beheerder: kantoor-app > Zoeken toont bij elke verstuurde/eigen werkbon een vinkje, met "Alles aanvinken"
+  en "Verwijderen (n)" (twee keer tikken). Verwijdert de gegevens bij kantoor (bonlog: planning, zoeken, aandacht, gereed)
+  en de bewaarde PDF (bonpdf). Komt in het logboek beheer.
+- Niet verwijderd: de bon op de telefoon van de monteur, een agenda-afspraak of klaargezette bon met hetzelfde nummer
+  (die blijven in de planning staan), en de mail die al naar kantoor ging. Verstuurt de monteur de bon opnieuw of wijzigt
+  hij hem, dan komt hij terug.
+- Firestore-regels: de beheerder mag bonpdf (en de delen) verwijderen; test toegevoegd.
+
 KANTOOR-APP: ROOSTER ZONDER "VORIGE VERSIE TERUGZETTEN", VERSIENUMMER VET (kantoor + server, 27-11-2026)
 - Kantoor-app > Rooster: de knop "Vorige versie terugzetten" en de regel "Vorige versie: ..." zijn weg. (De server bewaart
   de vorige versie nog wel in rooster/vorige, maar er is geen knop meer om hem terug te zetten.)

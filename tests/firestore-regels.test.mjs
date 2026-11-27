@@ -126,6 +126,14 @@ test('verstuurde PDF: kantoor leest, monteur niet, niemand schrijft', async () =
   await assertFails(getDoc(doc(db(JAN), 'bonpdf/uA_b1')));
   await assertFails(setDoc(doc(db(KANTOOR), 'bonpdf/x'), {uid: 'u'}));
 });
+test('verstuurde werkbon verwijderen: alleen de beheerder (v231)', async () => {
+  await assertFails(deleteDoc(doc(db(KANTOOR), 'bonpdf/uA_b1')));
+  await assertFails(deleteDoc(doc(db(JAN), 'bonpdf/uA_b1')));
+  await assertFails(deleteDoc(doc(db(KANTOOR), 'bonlog/uA_b1')));
+  await assertSucceeds(deleteDoc(doc(db(ADMIN), 'bonpdf/uA_b1/parts/0')));
+  await assertSucceeds(deleteDoc(doc(db(ADMIN), 'bonpdf/uA_b1')));
+  await assertSucceeds(deleteDoc(doc(db(ADMIN), 'bonlog/uA_b1')));
+});
 test('verzonden mails: alleen de beheerder', async () => {
   await assertSucceeds(getDoc(doc(db(ADMIN), 'mailuit/m1')));
   await assertFails(getDoc(doc(db(KANTOOR), 'mailuit/m1')));

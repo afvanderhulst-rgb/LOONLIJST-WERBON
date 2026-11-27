@@ -3,6 +3,19 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+V234: BIJLAGEN VAN KANTOOR BIJ BONNEN EN AFSPRAKEN + AGENDA-PDF WORDT HERKEND (app, kantoor, server, regels, 27-11-2026)
+- Kantoor-app > Bonnen klaarzetten: per bon "+ Bijlagen" (tekening, foto, offerte). Ze gaan mee met de klaargezette bon.
+- Kantoor-app > Planning: in het venster van een klaargezette bon of een agenda-afspraak staat "Bijlagen voor de monteur":
+  toevoegen, openen, weghalen. Max. 10 MB per bestand, 20 MB samen; programma's/scripts (.exe, .js, .bat enz.) mogen niet.
+- App (v234): een afspraak met bijlagen toont 📎 met het aantal; bij "Werkbon maken/openen" komen ze in de werkbon
+  (Bijlagen van kantoor). Door kantoor weggehaalde bijlagen worden overgeslagen.
+- Wordt bij klaarzetten (slepen in de kantoor-app of mailen naar <monteur>@mit-werkbon.com) een agenda-PDF van de planner
+  aangeboden in plaats van een werkbon, dan wordt hij herkend en als agenda ingelezen, met een melding. Zo ontstaat er
+  geen "rare bon" meer met alle afspraken erin.
+- Hersteld: op mit-werkbon.web.app/kantoor.html liep klaarzetten vast (fout "kb is not a function") door de melding
+  "Kantoor heeft nu een eigen app". mit-kantoor.web.app had hier geen last van.
+- Firestore-regels: nieuw agenda/{id}/parts (kantoor schrijft, alleen de eigen monteur leest). Met test.
+
 KANTOOR-APP: BEHEERDER VERWIJDERT WERKBONNEN MET VINKJES (kantoor + Firestore-regels, 27-11-2026)
 - Alleen voor de beheerder: kantoor-app > Zoeken toont bij elke verstuurde/eigen werkbon een vinkje, met "Alles aanvinken"
   en "Verwijderen (n)" (twee keer tikken). Verwijdert de gegevens bij kantoor (bonlog: planning, zoeken, aandacht, gereed)

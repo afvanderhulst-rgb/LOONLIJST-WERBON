@@ -138,6 +138,14 @@ service cloud.firestore {
       // v192: de monteur meldt terug: bezig / verstuurd / werk gereed / reparatiemelding
       allow update: if request.auth != null && resource.data.voor == request.auth.uid && !geblokkeerd()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bezig','verstuurd','gereed','repm']);
+      // v234: bijlagen die kantoor bij een afspraak zet (zelfde vorm als bij klaargezette bonnen: b<nr>_<deel>)
+      match /parts/{p} {
+        allow read: if isBeheerder() || isKantoor()
+          || (request.auth != null && !geblokkeerd()
+              && get(/databases/$(database)/documents/agenda/$(id)).data.voor == request.auth.uid);
+        allow write: if (isBeheerder() || isKantoor())
+          && (request.resource == null || (request.resource.data.d is string && request.resource.data.d.size() <= 400000));
+      }
     }
     // v194: verstuurde werkbonnen (datum, klant, gereed) voor het weekrooster van kantoor; de monteur schrijft zijn eigen
     match /bonlog/{id} {

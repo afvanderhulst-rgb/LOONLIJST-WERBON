@@ -817,6 +817,13 @@ async function verwerkMail(m, cache) {
         gelezen.push({b, naam: tekst(b.naam, 120) || 'werkbon.pdf', buf, g: await leesBon(buf)});
       }
     }
+    // v234: een agenda-PDF van de planner die per ongeluk naar <monteur>@ is gemaild: als agenda inlezen (niet als werkbon klaarzetten)
+    if (gelezen.length && !gelezen.some((f) => f.g && f.g.wb)) {
+      try {
+        const A = require('./agenda-parse.js'), P = await pdfWoorden(gelezen[0].buf);
+        if (A.leesAgenda(P).regels.some((r) => r.pt && (r.wb || r.klant))) { logger.info('agenda per ongeluk naar monteur-adres: als agenda ingelezen', {van}); return await verwerkAgendaMail(m, van, logRef, cache); }
+      } catch (e) { logger.warn('agenda-herkenning mislukt', e && e.message); }
+    }
     let bestanden = gelezen.filter((f) => f.g && f.g.wb).slice(0, MAX_BIJLAGEN);
     if (!bestanden.length && gelezen.length) bestanden = [gelezen[0]]; // geen werkbonnummer gevonden: de eerste PDF is de bon
     // overige bijlagen: PDF's zonder werkbonnummer, foto's, Word, Excel enz. (logo's in de handtekening zijn al weg)

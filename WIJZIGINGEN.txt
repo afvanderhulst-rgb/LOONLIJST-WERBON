@@ -3,6 +3,17 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+WERKBONNEN ALTIJD NAAR KANTOOR, CC UIT, NIEUW ONDERWERP (v229 + server + beheer)
+- Elke werkbon die een monteur vanuit de app naar kantoor verstuurt, gaat standaard naar storingen@mit-installatietechniek.com.
+  De monteur ziet het adres maar kan het niet wijzigen; de server dwingt het af. "Via mijn mail-app" staat dan niet meer
+  in het verzendvenster, en het kantooradres bij Afronden is alleen-lezen.
+- CC: het CC-veld is weg. De server negeert een CC van de app. De monteur krijgt zelf nog wel een kopie.
+- Beheer > Instellingen > "Werkbonnen naar kantoor": ander adres invullen, "Vrijgeven" (monteur kiest zelf een adres op
+  @mit-installatietechniek.com) en "CC toestaan" (standaard uit). Opgeslagen als instellingen/app: kantoorAdres,
+  kantoorVrij, ccAan (en kantoorVast = niet vrij, voor oudere app-versies).
+- Onderwerp van de mail naar kantoor: <projectnummer, anders werkbonnummer> - <naam klant> - werkbon <naam monteur>,
+  bijv. "25065R04 - Waternet - werkbon Jan Jansen". Bij een gevraagde correctie staat er "GECORRIGEERD: " voor.
+
 MAP TOOLS OP HET STARTSCHERM (v228)
 - Onder de kaart Storingsdienst staat een map "Tools" (tik om open of dicht te klappen; wordt onthouden).
   Daarin: "Verlof, ADV en ziek" (stond eerst bij het tandwieltje). Het overzicht zelf is hetzelfde gebleven, met onderaan

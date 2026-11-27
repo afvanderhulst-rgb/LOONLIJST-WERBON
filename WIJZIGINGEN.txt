@@ -3,6 +3,11 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+KANTOOR-APP: AANDACHT KIEZEN MET VINKJES + KORTERE REGELS (kantoor, 27-11-2026)
+- Aandacht: soorten en monteurs kies je nu met vinkjes (meerdere tegelijk), met knoppen Alle en Geen, zoals bij de planning.
+  Bijvoorbeeld Niet gereed + Reparatiemelding + Gereed voor twee monteurs. De keuze wordt per computer onthouden.
+- In de regels staat niet meer het woord "werkbon" voor het nummer ("29226 · Zorgcentrum ...").
+
 KANTOOR-APP: AANDACHT OOK OVER 3 MAANDEN OF EEN JAAR (kantoor, 27-11-2026)
 - Aandacht: keuzelijst "Laatste 30 dagen / Laatste 3 maanden / Laatste jaar" (onthouden). Geldt voor de aandachtspunten en
   de lijst Gereed. Oudere bonnen worden eenmalig opgehaald. Het getal en het rode bolletje in het menu blijven 30 dagen.

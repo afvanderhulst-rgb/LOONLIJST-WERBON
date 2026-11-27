@@ -3,6 +3,12 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+WERKBONNEN OP HETZELFDE TIJDSTIP KAN NIET MEER (v233)
+- Overlappen de werktijden van een bon met een andere bon (of een andere dag op dezelfde bon) op dezelfde datum, dan kan de
+  bon niet meer worden afgerond of naar de klant verstuurd (rood bij Afronden: "Tijden overlappen bij ... met bon ...").
+  Bij Uren staat in het rood "Dit kan niet: ...". Aansluitend mag wel (bijv. 08:00-12:00 en 12:00-14:00).
+  Eerder was dit alleen een waarschuwing (sinds v138).
+
 KANTOOR-APP: AANDACHT PER MONTEUR + ONTBREKENDE GEGEVENS INKLAPBAAR (kantoor, 27-11-2026)
 - Aandacht: keuzelijst "Alle monteurs" / één monteur (wordt per computer onthouden). De titel toont het aantal voor die monteur.
 - "Verstuurd met ontbrekende gegevens" is ingeklapt; klik op de kop om hem open of dicht te klappen (wordt onthouden).

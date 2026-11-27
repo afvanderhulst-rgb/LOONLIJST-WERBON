@@ -152,8 +152,10 @@ service cloud.firestore {
     // v197: verstuurde werkbon-PDF's (schrijft alleen de server); kantoor en beheerder mogen ze openen
     match /bonpdf/{id} {
       allow read: if isBeheerder() || isKantoor();
+      allow delete: if isBeheerder(); // v231: beheerder verwijdert werkbonnen (kantoor-app > Zoeken)
       match /parts/{p} {
         allow read: if isBeheerder() || isKantoor();
+        allow delete: if isBeheerder();
       }
     }
     // v210: correctie gevraagd door kantoor; de monteur leest zijn eigen en meldt terug (gezien / opnieuw verstuurd)

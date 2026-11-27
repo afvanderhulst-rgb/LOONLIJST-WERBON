@@ -291,6 +291,12 @@ exports.mailKantoor = onRequest({
     if (io.kantoorVrij !== true) vast = tekst(io.kantoorAdres || 'storingen@mit-installatietechniek.com', 200).trim();
     ccMag = io.ccAan === true;
   } catch (e) { logger.warn('instellingen lezen', e); vast = 'storingen@mit-installatietechniek.com'; }
+  // v232: storingsdienstlijst gaat alleen naar het kantooradres (storingen@), zonder CC
+  const sdLijst = soort === 'weeklijst' && (b.sd === true || /^storingsdienst\b/i.test(tekst(b.subject, 40).trim()));
+  if (sdLijst) {
+    vast = 'storingen@mit-installatietechniek.com'; ccMag = false;
+    try { const inst = await db.doc('instellingen/app').get(), ka = inst.exists && tekst(inst.get('kantoorAdres') || '', 200).trim(); if (ka && MAIL_RE.test(ka)) vast = ka; } catch (e) { logger.warn('instellingen lezen', e); }
+  }
   if (vast && !MAIL_RE.test(vast)) vast = '';
   if (vast) aan = vast;
   // v204: werkbon naar de KLANT: elk geldig adres, maar onderwerp en tekst maakt de server zelf (geen vrije tekst), antwoorden gaan naar kantoor
@@ -399,7 +405,7 @@ exports.mailKantoor = onRequest({
     else t = blok + t; // oude app-versie (status niet in de tekst): bovenaan
     mail.htmlContent = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222"><div style="white-space:pre-wrap">' + t + '</div></div>';
   }
-  if (soort === 'klant') { if (aan.toLowerCase() !== em.toLowerCase()) mail.bcc = [{email: em, name: naam || em}]; } // monteur krijgt een stille kopie
+  // v232: ook bij een werkbon naar de klant geen kopie meer naar de monteur
   // v231: werkbon naar kantoor en weeklijst: de monteur krijgt geen kopie meer (klant: stille kopie blijft)
   if (cc.length) mail.cc = cc;
   let r, j = {};

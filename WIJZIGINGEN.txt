@@ -3,6 +3,13 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+STORINGSDIENSTLIJST ALLEEN NAAR STORINGEN@ + GEEN KOPIE BIJ KLANTMAIL (v232 + server)
+- De storingsdienstlijst gaat altijd naar het kantooradres (standaard storingen@mit-installatietechniek.com, instelbaar in
+  beheer > Instellingen > Werkbonnen naar kantoor). Het adres staat vast in het venster, zonder CC en zonder "Via mijn
+  mail-app". De server dwingt het af (ook voor lijsten die nog in de wachtrij stonden: herkend aan het onderwerp).
+  De gewone weeklijst gaat zoals altijd naar de leidinggevende.
+- Werkbon naar de klant: de monteur krijgt geen stille kopie meer.
+
 MONTEUR KRIJGT GEEN KOPIE MEER (v231 + server)
 - Werkbon naar kantoor en weeklijst/storingsdienstlijst naar de leidinggevende: de monteur staat niet meer in de CC.
   (Werkbon naar de klant: de monteur krijgt nog wel een stille kopie.) Teksten in de app en beheer aangepast.

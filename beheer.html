@@ -289,7 +289,7 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
    <div class="plz"><select id="arP" style="padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit"></select><select id="arM" style="padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit"><option value="">Alle monteurs</option></select><button class="btn pr" type="button" id="arGo">ZIP maken</button></div><div id="arS" class="mu"></div></div>
  </div>
  <div id="alist" hidden>
-  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b id="aT">Aandachtspunten</b><label class="mu" style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="aAll"> ook afgehandelde tonen</label></div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b id="aT">Aandachtspunten</b><span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><select id="aMon" style="padding:7px;border:1px solid var(--bd);border-radius:8px;font:inherit;font-size:14px;background:var(--bg);color:var(--tx)"><option value="">Alle monteurs</option></select><label class="mu" style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="aAll"> ook afgehandelde tonen</label></span></div>
    <p class="mu" style="margin:4px 0 8px">Wat kantoor nog moet nakijken (laatste 30 dagen). Klik op een regel om de bon te openen; "Afgehandeld" haalt hem van de lijst (voor alle kantoor-collega's).</p><div id="aL"><p class="mu">Laden…</p></div></div>
  </div>
  <div id="plist" hidden>
@@ -958,14 +958,20 @@ function aOpen(o){if(!o)return;if(o.src==='a')return agInfo(o.id);if(o.src==='k'
  var e=[].concat(BL,ZB||[]).filter(function(x){return x.voor===o.voor&&(o.bon?x.id===o.voor+'_'+o.bon:String(x.wb||'')===String(o.wb))})[0];if(e)return ebInfo(e.id);
  var a=AG.filter(function(x){return x.voor===o.voor&&String(x.wb||'')===String(o.wb)})[0];if(a)return agInfo(a.id);
  var k=SENT.filter(function(x){return o.ib?x.id===o.ib:(x.voor===o.voor&&(x.g||{}).wb===o.wb)})[0];if(k)return plDlg(k.id)}
-function drawAandacht(){var el=$('aL');if(!el)return;var all=$('aAll').checked,L=aItems(),n=0;
+function drawAandacht(){var el=$('aL');if(!el)return;var all=$('aAll').checked,L0=aItems(),n=0;
+ // v226 (kantoor): filter op monteur
+ var ms=$('aMon'),cur=ms.value||(function(){try{return localStorage.getItem('kt:amon')||''}catch(e){return ''}})(),nm={};L0.forEach(function(x){if(x.mon)nm[x.mon]=1});if(cur)nm[cur]=1;
+ ms.innerHTML='<option value="">Alle monteurs</option>'+Object.keys(nm).sort(function(a,c){return a.localeCompare(c,'nl')}).map(function(k){return '<option'+(k===cur?' selected':'')+'>'+ee(k)+'</option>'}).join('');
+ var L=cur?L0.filter(function(x){return x.mon===cur}):L0;
  var h=AGRP.map(function(gr){var X=L.filter(function(x){return x.g===gr[0]&&(all||!AFG[x.key])}).sort(function(a,c){return String(c.pd).localeCompare(String(a.pd))});if(!X.length)return '';n+=X.filter(function(x){return !AFG[x.key]}).length;
-  return '<h2 class="sh">'+ee(gr[1])+' ('+X.length+')</h2>'+X.map(function(x){var af=AFG[x.key];return '<div class="zr'+(af?'':' n')+'" data-ak="'+ee(x.key)+'" style="'+(af?'opacity:.55':'')+'"><div class="zd">'+ee(pdTxt({pd:x.pd}))+'</div><div class="zt"><b>'+ee(x.mon||'')+'</b><div>'+ee(x.txt)+'</div>'+(af?'<div class="mu">afgehandeld '+ee(fd(af.t))+(af.door?' door '+ee(af.door):'')+'</div>':'')+'</div><div style="flex:none">'+(af?'<button class="btn sm" type="button" data-au="'+ee(x.key)+'">Terugzetten</button>':'<button class="btn sm" type="button" data-aa="'+ee(x.key)+'">Afgehandeld</button>')+'</div></div>'}).join('')}).join('');
- $('aT').textContent='Aandachtspunten'+(n?' ('+n+')':'');el.innerHTML=h||'<p class="ok">Niets om na te kijken.</p>';
+  var dicht=gr[0]==='mis',kop=ee(gr[1])+' ('+X.length+')',open=(function(){try{return localStorage.getItem('kt:aopen:'+gr[0])==='1'}catch(e){return false}})();
+  return (dicht?'<details class="aGr" data-ag="'+gr[0]+'"'+(open?' open':'')+'><summary class="sh" style="cursor:pointer;list-style:revert;display:list-item;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin:18px 2px 8px;font-weight:700">'+kop+'</summary>':'<h2 class="sh">'+kop+'</h2>')+X.map(function(x){var af=AFG[x.key];return '<div class="zr'+(af?'':' n')+'" data-ak="'+ee(x.key)+'" style="'+(af?'opacity:.55':'')+'"><div class="zd">'+ee(pdTxt({pd:x.pd}))+'</div><div class="zt"><b>'+ee(x.mon||'')+'</b><div>'+ee(x.txt)+'</div>'+(af?'<div class="mu">afgehandeld '+ee(fd(af.t))+(af.door?' door '+ee(af.door):'')+'</div>':'')+'</div><div style="flex:none">'+(af?'<button class="btn sm" type="button" data-au="'+ee(x.key)+'">Terugzetten</button>':'<button class="btn sm" type="button" data-aa="'+ee(x.key)+'">Afgehandeld</button>')+'</div></div>'}).join('')+(dicht?'</details>':'')}).join('');
+ $('aT').textContent='Aandachtspunten'+(n?' ('+n+')':'')+(cur?' · '+cur:'');el.innerHTML=h||'<p class="ok">Niets om na te kijken'+(cur?' voor '+ee(cur):'')+'.</p>';
+ el.querySelectorAll('details.aGr').forEach(function(d){d.addEventListener('toggle',function(){try{localStorage.setItem('kt:aopen:'+d.dataset.ag,d.open?'1':'0')}catch(e){}})});
  el.querySelectorAll('[data-ak]').forEach(function(c){c.onclick=function(ev){if(ev.target.closest('button'))return;var x=L.filter(function(y){return y.key===c.dataset.ak})[0];if(x)aOpen(x.open)}});
  el.querySelectorAll('[data-aa]').forEach(function(bt){bt.onclick=async function(){bt.disabled=true;var k=bt.dataset.aa;try{AFG[k]={t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()};await db.collection('afgehandeld').doc(k).set(AFG[k]);drawAandacht();aDot()}catch(e){delete AFG[k];bt.disabled=false;alert0(err(e))}}});
  el.querySelectorAll('[data-au]').forEach(function(bt){bt.onclick=async function(){bt.disabled=true;var k=bt.dataset.au;try{await db.collection('afgehandeld').doc(k).delete();delete AFG[k];drawAandacht();aDot()}catch(e){bt.disabled=false;alert0(err(e))}}})}
-$('aAll').onchange=drawAandacht;
+$('aAll').onchange=drawAandacht;$('aMon').onchange=function(){try{localStorage.setItem('kt:amon',this.value)}catch(e){}drawAandacht()};
 /* ---------- correctie vragen aan de monteur (v210) ---------- */
 var CORR=[],CORRU=null,CORRL=false;
 function loadCorr(){if(CORRL||!db)return;CORRL=true;var d=Date.now()-120*864e5,q=db.collection('correctie').where('t','>=',d),mp=function(x){var o=x.data()||{};o.id=x.id;o.ref=x.ref;return o};

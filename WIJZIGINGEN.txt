@@ -3,6 +3,10 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+MONTEUR KRIJGT GEEN KOPIE MEER (v231 + server)
+- Werkbon naar kantoor en weeklijst/storingsdienstlijst naar de leidinggevende: de monteur staat niet meer in de CC.
+  (Werkbon naar de klant: de monteur krijgt nog wel een stille kopie.) Teksten in de app en beheer aangepast.
+
 BON WEGGOOIEN: KANTOOR WORDT BIJGEWERKT (v230 + Firestore-regels)
 - Gooit een monteur een bon weg die nog niet verstuurd is (naar de Prullenbak):
   * een agenda-afspraak met hetzelfde bonnummer in dezelfde week staat bij kantoor niet meer op "bezig" (weer blauw, gepland);

@@ -34,7 +34,7 @@ Elke wijziging die op GitHub in de map komt, wordt vanzelf gepubliceerd door dri
 - "Firestore-regels naar Firebase" : test eerst de regels (tests/firestore-regels.test.mjs in een emulator);
                                      alleen als alle tests slagen worden ze gepubliceerd.
 Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige versie blijft dan gewoon draaien.
-- Na een wijziging in de app: versienummer in sw.js ophogen (nu mit-werkbon-v234, volgende v235 enz.), dan halen
+- Na een wijziging in de app: versienummer in sw.js ophogen (nu mit-werkbon-v235, volgende v236 enz.), dan halen
   telefoons de nieuwe versie vanzelf op. Het versienummer in index.html (APPV) gelijk houden.
 - firebase-config.js nooit vervangen door een oude kopie (bevat de echte instellingen van het project).
 

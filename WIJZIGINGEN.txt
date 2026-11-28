@@ -3,6 +3,14 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+V235: BIJLAGEN VAN KANTOOR BETROUWBAARDER OPHALEN (app, 28-11-2026)
+- Twee bijlagen met dezelfde naam en grootte (bijv. twee keer foto.jpg) komen nu allebei in de werkbon. Elke bijlage wordt
+  herkend aan de bon/afspraak waar hij bij hoort en zijn plek in de lijst; bijlagen die al met v234 waren opgehaald worden
+  op inhoud vergeleken, zodat ze niet dubbel komen.
+- Mislukt het ophalen van een bijlage (bijv. slecht bereik), dan blijft een klaargezette bon op "klaargezet" staan (kantoor
+  ziet hem niet als opgehaald) en meldt de app dat niet alles binnen is. Opnieuw tikken haalt alleen de ontbrekende bijlagen
+  op; er komt geen tweede werkbon en geen dubbele regel in de geschiedenis. Geldt ook voor bijlagen bij een agenda-afspraak.
+
 V234: BIJLAGEN VAN KANTOOR BIJ BONNEN EN AFSPRAKEN + AGENDA-PDF WORDT HERKEND (app, kantoor, server, regels, 27-11-2026)
 - Kantoor-app > Bonnen klaarzetten: per bon "+ Bijlagen" (tekening, foto, offerte). Ze gaan mee met de klaargezette bon.
 - Kantoor-app > Planning: in het venster van een klaargezette bon of een agenda-afspraak staat "Bijlagen voor de monteur":

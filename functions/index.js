@@ -306,9 +306,17 @@ exports.mailKantoor = onRequest({
     const inst = await db.doc('instellingen/app').get(), ka = inst.exists && tekst(inst.get('kantoorAdres') || '', 200).trim();
     if (ka && MAIL_RE.test(ka)) kantoorAdres = ka;
   } catch (e) { logger.warn('instellingen lezen', e); }
+  // v238: testaccount (beheer > Instellingen > Testaccounts): alles gaat naar het testaccount zelf, met [TEST] in het onderwerp;
+  // nooit naar storingen@, de leidinggevende of een klant
+  let testAcc = false;
+  try {
+    const inst = await db.doc('instellingen/app').get(), L = inst.exists && Array.isArray(inst.get('testAcc')) ? inst.get('testAcc') : [];
+    testAcc = L.map((x) => String(x || '').toLowerCase()).includes(em.toLowerCase());
+  } catch (e) { logger.warn('instellingen lezen', e); }
+  if (testAcc) { aan = em; vast = em; ccMag = false; kantoorAdres = em; }
   const wbNr = tekst(b.wb, 12).replace(/[^0-9A-Za-z-]/g, '');
-  const onderwerp = soort === 'klant' ? 'Werkbon ' + (wbNr ? wbNr + ' ' : '') + '- MIT Installatietechniek'
-    : (tekst(b.subject, 200).trim() || (soort === 'weeklijst' ? 'Weeklijst' : 'Werkbon'));
+  const onderwerp = (testAcc ? '[TEST] ' : '') + (soort === 'klant' ? 'Werkbon ' + (wbNr ? wbNr + ' ' : '') + '- MIT Installatietechniek'
+    : (tekst(b.subject, 200).trim() || (soort === 'weeklijst' ? 'Weeklijst' : 'Werkbon')));
   const bericht = soort === 'klant'
     ? 'Geachte heer/mevrouw,\n\n' +
       'In de bijlage vindt u de werkbon' + (wbNr ? ' ' + wbNr : '') + ' van de werkzaamheden die ' + (naam || 'onze monteur') + ' van MIT Installatietechniek bij u heeft uitgevoerd.\n\n' +

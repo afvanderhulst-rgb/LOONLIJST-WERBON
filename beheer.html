@@ -238,6 +238,9 @@ table.st .ac{display:flex;gap:6px;flex-wrap:wrap;align-items:center}table.st sel
   <div class="card"><b>Monteur vooraf aanmelden</b><p class="mu">Voor een nieuwe monteur die nog geen account heeft. Hij staat dan meteen in de kantoor-app (met "nog geen account"): kantoor kan zijn agenda al inlezen (ook via agenda@) en bonnen voor hem klaarzetten. Zodra hij in de app een account maakt met precies dit e-mailadres en dat adres bevestigt, komt alles vanzelf in zijn planning. Vul de naam in zoals die op de agenda staat.</p>
    <div class="tools" style="margin:0"><input id="vaN" placeholder="Voor- en achternaam" autocomplete="off" style="min-width:180px"><input id="vaM" type="email" placeholder="naam@mit-installatietechniek.com" autocomplete="off"><button class="btn pr" id="vaB" type="button">Aanmelden</button></div>
    <div id="vaR" class="mu" style="margin-top:6px"></div><div id="vaL" style="margin-top:8px"></div></div>
+  <div class="card"><b>Testaccounts (voor demo's)</b><p class="mu">Een account om de app te laten zien zonder echte mails te versturen. Werkbonnen, weeklijsten en mails "naar de klant" van een testaccount gaan naar het testaccount zelf, met [TEST] in het onderwerp; nooit naar storingen@, de leidinggevende of een klant. In de kantoor-app staat het met TEST, zodat je er bonnen voor kunt klaarzetten en een agenda kunt inlezen. Tip: gebruik een eigen adres met een plus, zoals jouwnaam+demo@gmail.com: de bevestigingsmail komt dan in je eigen mailbox. Een adres buiten @mit-installatietechniek.com wordt meteen toegelaten.</p>
+   <div class="tools" style="margin:0"><input id="taM" type="email" placeholder="jouwnaam+demo@gmail.com" autocomplete="off"><button class="btn pr" id="taB" type="button">Toevoegen</button></div>
+   <div id="taR" class="mu" style="margin-top:6px"></div><div id="taL" style="margin-top:8px"></div></div>
   <h2 class="sh">App-instellingen voor iedereen</h2>
   <div class="card"><b>Bewaartermijn op de telefoons</b><p class="mu">Hoe lang verstuurde werkbonnen (met foto's en bijlagen) op de telefoons van de monteurs blijven staan. Daarna verwijdert de app ze vanzelf van het toestel, maar alleen als ze in het archief van het account van de monteur staan (vanaf v147). In dat archief blijven ze altijd bewaard; de monteur haalt ze terug via Instellingen &gt; Account &gt; Archief. Bonnen die nog niet verstuurd zijn blijven altijd staan. Geldt voor iedereen; monteurs kunnen het niet zelf wijzigen.</p>
    <div class="tools" style="margin:0"><select id="kpSel" style="padding:9px;border:1px solid var(--bd);border-radius:8px;font:inherit"><option value="0">Altijd bewaren (oneindig)</option><option value="90">3 maanden</option><option value="182">6 maanden</option><option value="365">1 jaar</option><option value="730">2 jaar</option><option value="1825">5 jaar</option><option value="2555">7 jaar</option></select><button class="btn pr" id="kpSave" type="button">Opslaan</button></div>
@@ -707,7 +710,7 @@ async function addBonFiles(list){var fs=[].slice.call(list||[]).filter(function(
  $('bnew').innerHTML='<p class="mu">Lezen…</p>';var agd=null;for(var i=0;i<fs.length;i++){var o=await readBon(fs[i]);if(o.agenda){agd=agd||o.file;continue}NEWB.push(o)}renderNew();if(agd)agNaar(agd)}
 // v234: een agenda-PDF die als werkbon werd aangeboden: naar Planning > Agenda inlezen
 function agNaar(f){kToast('"'+f.name+'" is de agenda van de planner, geen werkbon. Hij wordt als agenda ingelezen (Planning).',9000);try{var t=document.querySelector('#tabs [data-tab="p"]');if(t&&!t.hidden)t.click()}catch(e){}agFiles([f])}
-function uLabel(u){return (u.naam?u.naam+' – ':'')+(u.email||u.uid)+(u.vooraf?' (nog geen account)':'')}
+function uLabel(u){return (u.naam?u.naam+' – ':'')+(u.email||u.uid)+(u.vooraf?' (nog geen account)':'')+(isTest(u.email)?' (TEST)':'')}
 function blog(actie,o,naar){try{var a=String(((o.g||{}).wadres)||'').split(NL)[0];db.collection('inboxlog').doc(Date.now()+'_'+Math.random().toString(36).slice(2,6)).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase(),actie:actie,wb:String((o.g||{}).wb||o.bestand||o.name||''),klant:a,voor:o.voorNaam||o.voorMail||'',naar:naar||''}).catch(function(){})}catch(e){}}
 // beheerder: korte monteurslijst (naam + e-mail) voor kantoor bijwerken vanuit de gebruikers; volledig geblokkeerden eruit
 async function syncMon(){try{var q=await db.collection('monteurs').get(),M={};q.docs.forEach(function(d){M[d.id]=d.data()||{}});
@@ -849,7 +852,7 @@ function drawPlan(){try{aDot();DUPD=Date.now();if(TAB==='d')drawDash();if(TAB===
   '<div class="mu">'+(o.voor?'monteur: '+ee(o.voorNaam||o.voorMail):'nog geen monteur')+(g.da?' · afspraak volgens PDF: '+ee(g.da)+(g.tijd?' '+ee(g.tijd):''):'')+'</div></div>'}).join(''):'<p class="mu">Alles is ingepland.</p>';
  var h='<div class="plg"><div class="h">Monteur</div>'+dagen.map(function(d,i){return '<div class="h'+(ds[i]===vandaag?' td':'')+'">'+DG[d.getDay()]+' '+d.getDate()+'-'+(d.getMonth()+1)+'</div>'}).join('');
  M.forEach(function(u){var mine=gepland.filter(function(o){return o.voor===u.uid});
-  h+='<div class="m">'+ee(u.naam||u.email)+(u.vooraf?'<small style="color:#9a5a00">nog geen account</small>':'')+'<small>'+ds.map(function(x){return mine.filter(function(o){return o.pd===x}).length||'·'}).join(' ')+'</small></div>';
+  h+='<div class="m">'+ee(u.naam||u.email)+(u.vooraf?'<small style="color:#9a5a00">nog geen account</small>':'')+(isTest(u.email)?'<small style="color:#b3261e;font-weight:700">TEST: mails gaan niet echt</small>':'')+'<small>'+ds.map(function(x){return mine.filter(function(o){return o.pd===x}).length||'·'}).join(' ')+'</small></div>';
   ds.forEach(function(x){var L=mine.filter(function(o){return o.pd===x}),wbs={};L.forEach(function(o){if(o.g&&o.g.wb)wbs[o.g.wb]=1});
    AG.forEach(function(a){if(a.voor===u.uid&&a.pd===x&&!(a.wb&&wbs[a.wb])){L.push({ag:a,pt:a.pt,id:a.id});if(a.wb)wbs[a.wb]=1}});
    BL.forEach(function(e){if(e.voor!==u.uid||(e.wb&&wbs[e.wb]))return;(e.dagen||[]).forEach(function(dd){if(dd.pd===x)L.push({eb:e,dd:dd,pt:dd.ws,id:e.id})})}); // v205: per dag: staat dezelfde bon die dag al gepland, dan niet dubbel
@@ -1284,10 +1287,30 @@ $('ksAdd').onclick=async function(){var b=this,em=String($('ksM').value||'').tri
  b.disabled=true;try{await db.collection('kantoor').doc(em).set({t:Date.now(),door:String(auth.currentUser.email||'').toLowerCase()});alog('kantoor-toegang gegeven',em);blog('kantoor-toegang gegeven',{bestand:em});$('ksM').value='';
   $('ksR').innerHTML='<span class="ok">'+ee(em)+' heeft nu toegang. Hij logt in op kantoor.html met zijn account uit de app (e-mailadres bevestigd).</span>';ksLoad()}
  catch(e){$('ksR').innerHTML='<span class="er">Niet gelukt: '+ee(err(e))+'</span>'}b.disabled=false};
+/* ---------- v238: testaccounts (instellingen/app.testAcc) ---------- */
+var TESTACC=[];
+function isTest(em){return TESTACC.indexOf(String(em||'').toLowerCase())>=0}
+function taDraw(){var el=$('taL');if(!el)return;el.innerHTML=TESTACC.length?TESTACC.map(function(em,i){var u=USERS.filter(function(x){return String(x.email||'').toLowerCase()===em})[0];
+  return '<div class="br"><span><b>'+ee(em)+'</b> <span class="tag">TEST</span><br><span class="mu" style="font-size:13px">'+(u?'account gemaakt'+(u.last?', laatst actief '+ee(ago(u.last)):''):'nog geen account: maak het aan in de app met dit adres')+'</span></span><button class="btn sm dg" type="button" data-tax="'+i+'">Weghalen</button></div>'}).join(''):'<p class="mu">Geen testaccounts.</p>';
+ el.querySelectorAll('[data-tax]').forEach(function(bt){bt.onclick=async function(){var em=TESTACC[+bt.dataset.tax];if(bt.dataset.sure!=='1'){bt.dataset.sure='1';bt.textContent='Zeker? Mails gaan dan weer echt';return}bt.disabled=true;
+  try{var L=TESTACC.filter(function(x){return x!==em});await instSet({testAcc:L,t:Date.now(),door:auth.currentUser.email},{merge:true});TESTACC=L;taDraw();$('taR').textContent=em+' is geen testaccount meer.'}catch(e){bt.disabled=false;alert0(err(e))}}})}
+$('taB').onclick=async function(){var b=this,em=String($('taM').value||'').trim().toLowerCase(),r=$('taR');
+ if(!/^[^\s@<>(),;:"]+@[^\s@<>(),;:"]+\.[^\s@<>(),;:"]+$/.test(em)){r.innerHTML='<span class="er">Dit e-mailadres klopt niet.</span>';return}
+ if(isAdm(em)){r.innerHTML='<span class="er">Een beheerdersadres kan geen testaccount zijn.</span>';return}
+ if(isTest(em)){r.textContent=em+' is al een testaccount.';return}
+ var u=USERS.filter(function(x){return String(x.email||'').toLowerCase()===em})[0];
+ if(u&&u.lastBackup&&b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker? Dit is een bestaand account';r.innerHTML='<span class="er">Let op: '+ee(em)+' wordt al gebruikt. Zijn mails gaan dan niet meer naar kantoor.</span>';return}
+ b.dataset.sure='';b.textContent='Toevoegen';b.disabled=true;
+ try{var me=String(auth.currentUser.email||'').toLowerCase(),L=TESTACC.concat([em]);
+  if(!isDom(em)&&!TOE[em]){await db.collection('toegang').doc(em).set({t:Date.now(),door:me});alog('externe gebruiker toegelaten',em+' (testaccount)');await loadToe()}
+  await instSet({testAcc:L,t:Date.now(),door:me},{merge:true});TESTACC=L;$('taM').value='';taDraw();
+  r.innerHTML='<span class="ok">'+ee(em)+' is een testaccount. Maak in de app een account met dit adres en bevestig het. Mails van dit account gaan naar '+ee(em)+' zelf.</span>'}
+ catch(e){r.innerHTML='<span class="er">Niet gelukt: '+ee(err(e))+'</span>'}b.disabled=false};
 /* ---------- bewaartermijn ---------- */
 function kpName(d){var o=$('kpSel').querySelector('option[value="'+d+'"]');return o?o.textContent:d+' dagen'}
 async function loadKeep(){try{var d=await db.collection('instellingen').doc('app').get(),o=d.exists?(d.data()||{}):{},v=o.bewaar==null?0:+o.bewaar;
  if(!$('kpSel').querySelector('option[value="'+v+'"]')){var op=document.createElement('option');op.value=v;op.textContent=v+' dagen';$('kpSel').appendChild(op)}
+ TESTACC=Array.isArray(o.testAcc)?o.testAcc.map(function(x){return String(x).toLowerCase()}):[];taDraw();
  $('kvChk').checked=o.kantoorVrij===true;$('kvCc').checked=o.ccAan===true;$('kvAdr').value=o.kantoorAdres||'storingen@mit-installatietechniek.com';$('kvRes').textContent=(o.kantoorVrij===true?'Nu: vrijgegeven (monteur kiest zelf het adres).':'Nu: alle werkbonnen gaan naar '+(o.kantoorAdres||'storingen@mit-installatietechniek.com')+'.')+(o.ccAan===true?' CC: aan.':' CC: uit.');
  $('plChk').checked=!!o.planAan;PLANON=!!o.planAan;$('plRes').textContent=o.planAan?'Nu: aan. Kantoor en monteurs zien de planning.':'Nu: uit. Alleen jij (beheerder) ziet de planning.';
  $('slChk').checked=!!o.saldoAan;$('slVrij').value=String(Math.round((o.saldoVrijDag!=null?o.saldoVrijDag:25)*800)/100).replace('.',',');$('slAdv').value=String(Math.round((o.saldoAdvDag!=null?o.saldoAdvDag:13)*800)/100).replace('.',',');
@@ -1366,7 +1389,7 @@ $('libChk').onclick=async function(){var el=$('libRes');el.textContent='Controle
 $('blf').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}var b=this;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Zeker weten? Tik nogmaals';setTimeout(function(){b.dataset.sure='';b.textContent='Hele app blokkeren'},5000);return}b.dataset.sure='';b.textContent='Hele app blokkeren';setBlock(v,true,true);$('blm').value=''};
 $('blb').onclick=function(){var v=$('blm').value.trim().toLowerCase();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){alert0('Vul een geldig e-mailadres in.');return}setBlock(v,true);$('blm').value=''};
 async function load(){show('');$('tabs').hidden=false;showTab();if(TAB==='r')loadR();$('users').innerHTML='<p class="mu">Laden…</p>';
- try{var _ia=await db.collection('instellingen').doc('app').get(),_io=_ia.exists?(_ia.data()||{}):{};PLANON=!!_io.planAan;UITU=_io.kantoorUitlog==null?5:+_io.kantoorUitlog||0}catch(e){}showTab();
+ try{var _ia=await db.collection('instellingen').doc('app').get(),_io=_ia.exists?(_ia.data()||{}):{};PLANON=!!_io.planAan;TESTACC=Array.isArray(_io.testAcc)?_io.testAcc.map(function(x){return String(x).toLowerCase()}):[];UITU=_io.kantoorUitlog==null?5:+_io.kantoorUitlog||0}catch(e){}showTab();
  if(KP&&ROLE==='kantoor'){uitChk();var _e=uitTijd();if(_e)$('who').textContent='Kantoor · '+auth.currentUser.email+' · automatisch uitloggen om '+p2(new Date(_e).getHours())+':'+p2(new Date(_e).getMinutes())}
  if(ROLE==='kantoor'){$('blogc').hidden=true;await loadUitd();setTimeout(function(){try{ensureData()}catch(e){}},TAB==='d'?50:1500);try{await auth.currentUser.getIdToken(true);var qk=await db.collection('monteurs').get();USERS=qk.docs.map(function(d){var o=d.data()||{};o.uid=d.id;return o})}catch(e){show('<b>Kon de monteurs niet laden.</b><p class="mu">'+ee(err(e))+' (zijn de nieuwste Firestore-regels gepubliceerd?)</p>')}renderNew();loadSent();return}
  try{await auth.currentUser.getIdToken(true);var q=await db.collection('users').get();

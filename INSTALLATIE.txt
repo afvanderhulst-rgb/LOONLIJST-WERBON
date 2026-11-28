@@ -63,6 +63,8 @@ Groen vinkje = online. Rood = klik erop en lees de laatste regels; de vorige ver
 
 7. DAGELIJKS BEHEER
 - Beheer > Toegang: externe adressen toelaten, kantoor-collega's, blokkeren (hele app of één persoon).
+- Nieuwe monteur: beheer > Instellingen > Monteur vooraf aanmelden (naam + e-mail). Kantoor kan dan al zijn agenda inlezen en
+  bonnen klaarzetten; na zijn registratie en bevestiging van het e-mailadres komt alles vanzelf in zijn app.
 - Werkbonnen gaan standaard altijd naar storingen@mit-installatietechniek.com (monteur kan het niet wijzigen, CC uit).
 - De storingsdienstlijst gaat altijd naar hetzelfde kantooradres (zonder CC). De monteur krijgt van geen enkele mail een kopie.
   Adres wijzigen, vrijgeven of CC aanzetten: beheer > Instellingen > Werkbonnen naar kantoor.

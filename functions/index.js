@@ -103,6 +103,7 @@ exports.pushAgenda = onDocumentCreated({document: 'agendaimport/{id}', secrets: 
   // v215: uitslag van de melding terugschrijven, zodat kantoor ziet of de telefoon hem kreeg (en zo niet: waarom)
   const uit = async (push, reden) => { try { await ev.data.ref.set({push, pushReden: reden, pushT: Date.now()}, {merge: true}); } catch (e) {} logger.info('pushAgenda', {voor: d.voor, push, reden}); };
   if (!d.voor) return;
+  if (String(d.voor).startsWith('pre_')) return uit(0, 'nog geen account: de planning staat klaar en komt in de app zodra hij zich registreert en zijn e-mailadres bevestigt');
   if (!(await planVoor(d.voor))) return uit(0, 'planning staat uit (beheer > Instellingen)');
   const dt = (iso) => { const p = String(iso || '').split('-'); if (p.length !== 3) return ''; const x = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); return DGN[x.getUTCDay()] + ' ' + (+p[2]) + '-' + (+p[1]); };
   const per = d.van ? ' (' + dt(d.van) + (d.tot && d.tot !== d.van ? ' t/m ' + dt(d.tot) : '') + ')' : '';
@@ -971,6 +972,63 @@ exports.inboxSetup = onRequest({cors: true, invoker: 'public', timeoutSeconds: 6
     return res.json({ok: true, script: cfScript(inboxUrl(), cfToken)});
   }
   return fout(400, 'Alleen de koppeling met Cloudflare wordt nog ondersteund.');
+});
+
+// ---- v236: monteur vooraf aangemeld door de beheerder (monteurs/pre_<adres>, vooraf: true) ----
+// Kantoor kan voor hem al agenda's inlezen en bonnen klaarzetten (voor = pre_...). Zodra hij een account heeft met dat adres
+// EN zijn e-mailadres heeft bevestigd, zet de server alles over naar zijn account en haalt de plaatshouder weg.
+// Pas na bevestiging: anders zou iemand die alleen een account met dat adres maakt, de afspraken (met klantadressen) krijgen.
+async function koppelVooraf(uid, email) {
+  const em = String(email || '').trim().toLowerCase();
+  if (!uid || !em || String(uid).startsWith('pre_')) return 0;
+  const q = await db.collection('monteurs').where('email', '==', em).get();
+  const pre = q.docs.filter((d) => d.id !== uid && d.id.startsWith('pre_') && d.get('vooraf') === true);
+  if (!pre.length) return 0;
+  let u;
+  try { u = await admin.auth().getUser(uid); } catch (e) { return 0; }
+  if (!u.emailVerified || String(u.email || '').toLowerCase() !== em || u.disabled) return 0;
+  const gb = await db.doc('geblokkeerd/' + em).get().catch(() => null);
+  if (gb && gb.exists && gb.get('volledig') === true) return 0;
+  let n = 0;
+  for (const p of pre) {
+    const naam = tekst(p.get('naam') || '', 80);
+    // agenda: het document-id begint met de monteur (agenda-parse.js docIds); opnieuw aanmaken onder zijn eigen id,
+    // zodat een volgende agenda dezelfde afspraak herkent (status en bijlagen blijven dan staan)
+    const A = require('./agenda-parse.js'), AL = await db.collection('agenda').where('voor', '==', p.id).get();
+    const nid = A.docIds(uid, AL.docs.map((d) => d.data() || {}));
+    for (let i = 0; i < AL.docs.length; i++) {
+      const d = AL.docs[i], nref = db.collection('agenda').doc(nid[i]);
+      const parts = await d.ref.collection('parts').get();
+      for (const x of parts.docs) await nref.collection('parts').doc(x.id).set(x.data());
+      await nref.set(Object.assign({}, d.data(), {voor: uid, voorMail: em, voorNaam: d.get('voorNaam') || naam}), {merge: true});
+      for (const x of parts.docs) await x.ref.delete().catch(() => {});
+      if (nref.id !== d.id) await d.ref.delete();
+      n++;
+    }
+    for (const c of ['inbox', 'agendaimport']) {
+      const L = await db.collection(c).where('voor', '==', p.id).get();
+      let b = db.batch(), k = 0;
+      for (const d of L.docs) {
+        b.update(d.ref, c === 'agendaimport' ? {voor: uid, voorMail: em} : {voor: uid, voorMail: em, voorNaam: d.get('voorNaam') || naam});
+        n++;
+        if (++k % 400 === 0) { await b.commit(); b = db.batch(); }
+      }
+      await b.commit();
+    }
+    const eigen = db.doc('monteurs/' + uid), al = await eigen.get();
+    if (!al.exists) await eigen.set({email: em, naam});
+    await p.ref.delete();
+    await db.collection('beheerlog').doc(Date.now() + '_' + crypto.randomBytes(2).toString('hex')).set({t: Date.now(), door: 'server',
+      actie: 'vooraf aangemelde monteur gekoppeld', wat: tekst(em + ' (' + naam + '): ' + n + ' afspraken/bonnen overgezet', 500)});
+    logger.info('koppelVooraf', {uid, n});
+  }
+  return n;
+}
+// de app schrijft users/<uid> bij elke keer openen en na een back-up (laatst actief); dan controleren we het
+exports.koppelVoorafUser = onDocumentWritten({document: 'users/{uid}'}, async (ev) => {
+  const na = ev.data && ev.data.after && ev.data.after.exists ? (ev.data.after.data() || {}) : null;
+  if (!na || !na.email) return;
+  await koppelVooraf(ev.params.uid, na.email).catch((e) => logger.error('koppelVooraf mislukt', e));
 });
 
 // ---- v173: nieuwe accounts alleen voor MIT-adressen en toegelaten adressen ----

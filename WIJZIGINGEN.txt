@@ -3,6 +3,16 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+TESTACCOUNTS VOOR DEMO'S (beheer + kantoor + server, 28-11-2026)
+- Beheer > Instellingen > "Testaccounts (voor demo's)": e-mailadres toevoegen (bijv. eigen adres met +demo). Een adres buiten
+  @mit-installatietechniek.com wordt meteen toegelaten. Opgeslagen in instellingen/app.testAcc.
+- Werkbonnen, weeklijsten/storingsdienstlijsten en "naar de klant" van een testaccount gaan via de server naar het testaccount
+  zelf, met [TEST] voor het onderwerp en zonder CC; nooit naar storingen@, de leidinggevende of een klant.
+- Kantoor-app: het testaccount staat in de planning en keuzelijsten met "(TEST)", zodat je er bonnen voor kunt klaarzetten en een
+  agenda kunt inlezen voor een demo. Wat het testaccount verstuurt, staat wel in Planning/Zoeken; de beheerder kan het daarna
+  bij Zoeken met vinkjes verwijderen.
+- Geen nieuwe app-versie nodig.
+
 KANTOOR-APP: MONTEURS AANMELDEN EN UIT DIENST (kantoor + server + Firestore-regels, 28-11-2026)
 - Kantoor-app > tandwiel (Instellingen) heeft nu twee extra onderdelen:
   * "Monteur vooraf aanmelden": zelfde als in beheer, maar alleen voor adressen op @mit-installatietechniek.com

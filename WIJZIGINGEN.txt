@@ -3,6 +3,18 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+KANTOOR-APP: MONTEURS AANMELDEN EN UIT DIENST (kantoor + server + Firestore-regels, 28-11-2026)
+- Kantoor-app > tandwiel (Instellingen) heeft nu twee extra onderdelen:
+  * "Monteur vooraf aanmelden": zelfde als in beheer, maar alleen voor adressen op @mit-installatietechniek.com
+    (een ander adres meldt de beheerder aan in beheer.html, want dat moet ook worden toegelaten).
+  * "Monteur uit dienst": de monteur kan de app niet meer gebruiken (blokkade met uitdienst), verdwijnt uit de planning en
+    de keuzelijsten, zijn agenda-afspraken vanaf vandaag gaan weg en zijn openstaande (niet verstuurde) bonnen gaan terug naar
+    "Nog in te plannen". Verstuurde werkbonnen blijven bewaard en vindbaar. "Terugzetten" heft de blokkade op (oude
+    afspraken komen niet terug: agenda opnieuw inlezen). Komt in het logboek beheer.
+- Kantoor kan een beheerder, een kantoor-collega of zichzelf niet uit dienst zetten; dat dwingen de Firestore-regels af.
+- agenda@ leest geen afspraken meer in voor een geblokkeerde of uit dienst gemelde monteur.
+- Beheer > Toegang toont zo iemand als "(uit dienst)".
+
 MONTEUR VOORAF AANMELDEN (beheer + kantoor + server, 28-11-2026)
 - Beheer > Instellingen > "Monteur vooraf aanmelden": naam (zoals op de agenda) en e-mailadres van een monteur die nog geen
   account heeft. Hij staat meteen in de kantoor-app met "nog geen account" (planning, klaarzetten, ook per mail en agenda@).

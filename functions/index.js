@@ -589,7 +589,9 @@ async function verwerkRoosterMail(m, van, logRef) {
 async function verwerkAgendaMail(m, van, logRef, cache) {
   const A = require('./agenda-parse.js');
   // v188: test/beheer-accounts (zelfde lijst als PLAN_NIET in beheer.html) niet in de agenda
-  const lijst = (await db.collection('monteurs').get()).docs.map((d) => Object.assign({uid: d.id}, d.data() || {})).filter((m) => !['a.f.vanderhulst@gmail.com'].includes(String(m.email || '').toLowerCase()));
+  // v237: wie uit dienst is (of volledig geblokkeerd) krijgt geen agenda meer
+  const weg = new Set((await db.collection('geblokkeerd').where('volledig', '==', true).get()).docs.map((d) => d.id));
+  const lijst = (await db.collection('monteurs').get()).docs.map((d) => Object.assign({uid: d.id}, d.data() || {})).filter((m) => !['a.f.vanderhulst@gmail.com'].includes(String(m.email || '').toLowerCase()) && !weg.has(String(m.email || '').toLowerCase()));
   const pdfs = (m.bijlagen || []).filter((b) => /pdf/i.test(b.type || '') || /\.pdf$/i.test(b.naam || '')).slice(0, 10);
   const goed = [], fouten = [];
   if (!pdfs.length) fouten.push('Er zat geen PDF bij de mail.');

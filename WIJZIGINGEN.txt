@@ -3,6 +3,19 @@ De actuele, korte handleiding staat in INSTALLATIE.txt. Dit bestand bewaart alle
 nieuwste eerst, met de stappen die toen eenmalig nodig waren. Oudere stukken (Vercel, Netlify, plakken van regels)
 kunnen achterhaald zijn: bij twijfel geldt INSTALLATIE.txt.
 
+MONTEUR VOORAF AANMELDEN (beheer + kantoor + server, 28-11-2026)
+- Beheer > Instellingen > "Monteur vooraf aanmelden": naam (zoals op de agenda) en e-mailadres van een monteur die nog geen
+  account heeft. Hij staat meteen in de kantoor-app met "nog geen account" (planning, klaarzetten, ook per mail en agenda@).
+  Kantoor kan zijn agenda al inlezen en bonnen voor hem klaarzetten. Een adres buiten @mit-installatietechniek.com wordt
+  meteen ook toegelaten (anders kan hij geen account maken).
+- Maakt hij in de app een account met precies dat adres en bevestigt hij het, dan zet de server (koppelVoorafUser) alles over
+  naar zijn account: agenda-afspraken (met bijlagen, onder zijn eigen id), klaargezette bonnen en de uitslag van de agenda-import.
+  De plaatshouder verdwijnt en het staat in het logboek beheer. Pas na bevestiging van het e-mailadres, zodat niemand de
+  afspraken krijgt door alleen een account met dat adres te maken. Meestal binnen een minuut na het bevestigen, anders bij het
+  volgende openen van de app.
+- Afmelden (twee keer tikken): zijn agenda-afspraken gaan weg, klaargezette bonnen gaan terug naar "Nog in te plannen".
+- Geen nieuwe app-versie nodig. Firestore-regels ongewijzigd (test toegevoegd).
+
 V235: BIJLAGEN VAN KANTOOR BETROUWBAARDER OPHALEN (app, 28-11-2026)
 - Twee bijlagen met dezelfde naam en grootte (bijv. twee keer foto.jpg) komen nu allebei in de werkbon. Elke bijlage wordt
   herkend aan de bon/afspraak waar hij bij hoort en zijn plek in de lijst; bijlagen die al met v234 waren opgehaald worden

@@ -167,6 +167,14 @@ test('monteurslijst: alleen je eigen naam', async () => {
   await assertSucceeds(setDoc(doc(db(JAN), 'monteurs/uA'), {email: JAN.email, naam: 'Jan', rooster: 'Jan Jansen'}));
   await assertFails(setDoc(doc(db(JAN), 'monteurs/uB'), {email: PIET.email, naam: 'Piet'}));
 });
+test('monteur vooraf aanmelden: alleen de beheerder (v236)', async () => {
+  const pre = {email: 'nieuw@mit-installatietechniek.com', naam: 'Nieuw', vooraf: true, t: 1, door: ADMIN.email};
+  await assertSucceeds(setDoc(doc(db(ADMIN), 'monteurs/pre_nieuw'), pre));
+  await assertFails(setDoc(doc(db(KANTOOR), 'monteurs/pre_nieuw2'), pre));
+  await assertFails(setDoc(doc(db(JAN), 'monteurs/pre_nieuw3'), pre));
+  await assertSucceeds(getDocs(query(collection(db(ADMIN), 'monteurs'), where('vooraf', '==', true))));
+  await assertSucceeds(setDoc(doc(db(KANTOOR), 'agenda/a9'), {voor: 'pre_nieuw', pd: '2026-12-01', oms: 'x'}));
+});
 test('aandachtspunten afhandelen: kantoor wel, monteur niet', async () => {
   await assertSucceeds(setDoc(doc(db(KANTOOR), 'afgehandeld/x'), {t: 1, door: KANTOOR.email}));
   await assertFails(setDoc(doc(db(JAN), 'afgehandeld/y'), {t: 1}));

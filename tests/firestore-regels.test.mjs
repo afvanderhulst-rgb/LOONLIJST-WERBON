@@ -175,6 +175,24 @@ test('monteur vooraf aanmelden: alleen de beheerder (v236)', async () => {
   await assertSucceeds(getDocs(query(collection(db(ADMIN), 'monteurs'), where('vooraf', '==', true))));
   await assertSucceeds(setDoc(doc(db(KANTOOR), 'agenda/a9'), {voor: 'pre_nieuw', pd: '2026-12-01', oms: 'x'}));
 });
+test('kantoor: monteur vooraf aanmelden en uit dienst (v237)', async () => {
+  const pre = {email: 'nieuw@mit-installatietechniek.com', naam: 'Nieuw', vooraf: true, t: 1, door: KANTOOR.email};
+  await assertSucceeds(setDoc(doc(db(KANTOOR), 'monteurs/pre_nieuw'), pre));
+  await assertFails(setDoc(doc(db(KANTOOR), 'monteurs/pre_g'), Object.assign({}, pre, {email: 'iemand@gmail.com'})));
+  await assertFails(setDoc(doc(db(KANTOOR), 'monteurs/uX'), pre));
+  await assertFails(setDoc(doc(db(JAN), 'monteurs/pre_j'), Object.assign({}, pre, {door: JAN.email})));
+  await assertSucceeds(deleteDoc(doc(db(KANTOOR), 'monteurs/pre_nieuw')));
+  const ud = {volledig: true, uitdienst: true, t: 1, door: KANTOOR.email, naam: 'Piet'};
+  await assertSucceeds(setDoc(doc(db(KANTOOR), 'geblokkeerd/' + PIET.email), ud));
+  await assertSucceeds(getDocs(query(collection(db(KANTOOR), 'geblokkeerd'), where('uitdienst', '==', true))));
+  await assertFails(getDoc(doc(db(KANTOOR), 'geblokkeerd/' + GEBLOKT.email)));
+  await assertFails(setDoc(doc(db(KANTOOR), 'geblokkeerd/arjan@mit-installatietechniek.com'), ud));
+  await assertFails(setDoc(doc(db(KANTOOR), 'geblokkeerd/' + KANTOOR.email), ud));
+  await assertFails(setDoc(doc(db(KANTOOR), 'geblokkeerd/iemand@gmail.com'), ud));
+  await assertFails(deleteDoc(doc(db(KANTOOR), 'geblokkeerd/' + GEBLOKT.email)));
+  await assertFails(setDoc(doc(db(JAN), 'geblokkeerd/' + PIET.email), Object.assign({}, ud, {door: JAN.email})));
+  await assertSucceeds(deleteDoc(doc(db(KANTOOR), 'geblokkeerd/' + PIET.email)));
+});
 test('aandachtspunten afhandelen: kantoor wel, monteur niet', async () => {
   await assertSucceeds(setDoc(doc(db(KANTOOR), 'afgehandeld/x'), {t: 1, door: KANTOOR.email}));
   await assertFails(setDoc(doc(db(JAN), 'afgehandeld/y'), {t: 1}));

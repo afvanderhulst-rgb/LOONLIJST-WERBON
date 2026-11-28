@@ -77,6 +77,14 @@ service cloud.firestore {
             && (!('rooster' in request.resource.data)
                 || (request.resource.data.rooster is string && request.resource.data.rooster.size() <= 80)));
       allow delete: if isBeheerder() || (request.auth != null && request.auth.uid == uid);
+      // v237: kantoor meldt een nieuwe monteur vooraf aan (plaatshouder pre_<adres>, alleen MIT-adressen) en kan hem weer afmelden
+      allow create: if isKantoor() && uid.matches('pre_.*')
+        && request.resource.data.keys().hasOnly(['email','naam','vooraf','t','door'])
+        && request.resource.data.vooraf == true
+        && request.resource.data.email is string && request.resource.data.email.matches('.*@mit-installatietechniek[.]com$')
+        && request.resource.data.naam is string && request.resource.data.naam.size() <= 80
+        && request.resource.data.door is string && request.resource.data.door.lower() == em();
+      allow delete: if isKantoor() && uid.matches('pre_.*') && resource.data.get('vooraf', false) == true;
     }
     match /foutlog/{id} {
       allow create: if request.auth != null && !geblokkeerd()
@@ -227,6 +235,15 @@ service cloud.firestore {
     match /geblokkeerd/{email} {
       allow get: if request.auth != null && em() == email;
       allow read, write: if isBeheerder();
+      // v237: kantoor zet een monteur (MIT-adres) uit dienst en weer terug; nooit een beheerder of kantoor-collega
+      allow read: if isKantoor() && resource.data.get('uitdienst', false) == true;
+      allow create: if isKantoor() && email.matches('.*@mit-installatietechniek[.]com$')
+        && !(email in ['a.f.vanderhulst@gmail.com', 'arjan@mit-installatietechniek.com'])
+        && !exists(/databases/$(database)/documents/kantoor/$(email)) && email != em()
+        && request.resource.data.keys().hasOnly(['volledig','uitdienst','t','door','naam'])
+        && request.resource.data.volledig == true && request.resource.data.uitdienst == true
+        && request.resource.data.door is string && request.resource.data.door.lower() == em();
+      allow delete: if isKantoor() && resource.data.get('uitdienst', false) == true;
     }
   }
 }
